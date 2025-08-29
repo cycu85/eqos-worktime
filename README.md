@@ -15,11 +15,138 @@ System zarządzania czasem pracy dla zespołów, umożliwiający śledzenie zada
 
 ## Wymagania systemowe
 
+### Wymagania sprzętowe (minimalne)
+- **RAM**: 1 GB (zalecane 2 GB lub więcej)
+- **Dysk**: 5 GB wolnego miejsca (zalecane 10 GB)
+- **CPU**: 1 core (zalecane 2 core lub więcej)
+- **Przepustowość**: Połączenie internetowe (do pobierania pakietów)
+
+### Wymagania sprzętowe (zalecane dla produkcji)
+- **RAM**: 4 GB lub więcej
+- **Dysk**: 20 GB SSD
+- **CPU**: 2-4 core
+- **Backup**: Regularnie tworzone kopie zapasowe
+
+### Wymagania oprogramowania
+- **System operacyjny**: Ubuntu 24.04 LTS (lub nowszy)
 - **PHP** 8.3 lub nowszy
 - **MySQL** 8.0 lub nowszy  
 - **Node.js** 18 lub nowszy
 - **Composer** (menedżer pakietów PHP)
-- **Web server** (Apache/Nginx)
+- **Web server** (Nginx zalecany, Apache obsługiwany)
+
+## Przygotowanie serwera Ubuntu 24.04
+
+### Konfiguracja podstawowa serwera
+
+Przed instalacją aplikacji zaleca się wykonanie podstawowej konfiguracji serwera:
+
+#### 1. Aktualizacja użytkownika root i tworzenie użytkownika
+
+```bash
+# Zaloguj się jako root
+sudo su -
+
+# Zaktualizuj system
+apt update && apt upgrade -y
+
+# Utwórz użytkownika dla aplikacji (opcjonalnie)
+adduser eqos
+usermod -aG sudo eqos
+
+# Przełącz się na nowego użytkownika
+su - eqos
+```
+
+#### 2. Konfiguracja SSH (jeśli serwer zdalny)
+
+```bash
+# Edytuj konfigurację SSH
+sudo nano /etc/ssh/sshd_config
+
+# Zalecane ustawienia bezpieczeństwa:
+# Port 22 (lub zmień na inny)
+# PermitRootLogin no
+# PasswordAuthentication yes (lub no jeśli używasz kluczy)
+# PubkeyAuthentication yes
+
+# Zrestartuj SSH
+sudo systemctl restart sshd
+```
+
+#### 3. Konfiguracja strefy czasowej
+
+```bash
+# Ustaw strefę czasową
+sudo timedatectl set-timezone Europe/Warsaw
+
+# Sprawdź ustawienia
+timedatectl status
+```
+
+#### 4. Konfiguracja hostname
+
+```bash
+# Ustaw nazwę serwera
+sudo hostnamectl set-hostname eqos-worktime
+
+# Edytuj plik hosts
+sudo nano /etc/hosts
+
+# Dodaj linię:
+# 127.0.0.1 eqos-worktime
+```
+
+#### 5. Podstawowa konfiguracja firewall
+
+```bash
+# Sprawdź status UFW
+sudo ufw status
+
+# Jeśli nieaktywny, skonfiguruj podstawowe reguły
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+# Włącz firewall (zostanie włączony później w procesie)
+# sudo ufw enable
+```
+
+#### 6. Instalacja podstawowych narzędzi
+
+```bash
+# Zainstaluj przydatne narzędzia
+sudo apt install -y curl wget git unzip vim htop tree
+```
+
+#### 7. Konfiguracja swapfile (dla serwerów z małą ilością RAM)
+
+```bash
+# Sprawdź obecny swap
+sudo swapon --show
+free -h
+
+# Jeśli brak swap i masz <2GB RAM, utwórz swapfile 1GB
+sudo fallocate -l 1G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+# Dodaj do fstab aby swap był stały
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+#### 8. Sprawdzenie zasobów systemowych
+
+```bash
+# Sprawdź dostępne zasoby
+df -h          # Miejsce na dysku
+free -h        # Pamięć RAM
+nproc          # Liczba procesorów
+lscpu          # Informacje o CPU
+```
 
 ## Instalacja na Ubuntu 24.04
 
@@ -430,6 +557,107 @@ php artisan view:cache
 # Zrestartuj usługi
 sudo systemctl restart php8.3-fpm
 sudo systemctl restart nginx
+```
+
+## Monitorowanie i konserwacja serwera
+
+### Sprawdzenie statusu usług
+
+```bash
+# Status wszystkich kluczowych usług
+sudo systemctl status nginx php8.3-fpm mysql
+
+# Sprawdzenie logów w czasie rzeczywistym
+sudo tail -f /var/log/nginx/error.log
+sudo tail -f /var/log/mysql/error.log
+sudo tail -f /var/www/eqos-worktime/storage/logs/laravel.log
+```
+
+### Monitorowanie zasobów
+
+```bash
+# Sprawdzenie obciążenia serwera
+htop
+# lub
+top
+
+# Sprawdzenie miejsca na dysku
+df -h
+
+# Sprawdzenie pamięci
+free -h
+
+# Sprawdzenie aktywnych połączeń
+ss -tulpn
+```
+
+### Automatyzacja kopii zapasowych
+
+```bash
+# Utwórz skrypt backupu
+sudo nano /usr/local/bin/eqos-backup.sh
+```
+
+Zawartość skryptu backup:
+```bash
+#!/bin/bash
+BACKUP_DIR="/home/backups/eqos-worktime"
+DATE=$(date +%Y%m%d_%H%M%S)
+APP_DIR="/var/www/eqos-worktime"
+
+# Utwórz katalog backupu
+mkdir -p $BACKUP_DIR
+
+# Backup bazy danych
+mysqldump -u eqos_user -p'twoje_bezpieczne_haslo' eqos_worktime > $BACKUP_DIR/db_backup_$DATE.sql
+
+# Backup plików aplikacji (bez node_modules i vendor)
+tar -czf $BACKUP_DIR/app_backup_$DATE.tar.gz -C $APP_DIR \
+    --exclude=node_modules \
+    --exclude=vendor \
+    --exclude=storage/logs \
+    .
+
+# Usuń stare backupy (starsze niż 7 dni)
+find $BACKUP_DIR -name "*.sql" -mtime +7 -delete
+find $BACKUP_DIR -name "*.tar.gz" -mtime +7 -delete
+
+echo "Backup completed: $DATE"
+```
+
+```bash
+# Ustaw uprawnienia
+sudo chmod +x /usr/local/bin/eqos-backup.sh
+
+# Dodaj do crontab (codziennie o 2:00)
+sudo crontab -e
+# Dodaj linię:
+# 0 2 * * * /usr/local/bin/eqos-backup.sh >> /var/log/eqos-backup.log 2>&1
+```
+
+### Optymalizacja wydajności
+
+```bash
+# Optymalizacja MySQL
+sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf
+
+# Dodaj/modyfikuj sekcje:
+# [mysqld]
+# innodb_buffer_pool_size = 128M  # 70-80% dostępnej RAM dla MySQL
+# query_cache_size = 16M
+# query_cache_limit = 1M
+
+# Optymalizacja PHP-FPM
+sudo nano /etc/php/8.3/fpm/pool.d/www.conf
+
+# Modyfikuj:
+# pm.max_children = 10
+# pm.start_servers = 3
+# pm.min_spare_servers = 2
+# pm.max_spare_servers = 4
+
+# Zrestartuj usługi po zmianach
+sudo systemctl restart mysql php8.3-fpm nginx
 ```
 
 ## Deployment
