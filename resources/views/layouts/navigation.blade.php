@@ -22,6 +22,9 @@
                         <x-nav-link :href="route('vehicles.index')" :active="request()->routeIs('vehicles.*')">
                             Pojazdy
                         </x-nav-link>
+                        <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                            Użytkownicy
+                        </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -78,6 +81,17 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('tasks.index')" :active="request()->routeIs('tasks.*')">
+                Zadania
+            </x-responsive-nav-link>
+            @if(auth()->user()->isAdmin())
+                <x-responsive-nav-link :href="route('vehicles.index')" :active="request()->routeIs('vehicles.*')">
+                    Pojazdy
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                    Użytkownicy
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

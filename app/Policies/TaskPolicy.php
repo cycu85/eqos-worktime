@@ -21,8 +21,23 @@ class TaskPolicy
      */
     public function view(User $user, Task $task): bool
     {
-        // Admin i kierownik widzą wszystko, lider tylko swoje zadania
-        return $user->isAdmin() || $user->isKierownik() || $task->leader_id === $user->id;
+        // Admin i kierownik widzą wszystko
+        if ($user->isAdmin() || $user->isKierownik()) {
+            return true;
+        }
+        
+        // Lider widzi tylko swoje zadania
+        if ($user->isLider() && $task->leader_id === $user->id) {
+            return true;
+        }
+        
+        // Pracownik widzi zadania gdzie jest w zespole
+        if ($user->isPracownik() && $task->team) {
+            $teamMembers = array_map('trim', explode(',', $task->team));
+            return in_array($user->name, $teamMembers);
+        }
+        
+        return false;
     }
 
     /**

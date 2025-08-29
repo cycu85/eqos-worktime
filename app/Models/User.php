@@ -62,8 +62,21 @@ class User extends Authenticatable
         return $this->role === 'lider';
     }
 
+    public function isPracownik(): bool
+    {
+        return $this->role === 'pracownik';
+    }
+
     public function tasks()
     {
         return $this->hasMany(Task::class, 'leader_id');
+    }
+
+    /**
+     * Get tasks where this user is part of the team
+     */
+    public function teamTasks()
+    {
+        return Task::whereRaw("FIND_IN_SET(?, REPLACE(team, ', ', ','))", [$this->name])->orderBy('start_datetime', 'desc');
     }
 }

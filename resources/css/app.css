@@ -1,3 +1,6 @@
+/* Import Metronic-inspired styles */
+@import './metronic.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -17,6 +17,7 @@ class Task extends Model
         'end_datetime',
         'vehicle_id',
         'leader_id',
+        'team_id',
         'team',
         'notes',
         'status',
@@ -35,6 +36,11 @@ class Task extends Model
     public function leader()
     {
         return $this->belongsTo(User::class, 'leader_id');
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
     }
 
     public function getDurationAttribute()

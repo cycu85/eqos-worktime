@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TeamController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,9 +23,11 @@ Route::middleware('auth')->group(function () {
     // Tasks routes - available for all authenticated users
     Route::resource('tasks', TaskController::class);
     
-    // Vehicles routes - only for admin
+    // Admin only routes
     Route::middleware('role:admin')->group(function () {
         Route::resource('vehicles', VehicleController::class);
+        Route::resource('users', UserController::class);
+        Route::resource('teams', TeamController::class);
     });
 });
 
