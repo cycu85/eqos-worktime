@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\Setting;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Policies\SettingPolicy;
 use App\Policies\TaskPolicy;
 use App\Policies\TeamPolicy;
 use App\Policies\UserPolicy;
@@ -20,6 +22,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
+        Setting::class => SettingPolicy::class,
         Task::class => TaskPolicy::class,
         Team::class => TeamPolicy::class,
         Vehicle::class => VehiclePolicy::class,

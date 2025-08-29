@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserController;
@@ -31,6 +32,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('vehicles', VehicleController::class);
         Route::resource('users', UserController::class);
         Route::resource('teams', TeamController::class);
+        
+        // Settings routes
+        Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
     });
 });
 

@@ -25,6 +25,12 @@
                         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                             Użytkownicy
                         </x-nav-link>
+                        <x-nav-link :href="route('teams.index')" :active="request()->routeIs('teams.*')">
+                            Zespoły
+                        </x-nav-link>
+                        <x-nav-link :href="route('settings.index')" :active="request()->routeIs('settings.*')">
+                            Ustawienia
+                        </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -90,6 +96,12 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                     Użytkownicy
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('teams.index')" :active="request()->routeIs('teams.*')">
+                    Zespoły
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('settings.index')" :active="request()->routeIs('settings.*')">
+                    Ustawienia
                 </x-responsive-nav-link>
             @endif
         </div>
