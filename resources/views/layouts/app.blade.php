@@ -39,16 +39,12 @@
                 const html = document.documentElement;
                 const isDark = html.classList.contains('dark');
                 
-                console.log('Toggle dark mode - current state:', isDark);
-                
                 if (isDark) {
                     html.classList.remove('dark');
                     localStorage.setItem('theme', 'light');
-                    console.log('Switched to light mode');
                 } else {
                     html.classList.add('dark');
                     localStorage.setItem('theme', 'dark');
-                    console.log('Switched to dark mode');
                 }
             }
 
@@ -57,14 +53,10 @@
                 const saved = localStorage.getItem('theme');
                 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 
-                console.log('Theme initialization - saved:', saved, 'prefersDark:', prefersDark);
-                
                 if (saved === 'dark' || (!saved && prefersDark)) {
                     document.documentElement.classList.add('dark');
-                    console.log('Applied dark mode');
                 } else {
                     document.documentElement.classList.remove('dark');
-                    console.log('Applied light mode');
                 }
             })();
         </script>
