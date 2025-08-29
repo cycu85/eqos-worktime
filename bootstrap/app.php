@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
         
+        // Trust proxies for SSL termination
+        $middleware->trustProxies(at: '*');
+        
         // Set redirect path for unauthenticated users
         $middleware->redirectGuestsTo('/login');
     })

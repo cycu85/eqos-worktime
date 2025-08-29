@@ -358,7 +358,24 @@ sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d twoja-domena.com -d www.twoja-domena.com
 ```
 
-### 13. Konfiguracja Firewall
+### 13. Konfiguracja SSL Proxy (jeśli za proxy menedżerem)
+
+Jeśli aplikacja działa za SSL proxy (np. Nginx Proxy Manager, Cloudflare), zaktualizuj plik `.env`:
+
+```bash
+nano .env
+
+# Dodaj/zaktualizuj te zmienne:
+APP_URL=https://twoja-domena.com
+FORCE_HTTPS=true
+TRUSTED_PROXIES=*
+
+# Wyczyść cache po zmianach
+php artisan config:clear
+php artisan config:cache
+```
+
+### 14. Konfiguracja Firewall
 
 ```bash
 sudo ufw enable
@@ -562,6 +579,35 @@ git clone git@github.com:cycu85/eqos-worktime.git
 # Metoda 3: Personal Access Token
 # Wygeneruj token w GitHub Settings > Developer settings > Personal access tokens
 git clone https://username:TOKEN@github.com/cycu85/eqos-worktime.git
+```
+
+### Problem z mieszanymi treściami (Mixed Content) za SSL proxy
+```bash
+# Jeśli aplikacja działa za SSL proxy i masz błędy "Mixed Content":
+
+# 1. Zaktualizuj plik .env
+nano /var/www/eqos-worktime/.env
+
+# Dodaj/zmień te wartości:
+APP_URL=https://twoja-domena.com
+FORCE_HTTPS=true
+TRUSTED_PROXIES=*
+
+# 2. Wyczyść cache Laravel
+cd /var/www/eqos-worktime
+php artisan config:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# 3. Zrestartuj usługi
+sudo systemctl restart php8.3-fpm nginx
+
+# 4. Sprawdź czy proxy przekazuje nagłówki SSL
+# W konfiguracji proxy menedżera sprawdź:
+# - X-Forwarded-Proto: https
+# - X-Forwarded-For: $remote_addr
+# - X-Forwarded-Host: $host
 ```
 
 ## Aktualizacja aplikacji
