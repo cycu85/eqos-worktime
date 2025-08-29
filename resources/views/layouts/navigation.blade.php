@@ -15,6 +15,14 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('tasks.index')" :active="request()->routeIs('tasks.*')">
+                        Zadania
+                    </x-nav-link>
+                    @if(auth()->user()->isAdmin())
+                        <x-nav-link :href="route('vehicles.index')" :active="request()->routeIs('vehicles.*')">
+                            Pojazdy
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 

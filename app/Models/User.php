@@ -61,4 +61,9 @@ class User extends Authenticatable
     {
         return $this->role === 'lider';
     }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'leader_id');
+    }
 }
