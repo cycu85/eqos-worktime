@@ -119,3 +119,86 @@ Core tables:
 - Laravel's built-in session and cache drivers
 - Designed for shared hosting compatibility
 - Environment-specific configurations via .env files
+
+## Recent Development Session Summary (2025-08-29)
+
+### UI/UX Improvements Completed:
+
+#### 1. Dark Mode Form Field Fixes
+- **Problem**: Form fields in dark mode had poor visibility (white backgrounds with light gray text)
+- **Solution**: Updated `form-kt-control` and `form-kt-select` classes in `resources/css/metronic.css`:
+  - Changed `dark:bg-gray-800` to `dark:bg-gray-900` (darker background)
+  - Changed `dark:text-gray-100` to `dark:text-gray-300` (better contrast)
+  - Updated `dark:border-gray-600` to `dark:border-gray-700` (consistent borders)
+
+#### 2. Light/Dark Mode Toggle Implementation
+- **Added**: Toggle button in navigation topbar (both desktop and mobile versions)
+- **Features**:
+  - Sun/moon icons that switch based on current theme
+  - Saves preference in localStorage
+  - Auto-detects system preference on first visit
+  - JavaScript functionality in `resources/views/layouts/app.blade.php`
+- **Configuration**: Added `darkMode: 'class'` to `tailwind.config.js` (critical for functionality)
+
+#### 3. Task Edit Form Enhancement
+- **Problem**: Task edit form had simple text field for team members (inconsistent with create form)
+- **Solution**: Implemented advanced team selection UI matching create form:
+  - Modal with checkbox interface for selecting team members
+  - Visual tags display for selected members
+  - Auto-population of leader's team members
+  - Updated `TaskController@edit` to load users and team data
+  - Unified all form fields to use Metronic CSS classes (`form-kt-control`, `form-kt-select`)
+
+#### 4. Vehicle List Filtering and Sorting
+- **Problem**: No filtering or sorting capabilities in vehicles list
+- **Solution**: Comprehensive filtering and sorting system:
+  - **Search**: By name, registration, or description
+  - **Status filter**: Active/inactive/all vehicles
+  - **Sorting**: By all columns (name, registration, status, task count, date)
+  - **Clickable headers**: With sort direction indicators (arrows)
+  - **Results info banner**: Shows applied filters and result count
+  - **Pagination**: Preserves all query parameters
+  - **Responsive design**: Form adapts to screen size
+
+### Technical Implementation Details:
+
+#### Files Modified:
+1. `resources/css/metronic.css` - Fixed dark mode form styling
+2. `resources/views/layouts/navigation.blade.php` - Added theme toggle buttons
+3. `resources/views/layouts/app.blade.php` - Added JavaScript for theme switching
+4. `tailwind.config.js` - Enabled class-based dark mode
+5. `app/Http/Controllers/TaskController.php` - Enhanced edit method with team data
+6. `resources/views/tasks/edit.blade.php` - Complete form redesign with modal
+7. `app/Http/Controllers/VehicleController.php` - Added filtering and sorting logic
+8. `resources/views/vehicles/index.blade.php` - Added filter form and sortable headers
+
+#### Deployment Commands for Server:
+```bash
+git pull origin master
+npm run build  # Required after CSS/JS changes
+php artisan cache:clear
+php artisan config:clear
+php artisan view:clear
+```
+
+### Known Issues to Address Next Session:
+
+1. **Timezone Problem**: Application shows incorrect time despite proper timezone configuration
+   - Need to investigate Laravel timezone settings vs database timezone
+   - Check `config/app.php` timezone setting
+   - Verify MySQL timezone configuration
+   - Review datetime handling in models and views
+
+### Development Status:
+
+- ✅ Dark mode visibility issues resolved
+- ✅ Theme toggle fully functional
+- ✅ Task edit form enhanced with team selection
+- ✅ Vehicle list filtering and sorting implemented
+- 🔄 Timezone issue pending resolution
+- 📋 All changes committed and pushed to GitHub
+
+### Next Session Focus:
+1. Fix timezone/time display issues
+2. Continue with any remaining UI/UX improvements
+3. Address any deployment or server-specific issues
