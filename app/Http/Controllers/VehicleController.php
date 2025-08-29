@@ -8,13 +8,53 @@ use Illuminate\Support\Facades\Auth;
 
 class VehicleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $vehicles = Vehicle::withCount(['tasks' => function ($query) {
+        $query = Vehicle::withCount(['tasks' => function ($query) {
             $query->active();
-        }])
-        ->orderBy('name')
-        ->paginate(15);
+        }]);
+
+        // Filter by search
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('registration', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $status = $request->get('status');
+            if ($status === 'active') {
+                $query->where('is_active', true);
+            } elseif ($status === 'inactive') {
+                $query->where('is_active', false);
+            }
+        }
+
+        // Sorting
+        $sortField = $request->get('sort', 'name');
+        $sortDirection = $request->get('direction', 'asc');
+
+        $allowedSortFields = ['name', 'registration', 'is_active', 'created_at', 'tasks_count'];
+        if (!in_array($sortField, $allowedSortFields)) {
+            $sortField = 'name';
+        }
+
+        if ($sortField === 'tasks_count') {
+            $query->orderBy('tasks_count', $sortDirection);
+        } else {
+            $query->orderBy($sortField, $sortDirection);
+        }
+
+        // Add secondary sort by name if not already sorting by name
+        if ($sortField !== 'name') {
+            $query->orderBy('name', 'asc');
+        }
+
+        $vehicles = $query->paginate(15)->withQueryString();
         
         return view('vehicles.index', compact('vehicles'));
     }
