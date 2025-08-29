@@ -221,8 +221,17 @@ sudo apt install -y nginx
 # Przejdź do katalogu web serwera
 cd /var/www
 
-# Sklonuj repozytorium (zmień URL na właściwy)
-sudo git clone https://github.com/twoje-repo/eqos-worktime.git
+# Sklonuj repozytorium (publiczne - bez autoryzacji)
+sudo git clone https://github.com/cycu85/eqos-worktime.git
+
+# ALTERNATYWNIE - jeśli masz dostęp przez SSH:
+# sudo git clone git@github.com:cycu85/eqos-worktime.git
+
+# ALTERNATYWNIE - pobierz ZIP i rozpakuj:
+# wget https://github.com/cycu85/eqos-worktime/archive/refs/heads/master.zip
+# unzip master.zip
+# sudo mv eqos-worktime-master eqos-worktime
+
 sudo chown -R $USER:www-data eqos-worktime
 cd eqos-worktime
 
@@ -531,6 +540,28 @@ composer install --no-dev --no-scripts --optimize-autoloader
 
 # Jeśli problem z pamięcią
 php -d memory_limit=-1 /usr/local/bin/composer install --no-dev
+```
+
+### Problem z autoryzacją Git
+```bash
+# Jeśli repozytorium wymaga autoryzacji, użyj jednej z metod:
+
+# Metoda 1: Pobierz ZIP (bez git)
+cd /var/www
+sudo wget https://github.com/cycu85/eqos-worktime/archive/refs/heads/master.zip
+sudo unzip master.zip
+sudo mv eqos-worktime-master eqos-worktime
+sudo rm master.zip
+
+# Metoda 2: Konfiguruj SSH key (zalecane)
+ssh-keygen -t ed25519 -C "your_email@example.com"
+cat ~/.ssh/id_ed25519.pub
+# Dodaj klucz do GitHub Settings > SSH Keys
+git clone git@github.com:cycu85/eqos-worktime.git
+
+# Metoda 3: Personal Access Token
+# Wygeneruj token w GitHub Settings > Developer settings > Personal access tokens
+git clone https://username:TOKEN@github.com/cycu85/eqos-worktime.git
 ```
 
 ## Aktualizacja aplikacji
