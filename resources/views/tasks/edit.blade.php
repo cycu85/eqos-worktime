@@ -33,39 +33,79 @@
 
                         <!-- Title -->
                         <div class="mb-6">
-                            <x-input-label for="title" :value="__('Tytuł zadania')" />
-                            <x-text-input id="title" class="block mt-1 w-full" type="text" name="title" :value="old('title', $task->title)" required autofocus />
-                            <x-input-error :messages="$errors->get('title')" class="mt-2" />
+                            <label for="title" class="form-kt-label">
+                                Tytuł zadania <span class="text-red-500">*</span>
+                            </label>
+                            <input id="title" 
+                                   class="form-kt-control @error('title') border-red-500 @enderror" 
+                                   type="text" 
+                                   name="title" 
+                                   value="{{ old('title', $task->title) }}" 
+                                   required 
+                                   autofocus />
+                            @error('title')
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Description -->
                         <div class="mb-6">
-                            <x-input-label for="description" :value="__('Opis zadania')" />
-                            <textarea id="description" name="description" rows="3" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">{{ old('description', $task->description) }}</textarea>
-                            <x-input-error :messages="$errors->get('description')" class="mt-2" />
+                            <label for="description" class="form-kt-label">
+                                Opis zadania
+                            </label>
+                            <textarea id="description" 
+                                      name="description" 
+                                      rows="3" 
+                                      class="form-kt-control @error('description') border-red-500 @enderror"
+                                      placeholder="Opisz szczegóły zadania...">{{ old('description', $task->description) }}</textarea>
+                            @error('description')
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <!-- Start DateTime -->
                             <div>
-                                <x-input-label for="start_datetime" :value="__('Data i godzina rozpoczęcia')" />
-                                <x-text-input id="start_datetime" class="block mt-1 w-full" type="datetime-local" name="start_datetime" :value="old('start_datetime', $task->start_datetime?->format('Y-m-d\TH:i'))" required />
-                                <x-input-error :messages="$errors->get('start_datetime')" class="mt-2" />
+                                <label for="start_datetime" class="form-kt-label">
+                                    Data i godzina rozpoczęcia <span class="text-red-500">*</span>
+                                </label>
+                                <input id="start_datetime" 
+                                       class="form-kt-control @error('start_datetime') border-red-500 @enderror" 
+                                       type="datetime-local" 
+                                       name="start_datetime" 
+                                       value="{{ old('start_datetime', $task->start_datetime?->format('Y-m-d\TH:i')) }}" 
+                                       required />
+                                @error('start_datetime')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <!-- End DateTime -->
                             <div>
-                                <x-input-label for="end_datetime" :value="__('Data i godzina zakończenia (opcjonalna)')" />
-                                <x-text-input id="end_datetime" class="block mt-1 w-full" type="datetime-local" name="end_datetime" :value="old('end_datetime', $task->end_datetime?->format('Y-m-d\TH:i'))" />
-                                <x-input-error :messages="$errors->get('end_datetime')" class="mt-2" />
+                                <label for="end_datetime" class="form-kt-label">
+                                    Data i godzina zakończenia <span class="text-gray-500">(opcjonalna)</span>
+                                </label>
+                                <input id="end_datetime" 
+                                       class="form-kt-control @error('end_datetime') border-red-500 @enderror" 
+                                       type="datetime-local" 
+                                       name="end_datetime" 
+                                       value="{{ old('end_datetime', $task->end_datetime?->format('Y-m-d\TH:i')) }}" />
+                                @error('end_datetime')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <!-- Vehicle -->
                             <div>
-                                <x-input-label for="vehicle_id" :value="__('Pojazd')" />
-                                <select id="vehicle_id" name="vehicle_id" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" required>
+                                <label for="vehicle_id" class="form-kt-label">
+                                    Pojazd <span class="text-red-500">*</span>
+                                </label>
+                                <select id="vehicle_id" 
+                                        name="vehicle_id" 
+                                        class="form-kt-select @error('vehicle_id') border-red-500 @enderror" 
+                                        required>
                                     <option value="">Wybierz pojazd</option>
                                     @foreach($vehicles as $vehicle)
                                         <option value="{{ $vehicle->id }}" {{ old('vehicle_id', $task->vehicle_id) == $vehicle->id ? 'selected' : '' }}>
@@ -73,34 +113,90 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <x-input-error :messages="$errors->get('vehicle_id')" class="mt-2" />
+                                @error('vehicle_id')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <!-- Status -->
                             <div>
-                                <x-input-label for="status" :value="__('Status')" />
-                                <select id="status" name="status" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                <label for="status" class="form-kt-label">
+                                    Status
+                                </label>
+                                <select id="status" 
+                                        name="status" 
+                                        class="form-kt-select @error('status') border-red-500 @enderror">
                                     <option value="planned" {{ old('status', $task->status) == 'planned' ? 'selected' : '' }}>Planowane</option>
                                     <option value="in_progress" {{ old('status', $task->status) == 'in_progress' ? 'selected' : '' }}>W trakcie</option>
                                     <option value="completed" {{ old('status', $task->status) == 'completed' ? 'selected' : '' }}>Ukończone</option>
                                     <option value="cancelled" {{ old('status', $task->status) == 'cancelled' ? 'selected' : '' }}>Anulowane</option>
                                 </select>
-                                <x-input-error :messages="$errors->get('status')" class="mt-2" />
+                                @error('status')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
 
-                        <!-- Team -->
+                        <!-- Members -->
                         <div class="mb-6">
-                            <x-input-label for="team" :value="__('Zespół (opcjonalnie)')" />
-                            <x-text-input id="team" class="block mt-1 w-full" type="text" name="team" :value="old('team', $task->team)" placeholder="np. Jan Kowalski, Anna Nowak" />
-                            <x-input-error :messages="$errors->get('team')" class="mt-2" />
+                            <label for="team" class="form-kt-label">
+                                Członkowie zespołu <span class="text-gray-500">(opcjonalnie)</span>
+                            </label>
+                            <div class="flex items-center space-x-3 mt-1">
+                                <input type="hidden" id="team" name="team" value="{{ old('team', $task->team) }}" />
+                                <div class="flex-1">
+                                    <div id="selected-team" class="min-h-[42px] p-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 rounded-md">
+                                        <div id="team-display" class="text-gray-500 dark:text-gray-400">
+                                            @if(old('team', $task->team))
+                                                <span class="text-gray-900 dark:text-gray-100">{{ old('team', $task->team) }}</span>
+                                            @elseif(!empty($leaderTeamMembers))
+                                                <div class="flex flex-wrap gap-2">
+                                                    @foreach($leaderTeamMembers as $memberName)
+                                                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                                            </svg>
+                                                            {{ $memberName }}
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                Kliknij przycisk, aby wybrać członków zespołu
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="openTeamModal()" class="btn-kt-secondary">
+                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Wybierz członków
+                                </button>
+                            </div>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Wybierz członków, którzy będą pracować nad tym zadaniem.
+                                @if(!empty($leaderTeamMembers))
+                                    <br><strong>Jako lider zespołu, automatycznie załadowano członków Twojego zespołu.</strong>
+                                @endif
+                            </p>
+                            @error('team')
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Notes -->
                         <div class="mb-6">
-                            <x-input-label for="notes" :value="__('Notatki (opcjonalnie)')" />
-                            <textarea id="notes" name="notes" rows="3" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" placeholder="Dodatkowe informacje...">{{ old('notes', $task->notes) }}</textarea>
-                            <x-input-error :messages="$errors->get('notes')" class="mt-2" />
+                            <label for="notes" class="form-kt-label">
+                                Notatki <span class="text-gray-500">(opcjonalnie)</span>
+                            </label>
+                            <textarea id="notes" 
+                                      name="notes" 
+                                      rows="3" 
+                                      class="form-kt-control @error('notes') border-red-500 @enderror" 
+                                      placeholder="Dodatkowe informacje, uwagi...">{{ old('notes', $task->notes) }}</textarea>
+                            @error('notes')
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Current Info -->
@@ -124,21 +220,176 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-end">
-                            <a href="{{ route('tasks.show', $task) }}" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest hover:bg-gray-400 dark:hover:bg-gray-700 focus:bg-gray-400 dark:focus:bg-gray-700 active:bg-gray-500 dark:active:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150 mr-4">
-                                Anuluj
-                            </a>
-
-                            <x-primary-button class="ms-4">
-                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                </svg>
-                                {{ __('Zapisz zmiany') }}
-                            </x-primary-button>
+                        <div class="flex items-center justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <div class="flex space-x-3">
+                                <a href="{{ route('tasks.show', $task) }}" class="btn-kt-light">
+                                    Anuluj
+                                </a>
+                                <button type="submit" class="btn-kt-primary">
+                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Zapisz zmiany
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Team Selection Modal -->
+    <div id="team-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeTeamModal()"></div>
+
+            <!-- Center modal -->
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                <div class="sm:flex sm:items-start">
+                    <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 mb-4" id="modal-title">
+                            Wybierz członków zespołu
+                        </h3>
+                        
+                        <div class="mt-4 space-y-3 max-h-64 overflow-y-auto">
+                            @foreach($users as $user)
+                                <label class="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <input type="checkbox" 
+                                           value="{{ $user->id }}" 
+                                           data-name="{{ $user->name }}"
+                                           class="team-member-checkbox h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700" />
+                                    <div class="ml-3 flex items-center">
+                                        <div class="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center mr-3">
+                                            <svg class="h-5 w-5 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $user->name }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ $user->email }}</div>
+                                        </div>
+                                    </div>
+                                </label>
+                            @endforeach
+                        </div>
+
+                        @if($users->isEmpty())
+                            <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                                </svg>
+                                <p class="mt-2">Brak dostępnych pracowników w systemie</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="saveTeamSelection()" class="btn-kt-success w-full sm:w-auto sm:ml-3">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        Zapisz wybór
+                    </button>
+                    <button type="button" onclick="closeTeamModal()" class="btn-kt-light w-full sm:w-auto mt-3 sm:mt-0">
+                        Anuluj
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedTeamMembers = [];
+
+        // Initialize team display on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const leaderTeamMembers = @json($leaderTeamMembers ?? []);
+            const existingTeam = document.getElementById('team').value;
+            
+            if (existingTeam) {
+                // If there's existing team data, parse it and display as tags
+                const teamNames = existingTeam.split(', ').filter(name => name.trim() !== '');
+                if (teamNames.length > 0) {
+                    document.getElementById('team-display').innerHTML = 
+                        '<div class="flex flex-wrap gap-2">' + 
+                        teamNames.map(name => 
+                            '<span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">' +
+                            '<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">' +
+                            '<path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>' +
+                            '</svg>' + name + '</span>'
+                        ).join('') + 
+                        '</div>';
+                }
+            } else if (leaderTeamMembers.length > 0) {
+                // Auto-populate team members for leaders
+                const teamString = leaderTeamMembers.join(', ');
+                document.getElementById('team').value = teamString;
+            }
+        });
+
+        function openTeamModal() {
+            document.getElementById('team-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            // Pre-select checkboxes based on current team value
+            const currentTeam = document.getElementById('team').value;
+            const checkboxes = document.querySelectorAll('.team-member-checkbox');
+            
+            // Clear all checkboxes first
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+            
+            if (currentTeam) {
+                const teamNames = currentTeam.split(', ');
+                checkboxes.forEach(checkbox => {
+                    if (teamNames.includes(checkbox.dataset.name)) {
+                        checkbox.checked = true;
+                    }
+                });
+            }
+        }
+
+        function closeTeamModal() {
+            document.getElementById('team-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function saveTeamSelection() {
+            const checkboxes = document.querySelectorAll('.team-member-checkbox:checked');
+            const selectedNames = Array.from(checkboxes).map(cb => cb.dataset.name);
+            const teamString = selectedNames.join(', ');
+            
+            // Update hidden input
+            document.getElementById('team').value = teamString;
+            
+            // Update display
+            const displayElement = document.getElementById('team-display');
+            if (selectedNames.length > 0) {
+                displayElement.innerHTML = 
+                    '<div class="flex flex-wrap gap-2">' + 
+                    selectedNames.map(name => 
+                        '<span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">' +
+                        '<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">' +
+                        '<path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>' +
+                        '</svg>' + name + '</span>'
+                    ).join('') + 
+                    '</div>';
+            } else {
+                displayElement.innerHTML = '<span class="text-gray-500 dark:text-gray-400">Kliknij przycisk, aby wybrać członków zespołu</span>';
+            }
+            
+            closeTeamModal();
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeTeamModal();
+            }
+        });
+    </script>
 </x-app-layout>

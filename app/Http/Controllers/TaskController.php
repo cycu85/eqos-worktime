@@ -150,9 +150,19 @@ class TaskController extends Controller
         $this->authorize('update', $task);
         
         $vehicles = Vehicle::active()->orderBy('name')->get();
-        $teams = Team::active()->orderBy('name')->get();
+        $users = User::whereIn('role', ['lider', 'pracownik'])->orderBy('name')->get();
         
-        return view('tasks.edit', compact('task', 'vehicles', 'teams'));
+        // Get user's team members if user is a leader
+        $leaderTeamMembers = [];
+        $currentUser = Auth::user();
+        if ($currentUser->isLider()) {
+            $leaderTeam = Team::where('leader_id', $currentUser->id)->first();
+            if ($leaderTeam && $leaderTeam->members) {
+                $leaderTeamMembers = User::whereIn('id', $leaderTeam->members)->pluck('name')->toArray();
+            }
+        }
+        
+        return view('tasks.edit', compact('task', 'vehicles', 'users', 'leaderTeamMembers'));
     }
 
     public function update(Request $request, Task $task)
