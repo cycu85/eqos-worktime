@@ -69,12 +69,25 @@
                                 <label for="start_datetime" class="form-kt-label">
                                     Data i godzina rozpoczęcia <span class="text-red-500">*</span>
                                 </label>
-                                <input id="start_datetime" 
-                                       class="form-kt-control @error('start_datetime') border-red-500 @enderror" 
-                                       type="datetime-local" 
-                                       name="start_datetime" 
-                                       value="{{ old('start_datetime', $task->start_datetime?->format('Y-m-d\TH:i')) }}" 
-                                       required />
+                                <div class="datetime-container">
+                                    <input id="start_datetime" 
+                                           class="form-kt-control @error('start_datetime') border-red-500 @enderror" 
+                                           type="datetime-local" 
+                                           name="start_datetime" 
+                                           value="{{ old('start_datetime', $task->start_datetime?->format('Y-m-d\TH:i')) }}" 
+                                           required />
+                                    <!-- Fallback for browsers that don't support datetime-local properly -->
+                                    <div id="start_datetime_fallback" class="datetime-fallback hidden grid grid-cols-2 gap-2">
+                                        <input type="date" 
+                                               id="start_date_fallback" 
+                                               class="form-kt-control @error('start_datetime') border-red-500 @enderror" 
+                                               required />
+                                        <input type="time" 
+                                               id="start_time_fallback" 
+                                               class="form-kt-control @error('start_datetime') border-red-500 @enderror" 
+                                               required />
+                                    </div>
+                                </div>
                                 @error('start_datetime')
                                     <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                 @enderror
@@ -85,11 +98,22 @@
                                 <label for="end_datetime" class="form-kt-label">
                                     Data i godzina zakończenia <span class="text-gray-500">(opcjonalna)</span>
                                 </label>
-                                <input id="end_datetime" 
-                                       class="form-kt-control @error('end_datetime') border-red-500 @enderror" 
-                                       type="datetime-local" 
-                                       name="end_datetime" 
-                                       value="{{ old('end_datetime', $task->end_datetime?->format('Y-m-d\TH:i')) }}" />
+                                <div class="datetime-container">
+                                    <input id="end_datetime" 
+                                           class="form-kt-control @error('end_datetime') border-red-500 @enderror" 
+                                           type="datetime-local" 
+                                           name="end_datetime" 
+                                           value="{{ old('end_datetime', $task->end_datetime?->format('Y-m-d\TH:i')) }}" />
+                                    <!-- Fallback for browsers that don't support datetime-local properly -->
+                                    <div id="end_datetime_fallback" class="datetime-fallback hidden grid grid-cols-2 gap-2">
+                                        <input type="date" 
+                                               id="end_date_fallback" 
+                                               class="form-kt-control @error('end_datetime') border-red-500 @enderror" />
+                                        <input type="time" 
+                                               id="end_time_fallback" 
+                                               class="form-kt-control @error('end_datetime') border-red-500 @enderror" />
+                                    </div>
+                                </div>
                                 @error('end_datetime')
                                     <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                 @enderror
@@ -308,6 +332,9 @@
 
         // Initialize team display on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Check datetime-local support and setup fallback if needed
+            setupDateTimeFallback();
+            
             const leaderTeamMembers = @json($leaderTeamMembers ?? []);
             const existingTeam = document.getElementById('team').value;
             
@@ -391,5 +418,73 @@
                 closeTeamModal();
             }
         });
+
+        // Function to test datetime-local support and setup fallback
+        function setupDateTimeFallback() {
+            // Force fallback for desktop browsers to ensure time picker is always available
+            const isDesktop = window.innerWidth > 768 && !('ontouchstart' in window);
+            const userAgent = navigator.userAgent.toLowerCase();
+            
+            // Use fallback for desktop Chrome, Safari, Edge, and Firefox
+            const needsFallback = isDesktop && (
+                userAgent.includes('chrome') || 
+                userAgent.includes('safari') || 
+                userAgent.includes('edge') ||
+                userAgent.includes('firefox')
+            );
+            
+            // Debug logging
+            console.log('Desktop detected:', isDesktop);
+            console.log('User agent:', userAgent);
+            console.log('Needs fallback:', needsFallback);
+            
+            if (needsFallback) {
+                console.log('Activating datetime fallback');
+                // Use fallback inputs
+                document.getElementById('start_datetime').style.display = 'none';
+                document.getElementById('start_datetime_fallback').classList.remove('hidden');
+                document.getElementById('end_datetime').style.display = 'none';
+                document.getElementById('end_datetime_fallback').classList.remove('hidden');
+                
+                // Setup event listeners to sync fallback inputs with main inputs
+                setupFallbackSync('start');
+                setupFallbackSync('end');
+            }
+        }
+
+        // Function to setup synchronization between fallback inputs and main datetime input
+        function setupFallbackSync(prefix) {
+            const datetimeInput = document.getElementById(prefix + '_datetime');
+            const dateInput = document.getElementById(prefix + '_date_fallback');
+            const timeInput = document.getElementById(prefix + '_time_fallback');
+            
+            function updateDateTime() {
+                const date = dateInput.value;
+                const time = timeInput.value;
+                if (date && time) {
+                    datetimeInput.value = date + 'T' + time;
+                } else if (date) {
+                    datetimeInput.value = date + 'T00:00';
+                } else {
+                    datetimeInput.value = '';
+                }
+            }
+            
+            function updateFallbacks() {
+                const datetime = datetimeInput.value;
+                if (datetime) {
+                    const [date, time] = datetime.split('T');
+                    dateInput.value = date || '';
+                    timeInput.value = time || '';
+                }
+            }
+            
+            // Sync fallback -> main
+            dateInput.addEventListener('change', updateDateTime);
+            timeInput.addEventListener('change', updateDateTime);
+            
+            // Sync main -> fallback (for initial values)
+            updateFallbacks();
+        }
     </script>
 </x-app-layout>
