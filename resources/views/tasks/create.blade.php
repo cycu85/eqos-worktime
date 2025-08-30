@@ -69,7 +69,7 @@
                                        class="form-kt-control @error('start_datetime') border-red-500 @enderror" 
                                        type="datetime-local" 
                                        name="start_datetime" 
-                                       value="{{ old('start_datetime', now()->format('Y-m-d\TH:i')) }}" 
+                                       value="{{ old('start_datetime') }}" 
                                        required />
                                 @error('start_datetime')
                                     <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
@@ -279,10 +279,23 @@
     <script>
         let selectedTeamMembers = [];
 
-        // Initialize team display on page load
+        // Initialize team display and default datetime on page load
         document.addEventListener('DOMContentLoaded', function() {
             const leaderTeamMembers = @json($leaderTeamMembers ?? []);
             const existingTeam = document.getElementById('team').value;
+            
+            // Set default start datetime to current local time if no old value exists
+            const startDateTimeInput = document.getElementById('start_datetime');
+            if (!startDateTimeInput.value) {
+                const now = new Date();
+                // Format to datetime-local format (YYYY-MM-DDTHH:MM)
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                startDateTimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
             
             if (existingTeam) {
                 // If there's existing team data (from old() in case of validation errors), display it
