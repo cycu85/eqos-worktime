@@ -39,7 +39,7 @@ class TeamController extends Controller
         
         // Apply sorting
         $sortBy = $request->get('sort', 'name');
-        $sortOrder = $request->get('order', 'asc');
+        $sortOrder = $request->get('direction', 'asc');
         
         $allowedSorts = ['name', 'created_at'];
         if (in_array($sortBy, $allowedSorts)) {

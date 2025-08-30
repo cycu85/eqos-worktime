@@ -65,26 +65,6 @@
                             </select>
                         </div>
 
-                        <!-- Sort -->
-                        <div class="sm:w-48">
-                            <label for="sort" class="form-kt-label">Sortuj według</label>
-                            <select id="sort" name="sort" class="form-kt-select">
-                                <option value="name" {{ request('sort', 'name') == 'name' ? 'selected' : '' }}>Nazwy</option>
-                                <option value="registration" {{ request('sort') == 'registration' ? 'selected' : '' }}>Rejestracji</option>
-                                <option value="is_active" {{ request('sort') == 'is_active' ? 'selected' : '' }}>Statusu</option>
-                                <option value="tasks_count" {{ request('sort') == 'tasks_count' ? 'selected' : '' }}>Liczby zadań</option>
-                                <option value="created_at" {{ request('sort') == 'created_at' ? 'selected' : '' }}>Daty utworzenia</option>
-                            </select>
-                        </div>
-
-                        <!-- Sort Direction -->
-                        <div class="sm:w-32">
-                            <label for="direction" class="form-kt-label">Kierunek</label>
-                            <select id="direction" name="direction" class="form-kt-select">
-                                <option value="asc" {{ request('direction', 'asc') == 'asc' ? 'selected' : '' }}>Rosnąco</option>
-                                <option value="desc" {{ request('direction') == 'desc' ? 'selected' : '' }}>Malejąco</option>
-                            </select>
-                        </div>
 
                         <!-- Filter Buttons -->
                         <div class="flex space-x-2">
@@ -121,19 +101,6 @@
                             @if(request('status'))
                                 <span class="text-blue-600 dark:text-blue-400">
                                     Status: {{ request('status') == 'active' ? 'Aktywne' : 'Nieaktywne' }}
-                                </span>
-                            @endif
-                            @if(request('sort') && request('sort') !== 'name')
-                                <span class="text-blue-600 dark:text-blue-400">
-                                    Sortowanie: 
-                                    @switch(request('sort'))
-                                        @case('registration') Rejestracja @break
-                                        @case('is_active') Status @break
-                                        @case('tasks_count') Liczba zadań @break
-                                        @case('created_at') Data utworzenia @break
-                                        @default {{ request('sort') }}
-                                    @endswitch
-                                    ({{ request('direction', 'asc') == 'asc' ? 'rosnąco' : 'malejąco' }})
                                 </span>
                             @endif
                         </div>

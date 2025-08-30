@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\TaskExport;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TaskController extends Controller
 {
@@ -67,21 +69,31 @@ class TaskController extends Controller
             $query->where('start_datetime', '<=', $request->get('date_to') . ' 23:59:59');
         }
         
-        // Apply sorting
-        $sortBy = $request->get('sort', 'start_datetime');
-        $sortOrder = $request->get('order', 'desc');
+        // Apply user filter
+        if ($request->filled('user_id')) {
+            $userId = $request->get('user_id');
+            $query->where(function ($q) use ($userId) {
+                $q->where('leader_id', $userId)
+                  ->orWhere('team', 'like', '%' . User::find($userId)->name . '%');
+            });
+        }
         
-        $allowedSorts = ['start_datetime', 'title', 'status', 'created_at'];
+        // Apply sorting
+        $sortBy = $request->get('sort', 'title');
+        $sortOrder = $request->get('direction', 'asc');
+        
+        $allowedSorts = ['title', 'start_datetime', 'status', 'created_at'];
         if (in_array($sortBy, $allowedSorts)) {
             $query->orderBy($sortBy, $sortOrder);
         } else {
-            $query->orderBy('start_datetime', 'desc');
+            $query->orderBy('title', 'asc');
         }
         
         $tasks = $query->paginate(15)->appends($request->query());
         
         // Get filter options
         $vehicles = Vehicle::active()->orderBy('name')->get();
+        $users = User::orderBy('name')->get();
         $statuses = [
             'planned' => 'Planowane',
             'in_progress' => 'W trakcie', 
@@ -89,7 +101,7 @@ class TaskController extends Controller
             'cancelled' => 'Anulowane'
         ];
         
-        return view('tasks.index', compact('tasks', 'vehicles', 'statuses'));
+        return view('tasks.index', compact('tasks', 'vehicles', 'users', 'statuses'));
     }
 
     public function create()
@@ -194,5 +206,17 @@ class TaskController extends Controller
 
         return redirect()->route('tasks.index')
             ->with('success', 'Zadanie zostało usunięte pomyślnie.');
+    }
+
+    public function export(Request $request)
+    {
+        // Only admin and kierownik can export
+        if (!auth()->user()->isAdmin() && !auth()->user()->isKierownik()) {
+            abort(403);
+        }
+
+        $fileName = 'zadania_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        
+        return Excel::download(new TaskExport($request), $fileName);
     }
 }

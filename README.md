@@ -9,7 +9,8 @@ System zarządzania czasem pracy dla zespołów, umożliwiający śledzenie zada
 - **Zarządzanie pojazdami** - Rejestr pojazdów/sprzętu firmy
 - **Zarządzanie użytkownikami** - System ról (Admin, Kierownik, Lider, Pracownik)
 - **Responsywny design** - Zoptymalizowany pod urządzenia mobilne z motywem Metronic
-- **System raportowania** - Filtrowanie i wyszukiwanie danych
+- **System raportowania** - Filtrowanie i wyszukiwanie danych z eksportem do Excel
+- **Export danych** - Eksport listy zadań do formatu Excel (.xlsx) z obliczaniem czasu trwania
 - **Bezpieczeństwo** - Kontrola dostępu oparta na rolach
 - **Interface w języku polskim** - Pełne tłumaczenie aplikacji
 
@@ -164,7 +165,7 @@ sudo apt install -y software-properties-common
 sudo add-apt-repository ppa:ondrej/php -y
 sudo apt update
 
-# Zainstaluj PHP i wymagane rozszerzenia
+# Zainstaluj PHP i wymagane rozszerzenia (włącznie z php8.3-zip dla Laravel Excel)
 sudo apt install -y php8.3 php8.3-cli php8.3-fpm php8.3-mysql php8.3-xml \
     php8.3-curl php8.3-mbstring php8.3-zip php8.3-gd php8.3-intl \
     php8.3-bcmath php8.3-soap php8.3-readline

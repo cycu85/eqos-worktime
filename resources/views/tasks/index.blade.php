@@ -18,16 +18,24 @@
                 </p>
             </div>
             
-            @can('create', App\Models\Task::class)
-                <div class="mt-3 sm:mt-0">
+            <div class="mt-3 sm:mt-0 flex space-x-3">
+                @if(auth()->user()->isAdmin() || auth()->user()->isKierownik())
+                    <a href="{{ route('tasks.export') }}{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="btn-kt-secondary">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                        Eksport do Excel
+                    </a>
+                @endif
+                @can('create', App\Models\Task::class)
                     <a href="{{ route('tasks.create') }}" class="btn-kt-primary">
                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
                         </svg>
                         Nowe zadanie
                     </a>
-                </div>
-            @endcan
+                @endcan
+            </div>
         </div>
     </x-slot>
 
@@ -101,24 +109,19 @@
                                        class="form-kt-control">
                             </div>
 
-                            <!-- Sort -->
+                            <!-- User Filter -->
                             <div>
-                                <label class="form-kt-label">Sortuj według</label>
-                                <select name="sort" class="form-kt-select">
-                                    <option value="start_datetime" {{ request('sort') == 'start_datetime' ? 'selected' : '' }}>
-                                        Data rozpoczęcia
-                                    </option>
-                                    <option value="title" {{ request('sort') == 'title' ? 'selected' : '' }}>
-                                        Tytuł
-                                    </option>
-                                    <option value="status" {{ request('sort') == 'status' ? 'selected' : '' }}>
-                                        Status
-                                    </option>
-                                    <option value="created_at" {{ request('sort') == 'created_at' ? 'selected' : '' }}>
-                                        Data utworzenia
-                                    </option>
+                                <label class="form-kt-label">Użytkownik</label>
+                                <select name="user_id" class="form-kt-select">
+                                    <option value="">Wszyscy użytkownicy</option>
+                                    @foreach($users as $user)
+                                        <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>
+                                            {{ $user->name }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
+
                         </div>
 
                         <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -137,17 +140,41 @@
                                 </svg>
                                 Wyczyść filtry
                             </a>
-                            
-                            <button type="button" onclick="toggleSortOrder()" class="btn-kt-secondary">
-                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h5a1 1 0 000-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM13 16a1 1 0 102 0v-5.586l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 101.414 1.414L13 10.414V16z" clip-rule="evenodd"></path>
-                                </svg>
-                                {{ request('order') == 'desc' ? 'Malejąco' : 'Rosnąco' }}
-                            </button>
                         </div>
                     </form>
                 </div>
             </div>
+
+            <!-- Results Info -->
+            @if(request()->hasAny(['search', 'status', 'vehicle_id', 'date_from', 'date_to', 'user_id', 'sort']))
+                <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4 text-sm">
+                            <span class="text-blue-700 dark:text-blue-300 font-medium">
+                                Znaleziono: {{ $tasks->total() }} {{ Str::plural('zadanie', $tasks->total()) }}
+                            </span>
+                            @if(request('search'))
+                                <span class="text-blue-600 dark:text-blue-400">
+                                    Szukano: "{{ request('search') }}"
+                                </span>
+                            @endif
+                            @if(request('status'))
+                                <span class="text-blue-600 dark:text-blue-400">
+                                    Status: {{ request('status') == 'planned' ? 'Planowane' : (request('status') == 'in_progress' ? 'W trakcie' : (request('status') == 'completed' ? 'Ukończone' : 'Anulowane')) }}
+                                </span>
+                            @endif
+                            @if(request('user_id'))
+                                <span class="text-blue-600 dark:text-blue-400">
+                                    Użytkownik: {{ $users->where('id', request('user_id'))->first()->name ?? 'Nieznany' }}
+                                </span>
+                            @endif
+                        </div>
+                        <a href="{{ route('tasks.index') }}" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                            Wyczyść filtry
+                        </a>
+                    </div>
+                </div>
+            @endif
 
             <div class="kt-card">
                 @if($tasks->count() > 0)
@@ -155,12 +182,60 @@
                         <table class="table-kt">
                             <thead>
                                 <tr>
-                                    <th>Zadanie</th>
+                                    <th>
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'title', 'direction' => request('sort') == 'title' && request('direction', 'asc') == 'asc' ? 'desc' : 'asc']) }}" 
+                                           class="flex items-center space-x-1 hover:text-blue-600 dark:hover:text-blue-400">
+                                            <span>Zadanie</span>
+                                            @if(request('sort', 'title') == 'title')
+                                                @if(request('direction', 'asc') == 'asc')
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @else
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @endif
+                                            @endif
+                                        </a>
+                                    </th>
                                     <th>Pojazd</th>
                                     <th>Lider</th>
                                     <th>Zespół</th>
-                                    <th>Start</th>
-                                    <th>Status</th>
+                                    <th>
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'start_datetime', 'direction' => request('sort') == 'start_datetime' && request('direction', 'asc') == 'asc' ? 'desc' : 'asc']) }}" 
+                                           class="flex items-center space-x-1 hover:text-blue-600 dark:hover:text-blue-400">
+                                            <span>Start</span>
+                                            @if(request('sort') == 'start_datetime')
+                                                @if(request('direction', 'asc') == 'asc')
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @else
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @endif
+                                            @endif
+                                        </a>
+                                    </th>
+                                    <th>
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'status', 'direction' => request('sort') == 'status' && request('direction', 'asc') == 'asc' ? 'desc' : 'asc']) }}" 
+                                           class="flex items-center space-x-1 hover:text-blue-600 dark:hover:text-blue-400">
+                                            <span>Status</span>
+                                            @if(request('sort') == 'status')
+                                                @if(request('direction', 'asc') == 'asc')
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @else
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @endif
+                                            @endif
+                                        </a>
+                                    </th>
                                     @if(auth()->user()->isAdmin() || auth()->user()->isKierownik())
                                         <th>Czas</th>
                                     @endif

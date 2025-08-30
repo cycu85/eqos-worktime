@@ -32,7 +32,7 @@ class UserController extends Controller
         
         // Apply sorting
         $sortBy = $request->get('sort', 'name');
-        $sortOrder = $request->get('order', 'asc');
+        $sortOrder = $request->get('direction', 'asc');
         
         $allowedSorts = ['name', 'email', 'role', 'created_at', 'tasks_count'];
         if (in_array($sortBy, $allowedSorts)) {

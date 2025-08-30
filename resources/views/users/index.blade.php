@@ -68,27 +68,6 @@
                                 </select>
                             </div>
 
-                            <!-- Sort -->
-                            <div>
-                                <label class="form-kt-label">Sortuj według</label>
-                                <select name="sort" class="form-kt-select">
-                                    <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>
-                                        Nazwa
-                                    </option>
-                                    <option value="email" {{ request('sort') == 'email' ? 'selected' : '' }}>
-                                        Email
-                                    </option>
-                                    <option value="role" {{ request('sort') == 'role' ? 'selected' : '' }}>
-                                        Rola
-                                    </option>
-                                    <option value="tasks_count" {{ request('sort') == 'tasks_count' ? 'selected' : '' }}>
-                                        Liczba zadań
-                                    </option>
-                                    <option value="created_at" {{ request('sort') == 'created_at' ? 'selected' : '' }}>
-                                        Data utworzenia
-                                    </option>
-                                </select>
-                            </div>
 
                             <!-- Actions -->
                             <div class="flex items-end space-x-2">
@@ -97,15 +76,6 @@
                                         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
                                     </svg>
                                     Szukaj
-                                </button>
-                                
-                                <input type="hidden" name="order" value="{{ request('order', 'asc') }}">
-                                
-                                <button type="button" onclick="toggleSortOrder()" class="btn-kt-secondary">
-                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h5a1 1 0 000-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM13 16a1 1 0 102 0v-5.586l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 101.414 1.414L13 10.414V16z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    {{ request('order') == 'desc' ? 'Malejąco' : 'Rosnąco' }}
                                 </button>
                             </div>
                         </div>
@@ -122,17 +92,107 @@
                 </div>
             </div>
 
+            <!-- Results Info -->
+            @if(request()->hasAny(['search', 'role', 'sort']))
+                <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4 text-sm">
+                            <span class="text-blue-700 dark:text-blue-300 font-medium">
+                                Znaleziono: {{ $users->total() }} {{ Str::plural('użytkownik', $users->total()) }}
+                            </span>
+                            @if(request('search'))
+                                <span class="text-blue-600 dark:text-blue-400">
+                                    Szukano: "{{ request('search') }}"
+                                </span>
+                            @endif
+                            @if(request('role'))
+                                <span class="text-blue-600 dark:text-blue-400">
+                                    Rola: {{ request('role') == 'admin' ? 'Administrator' : (request('role') == 'kierownik' ? 'Kierownik' : (request('role') == 'lider' ? 'Lider' : 'Pracownik')) }}
+                                </span>
+                            @endif
+                        </div>
+                        <a href="{{ route('users.index') }}" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                            Wyczyść filtry
+                        </a>
+                    </div>
+                </div>
+            @endif
+
             <div class="kt-card">
                 @if($users->count() > 0)
                     <div class="overflow-x-auto">
                         <table class="table-kt">
                             <thead>
                                 <tr>
-                                    <th>Użytkownik</th>
-                                    <th>Email</th>
-                                    <th>Rola</th>
+                                    <th>
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'name', 'direction' => request('sort') == 'name' && request('direction', 'asc') == 'asc' ? 'desc' : 'asc']) }}" 
+                                           class="flex items-center space-x-1 hover:text-blue-600 dark:hover:text-blue-400">
+                                            <span>Użytkownik</span>
+                                            @if(request('sort', 'name') == 'name')
+                                                @if(request('direction', 'asc') == 'asc')
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @else
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @endif
+                                            @endif
+                                        </a>
+                                    </th>
+                                    <th>
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'email', 'direction' => request('sort') == 'email' && request('direction', 'asc') == 'asc' ? 'desc' : 'asc']) }}" 
+                                           class="flex items-center space-x-1 hover:text-blue-600 dark:hover:text-blue-400">
+                                            <span>Email</span>
+                                            @if(request('sort') == 'email')
+                                                @if(request('direction', 'asc') == 'asc')
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @else
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @endif
+                                            @endif
+                                        </a>
+                                    </th>
+                                    <th>
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'role', 'direction' => request('sort') == 'role' && request('direction', 'asc') == 'asc' ? 'desc' : 'asc']) }}" 
+                                           class="flex items-center space-x-1 hover:text-blue-600 dark:hover:text-blue-400">
+                                            <span>Rola</span>
+                                            @if(request('sort') == 'role')
+                                                @if(request('direction', 'asc') == 'asc')
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @else
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @endif
+                                            @endif
+                                        </a>
+                                    </th>
                                     <th>Zadania</th>
-                                    <th>Utworzono</th>
+                                    <th>
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'created_at', 'direction' => request('sort') == 'created_at' && request('direction', 'asc') == 'asc' ? 'desc' : 'asc']) }}" 
+                                           class="flex items-center space-x-1 hover:text-blue-600 dark:hover:text-blue-400">
+                                            <span>Utworzono</span>
+                                            @if(request('sort') == 'created_at')
+                                                @if(request('direction', 'asc') == 'asc')
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @else
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @endif
+                                            @endif
+                                        </a>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
