@@ -45,8 +45,8 @@ class TaskPolicy
      */
     public function create(User $user): bool
     {
-        // Tylko liderzy i admin mogą tworzyć zadania
-        return $user->isAdmin() || $user->isLider();
+        // Admin, Kierownik i Liderzy mogą tworzyć zadania
+        return $user->isAdmin() || $user->isKierownik() || $user->isLider();
     }
 
     /**
@@ -54,8 +54,17 @@ class TaskPolicy
      */
     public function update(User $user, Task $task): bool
     {
-        // Admin może edytować wszystko, lider tylko swoje zadania
-        return $user->isAdmin() || $task->leader_id === $user->id;
+        // Admin i Kierownik mogą edytować wszystko
+        if ($user->isAdmin() || $user->isKierownik()) {
+            return true;
+        }
+        
+        // Lider może edytować tylko swoje zadania, ale nie te ze statusem "accepted"
+        if ($user->isLider() && $task->leader_id === $user->id) {
+            return !$task->isLockedForUser($user);
+        }
+        
+        return false;
     }
 
     /**
@@ -63,8 +72,8 @@ class TaskPolicy
      */
     public function delete(User $user, Task $task): bool
     {
-        // Admin może usuwać wszystko, lider tylko swoje zadania
-        return $user->isAdmin() || $task->leader_id === $user->id;
+        // Tylko Admin i Kierownik mogą usuwać zadania
+        return $user->isAdmin() || $user->isKierownik();
     }
 
     /**
