@@ -184,7 +184,8 @@
                                         <img src="{{ asset('storage/' . $image['path']) }}" 
                                              alt="{{ $image['original_name'] }}" 
                                              class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity duration-200"
-                                             onclick="openImageModal('{{ asset('storage/' . $image['path']) }}', '{{ $image['original_name'] }}', {{ $index + 1 }}, {{ count($task->images) }})">
+                                             onclick="openGalleryModal('{{ asset('storage/' . $image['path']) }}', '{{ addslashes($image['original_name']) }}', {{ $index + 1 }}, {{ count($task->images) }})"
+                                             data-index="{{ $index }}">
                                     </div>
                                     
                                     <!-- Image overlay with filename -->
@@ -222,12 +223,12 @@
     <div id="image-gallery-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="gallery-modal-title" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen p-4">
             <!-- Background overlay -->
-            <div class="fixed inset-0 bg-black bg-opacity-90 transition-opacity" onclick="closeImageModal()"></div>
+            <div class="fixed inset-0 bg-black bg-opacity-90 transition-opacity" onclick="closeGalleryModal()"></div>
 
             <!-- Modal content -->
             <div class="relative bg-transparent max-w-6xl max-h-full w-full">
                 <!-- Close button -->
-                <button type="button" onclick="closeImageModal()" class="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors">
+                <button type="button" onclick="closeGalleryModal()" class="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
@@ -270,10 +271,21 @@
             @if($task->images && count($task->images) > 0)
                 images = @json($task->images);
                 totalImages = images.length;
+                console.log('Gallery initialized with', totalImages, 'images');
             @endif
         });
 
-        function openImageModal(imageSrc, filename, imageIndex, total) {
+        // Test function first
+        window.openGalleryModal = function(imageSrc, filename, imageIndex, total) {
+            console.log('Opening gallery modal:', imageSrc, filename, imageIndex, total);
+            
+            // Check if modal exists
+            const modal = document.getElementById('image-gallery-modal');
+            if (!modal) {
+                console.error('Modal not found!');
+                return;
+            }
+            
             currentImageIndex = imageIndex - 1; // Convert to 0-based index
             totalImages = total;
             
@@ -295,9 +307,10 @@
             
             document.getElementById('image-gallery-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
-        }
+        };
 
-        function closeImageModal() {
+        window.closeGalleryModal = function() {
+            console.log('Closing gallery modal');
             document.getElementById('image-gallery-modal').classList.add('hidden');
             document.body.style.overflow = 'auto';
         }
@@ -339,7 +352,7 @@
             }
             
             if (e.key === 'Escape') {
-                closeImageModal();
+                closeGalleryModal();
             } else if (e.key === 'ArrowLeft') {
                 previousImage();
             } else if (e.key === 'ArrowRight') {
