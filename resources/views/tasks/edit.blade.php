@@ -153,24 +153,22 @@
                             @enderror
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <!-- Status -->
-                            <div>
-                                <label for="status" class="form-kt-label">
-                                    Status
-                                </label>
-                                <select id="status" 
-                                        name="status" 
-                                        class="form-kt-select @error('status') border-red-500 @enderror">
-                                    <option value="planned" {{ old('status', $task->status) == 'planned' ? 'selected' : '' }}>Planowane</option>
-                                    <option value="in_progress" {{ old('status', $task->status) == 'in_progress' ? 'selected' : '' }}>W trakcie</option>
-                                    <option value="completed" {{ old('status', $task->status) == 'completed' ? 'selected' : '' }}>Ukończone</option>
-                                    <option value="cancelled" {{ old('status', $task->status) == 'cancelled' ? 'selected' : '' }}>Anulowane</option>
-                                </select>
-                                @error('status')
-                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        <!-- Status -->
+                        <div class="mb-6">
+                            <label for="status" class="form-kt-label">
+                                Status
+                            </label>
+                            <select id="status" 
+                                    name="status" 
+                                    class="form-kt-select @error('status') border-red-500 @enderror">
+                                <option value="planned" {{ old('status', $task->status) == 'planned' ? 'selected' : '' }}>Planowane</option>
+                                <option value="in_progress" {{ old('status', $task->status) == 'in_progress' ? 'selected' : '' }}>W trakcie</option>
+                                <option value="completed" {{ old('status', $task->status) == 'completed' ? 'selected' : '' }}>Ukończone</option>
+                                <option value="cancelled" {{ old('status', $task->status) == 'cancelled' ? 'selected' : '' }}>Anulowane</option>
+                            </select>
+                            @error('status')
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Members -->
