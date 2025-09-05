@@ -116,54 +116,55 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <!-- Vehicle -->
-                            <div>
-                                <label class="form-kt-label">
-                                    Pojazdy <span class="text-red-500">*</span>
-                                </label>
-                                <div class="mt-2">
-                                    <div id="vehicles-inputs">
-                                        <!-- Hidden inputs for vehicles will be generated here -->
-                                    </div>
-                                    
-                                    <div id="selected-vehicles-display" class="mb-3">
-                                        <!-- Selected vehicles will be displayed here -->
-                                    </div>
-                                    
-                                    <button type="button" onclick="openVehiclesModal()" class="btn-kt-secondary">
-                                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
-                                            <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"></path>
-                                        </svg>
-                                        Wybierz pojazdy
-                                    </button>
-                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        Wybierz pojazdy potrzebne do wykonania zadania.
-                                    </p>
+                        <!-- Vehicle -->
+                        <div class="mb-6">
+                            <label class="form-kt-label">
+                                Pojazdy <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex items-center space-x-3 mt-1">
+                                <div id="vehicles-inputs">
+                                    <!-- Hidden inputs for vehicles will be generated here -->
                                 </div>
-                                @error('vehicles')
-                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                @enderror
+                                
+                                <div class="flex-1">
+                                    <div id="selected-vehicles" class="min-h-[42px] p-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 rounded-md">
+                                        <div id="selected-vehicles-display" class="text-gray-500 dark:text-gray-400">
+                                            <!-- Selected vehicles will be displayed here -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="openVehiclesModal()" class="btn-kt-secondary">
+                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
+                                        <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"></path>
+                                    </svg>
+                                    Wybierz pojazdy
+                                </button>
                             </div>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Wybierz pojazdy potrzebne do wykonania zadania.
+                            </p>
+                            @error('vehicles')
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                            <!-- Status -->
-                            <div>
-                                <label for="status" class="form-kt-label">
-                                    Status
-                                </label>
-                                <select id="status" 
-                                        name="status" 
-                                        class="form-kt-select @error('status') border-red-500 @enderror">
-                                    <option value="planned" {{ old('status', 'planned') == 'planned' ? 'selected' : '' }}>Planowane</option>
-                                    <option value="in_progress" {{ old('status') == 'in_progress' ? 'selected' : '' }}>W trakcie</option>
-                                    <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }}>Ukończone</option>
-                                    <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Anulowane</option>
-                                </select>
-                                @error('status')
-                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        <!-- Status -->
+                        <div class="mb-6">
+                            <label for="status" class="form-kt-label">
+                                Status
+                            </label>
+                            <select id="status" 
+                                    name="status" 
+                                    class="form-kt-select @error('status') border-red-500 @enderror">
+                                <option value="planned" {{ old('status', 'planned') == 'planned' ? 'selected' : '' }}>Planowane</option>
+                                <option value="in_progress" {{ old('status') == 'in_progress' ? 'selected' : '' }}>W trakcie</option>
+                                <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }}>Ukończone</option>
+                                <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Anulowane</option>
+                            </select>
+                            @error('status')
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Members -->
