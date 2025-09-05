@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TaskController extends Controller
@@ -198,11 +199,28 @@ class TaskController extends Controller
             'vehicles.*' => 'exists:vehicles,id',
             'team' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,jpg,png,gif,webp|max:10240',
             'status' => 'in:planned,in_progress,completed,cancelled',
         ]);
 
         $vehicleIds = $validated['vehicles'];
         unset($validated['vehicles']);
+        
+        // Handle image uploads
+        $currentImages = $task->images ?? [];
+        if ($request->hasFile('images')) {
+            $uploadedImages = [];
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('tasks', 'public');
+                $uploadedImages[] = [
+                    'path' => $path,
+                    'original_name' => $image->getClientOriginalName(),
+                    'uploaded_at' => now()->toDateTimeString()
+                ];
+            }
+            $validated['images'] = array_merge($currentImages, $uploadedImages);
+        }
         
         $task->update($validated);
         $task->vehicles()->sync($vehicleIds);
@@ -231,5 +249,30 @@ class TaskController extends Controller
         $fileName = 'zadania_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
         
         return Excel::download(new TaskExport($request), $fileName);
+    }
+
+    public function removeImage(Task $task, $imageIndex)
+    {
+        $this->authorize('update', $task);
+        
+        $images = $task->images ?? [];
+        
+        if (isset($images[$imageIndex])) {
+            // Delete file from storage
+            $imagePath = $images[$imageIndex]['path'] ?? null;
+            if ($imagePath && Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
+            }
+            
+            // Remove from array
+            array_splice($images, $imageIndex, 1);
+            
+            // Update task
+            $task->update(['images' => $images]);
+            
+            return response()->json(['success' => true]);
+        }
+        
+        return response()->json(['success' => false], 404);
     }
 }

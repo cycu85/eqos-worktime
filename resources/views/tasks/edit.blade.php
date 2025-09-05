@@ -27,7 +27,7 @@
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <form method="POST" action="{{ route('tasks.update', $task) }}">
+                    <form method="POST" action="{{ route('tasks.update', $task) }}" enctype="multipart/form-data">
                         @csrf
                         @method('PATCH')
 
@@ -268,6 +268,68 @@
                             @enderror
                         </div>
 
+                        <!-- Images -->
+                        <div class="mb-6">
+                            <label class="form-kt-label">
+                                Zdjęcia <span class="text-gray-500">(opcjonalnie)</span>
+                            </label>
+                            
+                            <!-- Current Images -->
+                            @if($task->images && count($task->images) > 0)
+                                <div class="mb-4">
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Aktualnie załączone zdjęcia:</p>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" id="current-images">
+                                        @foreach($task->images as $index => $image)
+                                            <div class="relative group current-image" data-index="{{ $index }}">
+                                                <img src="{{ asset('storage/' . $image['path']) }}" 
+                                                     alt="{{ $image['original_name'] }}" 
+                                                     class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-75 transition-opacity"
+                                                     onclick="showImagePreview('{{ asset('storage/' . $image['path']) }}', '{{ $image['original_name'] }}')">
+                                                <button type="button" 
+                                                        onclick="removeCurrentImage({{ $index }})"
+                                                        class="absolute top-1 right-1 bg-red-500 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    ×
+                                                </button>
+                                                <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 rounded-b-lg truncate">
+                                                    {{ $image['original_name'] }}
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                            
+                            <!-- Upload New Images -->
+                            <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                                <input type="file" 
+                                       id="images" 
+                                       name="images[]" 
+                                       multiple 
+                                       accept="image/*"
+                                       class="hidden"
+                                       onchange="previewNewImages(this)">
+                                <label for="images" class="flex flex-col items-center justify-center cursor-pointer">
+                                    <svg class="w-10 h-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Kliknij aby wybrać zdjęcia</span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-500 mt-1">JPEG, PNG, GIF, WEBP (max 10MB każde)</span>
+                                </label>
+                            </div>
+                            
+                            <!-- Preview New Images -->
+                            <div id="new-images-preview" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-3 hidden">
+                                <!-- New images will be previewed here -->
+                            </div>
+                            
+                            @error('images')
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                            @error('images.*')
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <!-- Current Info -->
                         <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                             <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Informacje o zadaniu</h4>
@@ -433,6 +495,36 @@
                     <button type="button" onclick="closeVehiclesModal()" class="btn-kt-light w-full sm:w-auto mt-3 sm:mt-0">
                         Anuluj
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div id="image-preview-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="image-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeImagePreview()"></div>
+
+            <!-- Center modal -->
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" id="image-modal-title">
+                            Podgląd zdjęcia
+                        </h3>
+                        <button type="button" onclick="closeImagePreview()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="text-center">
+                        <img id="preview-image" src="" alt="" class="max-w-full max-h-96 mx-auto rounded-lg">
+                        <p id="preview-filename" class="mt-2 text-sm text-gray-500 dark:text-gray-400"></p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -659,8 +751,100 @@
             if (e.key === 'Escape') {
                 closeTeamModal();
                 closeVehiclesModal();
+                closeImagePreview();
             }
         });
+
+        // Image handling functions
+        function showImagePreview(imageSrc, filename) {
+            document.getElementById('preview-image').src = imageSrc;
+            document.getElementById('preview-filename').textContent = filename;
+            document.getElementById('image-preview-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeImagePreview() {
+            document.getElementById('image-preview-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function previewNewImages(input) {
+            const previewContainer = document.getElementById('new-images-preview');
+            previewContainer.innerHTML = '';
+            
+            if (input.files && input.files.length > 0) {
+                previewContainer.classList.remove('hidden');
+                
+                Array.from(input.files).forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const div = document.createElement('div');
+                            div.className = 'relative group';
+                            div.innerHTML = `
+                                <img src="${e.target.result}" 
+                                     alt="${file.name}" 
+                                     class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-75 transition-opacity"
+                                     onclick="showImagePreview('${e.target.result}', '${file.name}')">
+                                <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 rounded-b-lg truncate">
+                                    ${file.name}
+                                </div>
+                            `;
+                            previewContainer.appendChild(div);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            } else {
+                previewContainer.classList.add('hidden');
+            }
+        }
+
+        function removeCurrentImage(index) {
+            if (confirm('Czy na pewno chcesz usunąć to zdjęcie?')) {
+                fetch(`/tasks/{{ $task->id }}/images/${index}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove the image element from DOM
+                        const imageElement = document.querySelector(`.current-image[data-index="${index}"]`);
+                        if (imageElement) {
+                            imageElement.remove();
+                        }
+                        
+                        // Update indices for remaining images
+                        const remainingImages = document.querySelectorAll('.current-image');
+                        remainingImages.forEach((img, newIndex) => {
+                            if (parseInt(img.dataset.index) > index) {
+                                img.dataset.index = parseInt(img.dataset.index) - 1;
+                                const removeButton = img.querySelector('button');
+                                removeButton.setAttribute('onclick', `removeCurrentImage(${parseInt(img.dataset.index)})`);
+                            }
+                        });
+                        
+                        // Hide current images section if no images left
+                        if (remainingImages.length === 0) {
+                            const currentImagesSection = document.getElementById('current-images').closest('.mb-4');
+                            if (currentImagesSection) {
+                                currentImagesSection.style.display = 'none';
+                            }
+                        }
+                    } else {
+                        alert('Błąd podczas usuwania zdjęcia.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Błąd podczas usuwania zdjęcia.');
+                });
+            }
+        }
 
         // Function to test datetime-local support and setup fallback
         function setupDateTimeFallback() {

@@ -19,12 +19,14 @@ class Task extends Model
         'team_id',
         'team',
         'notes',
+        'images',
         'status',
     ];
 
     protected $casts = [
         'start_datetime' => 'datetime',
         'end_datetime' => 'datetime',
+        'images' => 'array',
     ];
 
     public function vehicles()

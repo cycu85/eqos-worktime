@@ -27,6 +27,9 @@ Route::middleware('auth')->group(function () {
     // Tasks routes - available for all authenticated users
     Route::resource('tasks', TaskController::class);
     
+    // Task image removal
+    Route::delete('tasks/{task}/images/{imageIndex}', [TaskController::class, 'removeImage'])->name('tasks.removeImage');
+    
     // Task export - only for admin and kierownik
     Route::get('tasks/export/excel', [TaskController::class, 'export'])->name('tasks.export')->middleware('role:admin,kierownik');
     
