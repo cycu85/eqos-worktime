@@ -183,9 +183,11 @@
                                     <div class="aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
                                         <img src="{{ asset('storage/' . $image['path']) }}" 
                                              alt="{{ $image['original_name'] }}" 
-                                             class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity duration-200"
-                                             onclick="openGalleryModal('{{ asset('storage/' . $image['path']) }}', '{{ addslashes($image['original_name']) }}', {{ $index + 1 }}, {{ count($task->images) }})"
-                                             data-index="{{ $index }}">
+                                             class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity duration-200 gallery-image"
+                                             data-image-src="{{ asset('storage/' . $image['path']) }}"
+                                             data-filename="{{ $image['original_name'] }}"
+                                             data-index="{{ $index + 1 }}"
+                                             data-total="{{ count($task->images) }}">
                                     </div>
                                     
                                     <!-- Image overlay with filename -->
@@ -272,7 +274,42 @@
                 images = @json($task->images);
                 totalImages = images.length;
                 console.log('Gallery initialized with', totalImages, 'images');
+                console.log('Images data:', images);
+            @else
+                console.log('No images found for this task');
             @endif
+            
+            // Test if modal exists
+            const modal = document.getElementById('image-gallery-modal');
+            console.log('Modal element found:', modal ? 'YES' : 'NO');
+            
+            // Add test function to window for debugging
+            window.testModal = function() {
+                console.log('Testing modal...');
+                const modal = document.getElementById('image-gallery-modal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    console.log('Modal should be visible now');
+                } else {
+                    console.log('Modal not found');
+                }
+            };
+            
+            // Add event listeners to gallery images
+            const galleryImages = document.querySelectorAll('.gallery-image');
+            console.log('Found', galleryImages.length, 'gallery images');
+            
+            galleryImages.forEach(function(img) {
+                img.addEventListener('click', function() {
+                    const imageSrc = this.getAttribute('data-image-src');
+                    const filename = this.getAttribute('data-filename');
+                    const imageIndex = parseInt(this.getAttribute('data-index'));
+                    const total = parseInt(this.getAttribute('data-total'));
+                    
+                    console.log('Image clicked:', imageSrc, filename, imageIndex, total);
+                    openGalleryModal(imageSrc, filename, imageIndex, total);
+                });
+            });
         });
 
         // Test function first
