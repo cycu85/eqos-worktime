@@ -290,13 +290,15 @@
                                                     'in_progress' => 'badge-kt-primary',
                                                     'completed' => 'badge-kt-success',
                                                     'cancelled' => 'badge-kt-danger',
+                                                    'accepted' => 'badge-kt-info',
                                                     default => 'badge-kt-light'
                                                 };
                                                 $statusLabels = [
                                                     'planned' => 'Planowane',
                                                     'in_progress' => 'W trakcie',
                                                     'completed' => 'Ukończone',
-                                                    'cancelled' => 'Anulowane'
+                                                    'cancelled' => 'Anulowane',
+                                                    'accepted' => 'Zaakceptowane'
                                                 ];
                                             @endphp
                                             <span class="{{ $badgeClass }}">

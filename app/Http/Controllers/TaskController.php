@@ -99,7 +99,8 @@ class TaskController extends Controller
             'planned' => 'Planowane',
             'in_progress' => 'W trakcie', 
             'completed' => 'Ukończone',
-            'cancelled' => 'Anulowane'
+            'cancelled' => 'Anulowane',
+            'accepted' => 'Zaakceptowane'
         ];
         
         return view('tasks.index', compact('tasks', 'vehicles', 'users', 'statuses'));
@@ -168,6 +169,12 @@ class TaskController extends Controller
     {
         $this->authorize('update', $task);
         
+        // Check if task is locked for current user
+        if ($task->isLockedForUser(auth()->user())) {
+            return redirect()->route('tasks.show', $task)
+                ->with('error', 'To zadanie jest zablokowane do edycji. Status "Zaakceptowane" może być zmieniany tylko przez Administratora lub Kierownika.');
+        }
+        
         $vehicles = Vehicle::active()->orderBy('name')->get();
         $users = User::whereIn('role', ['lider', 'pracownik'])->orderBy('name')->get();
         $teams = Team::with('vehicle')->active()->orderBy('name')->get();
@@ -190,6 +197,12 @@ class TaskController extends Controller
     {
         $this->authorize('update', $task);
         
+        // Check if task is locked for current user
+        if ($task->isLockedForUser(auth()->user())) {
+            return redirect()->route('tasks.show', $task)
+                ->with('error', 'To zadanie jest zablokowane do edycji. Status "Zaakceptowane" może być zmieniany tylko przez Administratora lub Kierownika.');
+        }
+        
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -201,8 +214,15 @@ class TaskController extends Controller
             'notes' => 'nullable|string',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,jpg,png,gif,webp|max:10240',
-            'status' => 'in:planned,in_progress,completed,cancelled',
+            'status' => 'in:planned,in_progress,completed,cancelled,accepted',
         ]);
+
+        // Check if user can set 'accepted' status
+        if ($validated['status'] === 'accepted' && !$task->canSetAcceptedStatus(auth()->user())) {
+            return redirect()->back()
+                ->withErrors(['status' => 'Tylko Administrator i Kierownik mogą ustawiać status "Zaakceptowane".'])
+                ->withInput();
+        }
 
         $vehicleIds = $validated['vehicles'];
         unset($validated['vehicles']);

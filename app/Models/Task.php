@@ -72,4 +72,21 @@ class Task extends Model
     {
         return $query->where('leader_id', $userId);
     }
+
+    /**
+     * Check if task is locked for editing by non-admin/kierownik users
+     */
+    public function isLockedForUser($user)
+    {
+        // Task is locked when status is 'accepted' and user is not admin or kierownik
+        return $this->status === 'accepted' && !$user->isAdmin() && !$user->isKierownik();
+    }
+
+    /**
+     * Check if task status can be changed to 'accepted' by user
+     */
+    public function canSetAcceptedStatus($user)
+    {
+        return $user->isAdmin() || $user->isKierownik();
+    }
 }

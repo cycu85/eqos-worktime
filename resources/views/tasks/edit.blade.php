@@ -200,6 +200,9 @@
                                 <option value="in_progress" {{ old('status', $task->status) == 'in_progress' ? 'selected' : '' }}>W trakcie</option>
                                 <option value="completed" {{ old('status', $task->status) == 'completed' ? 'selected' : '' }}>Ukończone</option>
                                 <option value="cancelled" {{ old('status', $task->status) == 'cancelled' ? 'selected' : '' }}>Anulowane</option>
+                                @if(auth()->user()->isAdmin() || auth()->user()->isKierownik())
+                                    <option value="accepted" {{ old('status', $task->status) == 'accepted' ? 'selected' : '' }}>Zaakceptowane</option>
+                                @endif
                             </select>
                             @error('status')
                                 <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
