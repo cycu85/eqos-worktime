@@ -183,7 +183,8 @@
                                     <div class="aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
                                         <img src="{{ asset('storage/' . $image['path']) }}" 
                                              alt="{{ $image['original_name'] }}" 
-                                             class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity duration-200 gallery-image"
+                                             class="w-full h-full object-cover cursor-pointer hover:opacity-75 hover:scale-105 transition-all duration-200 gallery-image"
+                                             style="cursor: pointer !important;"
                                              data-image-src="{{ asset('storage/' . $image['path']) }}"
                                              data-filename="{{ $image['original_name'] }}"
                                              data-index="{{ $index + 1 }}"
@@ -307,8 +308,15 @@
             const galleryImages = document.querySelectorAll('.gallery-image');
             console.log('Found', galleryImages.length, 'gallery images');
             
-            galleryImages.forEach(function(img) {
-                img.addEventListener('click', function() {
+            galleryImages.forEach(function(img, index) {
+                console.log('Adding event listener to image', index, img);
+                
+                // Add multiple event types for debugging
+                img.addEventListener('click', function(e) {
+                    console.log('Click event triggered on image', index);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
                     const imageSrc = this.getAttribute('data-image-src');
                     const filename = this.getAttribute('data-filename');
                     const imageIndex = parseInt(this.getAttribute('data-index'));
@@ -317,7 +325,32 @@
                     console.log('Image clicked:', imageSrc, filename, imageIndex, total);
                     openGalleryModal(imageSrc, filename, imageIndex, total);
                 });
+                
+                // Add hover events for testing
+                img.addEventListener('mouseenter', function() {
+                    console.log('Mouse entered image', index);
+                    this.style.border = '2px solid red'; // Visual feedback
+                });
+                
+                img.addEventListener('mouseleave', function() {
+                    console.log('Mouse left image', index);
+                    this.style.border = 'none';
+                });
+                
+                // Test if image is clickable
+                img.style.backgroundColor = 'rgba(255,0,0,0.1)'; // Slight red tint for testing
             });
+            
+            // Add a simple test function
+            window.testImageClick = function() {
+                const firstImage = document.querySelector('.gallery-image');
+                if (firstImage) {
+                    console.log('Manually triggering click on first image');
+                    firstImage.click();
+                } else {
+                    console.log('No gallery images found');
+                }
+            };
         });
 
         // Test function first
