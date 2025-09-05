@@ -167,6 +167,184 @@
                     </div>
                 </div>
             @endif
+
+            <!-- Images Gallery -->
+            @if($task->images && count($task->images) > 0)
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+                            Załączone zdjęcia
+                            <span class="text-sm text-gray-500 dark:text-gray-400 font-normal">({{ count($task->images) }})</span>
+                        </h4>
+                        
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                            @foreach($task->images as $index => $image)
+                                <div class="relative group">
+                                    <div class="aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
+                                        <img src="{{ asset('storage/' . $image['path']) }}" 
+                                             alt="{{ $image['original_name'] }}" 
+                                             class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                                             onclick="openImageModal('{{ asset('storage/' . $image['path']) }}', '{{ $image['original_name'] }}', {{ $index + 1 }}, {{ count($task->images) }})">
+                                    </div>
+                                    
+                                    <!-- Image overlay with filename -->
+                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2 rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                        <p class="text-white text-xs truncate">{{ $image['original_name'] }}</p>
+                                        @if(isset($image['uploaded_at']))
+                                            <p class="text-gray-300 text-xs">{{ \Carbon\Carbon::parse($image['uploaded_at'])->format('d.m.Y H:i') }}</p>
+                                        @endif
+                                    </div>
+                                    
+                                    <!-- Click to view hint -->
+                                    <div class="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg">
+                                        <div class="bg-white dark:bg-gray-800 rounded-full p-2">
+                                            <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        
+                        <!-- Gallery info -->
+                        <div class="mt-4 text-xs text-gray-500 dark:text-gray-400">
+                            <p>Kliknij na zdjęcie, aby wyświetlić powiększenie</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
+
+    <!-- Image Gallery Modal -->
+    <div id="image-gallery-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="gallery-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-black bg-opacity-90 transition-opacity" onclick="closeImageModal()"></div>
+
+            <!-- Modal content -->
+            <div class="relative bg-transparent max-w-6xl max-h-full w-full">
+                <!-- Close button -->
+                <button type="button" onclick="closeImageModal()" class="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+
+                <!-- Navigation buttons -->
+                <button type="button" id="prev-image" onclick="previousImage()" class="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 text-white hover:text-gray-300 transition-colors bg-black bg-opacity-50 rounded-full p-3 hidden">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                
+                <button type="button" id="next-image" onclick="nextImage()" class="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 text-white hover:text-gray-300 transition-colors bg-black bg-opacity-50 rounded-full p-3 hidden">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+
+                <!-- Image container -->
+                <div class="text-center">
+                    <img id="modal-image" src="" alt="" class="max-w-full max-h-[80vh] mx-auto rounded-lg shadow-2xl">
+                    
+                    <!-- Image info -->
+                    <div class="mt-4 text-white">
+                        <p id="modal-filename" class="text-lg font-medium"></p>
+                        <p id="modal-counter" class="text-sm text-gray-300 mt-1"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentImageIndex = 0;
+        let totalImages = 0;
+        let images = [];
+
+        // Initialize images array from task data
+        document.addEventListener('DOMContentLoaded', function() {
+            @if($task->images && count($task->images) > 0)
+                images = @json($task->images);
+                totalImages = images.length;
+            @endif
+        });
+
+        function openImageModal(imageSrc, filename, imageIndex, total) {
+            currentImageIndex = imageIndex - 1; // Convert to 0-based index
+            totalImages = total;
+            
+            document.getElementById('modal-image').src = imageSrc;
+            document.getElementById('modal-filename').textContent = filename;
+            document.getElementById('modal-counter').textContent = `${imageIndex} z ${total}`;
+            
+            // Show/hide navigation buttons
+            const prevBtn = document.getElementById('prev-image');
+            const nextBtn = document.getElementById('next-image');
+            
+            if (total > 1) {
+                prevBtn.classList.toggle('hidden', currentImageIndex === 0);
+                nextBtn.classList.toggle('hidden', currentImageIndex === total - 1);
+            } else {
+                prevBtn.classList.add('hidden');
+                nextBtn.classList.add('hidden');
+            }
+            
+            document.getElementById('image-gallery-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeImageModal() {
+            document.getElementById('image-gallery-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function previousImage() {
+            if (currentImageIndex > 0) {
+                currentImageIndex--;
+                updateModalImage();
+            }
+        }
+
+        function nextImage() {
+            if (currentImageIndex < totalImages - 1) {
+                currentImageIndex++;
+                updateModalImage();
+            }
+        }
+
+        function updateModalImage() {
+            const image = images[currentImageIndex];
+            const imageSrc = "{{ asset('storage/') }}/" + image.path;
+            
+            document.getElementById('modal-image').src = imageSrc;
+            document.getElementById('modal-filename').textContent = image.original_name;
+            document.getElementById('modal-counter').textContent = `${currentImageIndex + 1} z ${totalImages}`;
+            
+            // Update navigation buttons
+            const prevBtn = document.getElementById('prev-image');
+            const nextBtn = document.getElementById('next-image');
+            
+            prevBtn.classList.toggle('hidden', currentImageIndex === 0);
+            nextBtn.classList.toggle('hidden', currentImageIndex === totalImages - 1);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('image-gallery-modal').classList.contains('hidden')) {
+                return;
+            }
+            
+            if (e.key === 'Escape') {
+                closeImageModal();
+            } else if (e.key === 'ArrowLeft') {
+                previousImage();
+            } else if (e.key === 'ArrowRight') {
+                nextImage();
+            }
+        });
+    </script>
 </x-app-layout>
