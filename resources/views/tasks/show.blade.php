@@ -222,7 +222,7 @@
     </div>
 
     <!-- Image Gallery Modal -->
-    <div id="image-gallery-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="gallery-modal-title" role="dialog" aria-modal="true">
+    <div id="image-gallery-modal" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;" aria-labelledby="gallery-modal-title" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen p-4">
             <!-- Background overlay -->
             <div class="fixed inset-0 bg-black bg-opacity-90 transition-opacity" onclick="closeGalleryModal()"></div>
@@ -288,8 +288,16 @@
                 console.log('Testing modal...');
                 const modal = document.getElementById('image-gallery-modal');
                 if (modal) {
+                    console.log('Modal found, current style:', modal.style.cssText);
+                    console.log('Modal classes:', modal.classList.toString());
+                    
+                    // Try both approaches
                     modal.classList.remove('hidden');
+                    modal.style.display = 'block';
+                    
                     console.log('Modal should be visible now');
+                    console.log('New classes:', modal.classList.toString());
+                    console.log('New style:', modal.style.cssText);
                 } else {
                     console.log('Modal not found');
                 }
@@ -323,12 +331,21 @@
                 return;
             }
             
+            console.log('Modal element:', modal);
+            console.log('Modal classes before:', modal.classList.toString());
+            
             currentImageIndex = imageIndex - 1; // Convert to 0-based index
             totalImages = total;
             
-            document.getElementById('modal-image').src = imageSrc;
-            document.getElementById('modal-filename').textContent = filename;
-            document.getElementById('modal-counter').textContent = `${imageIndex} z ${total}`;
+            // Set image source
+            const modalImage = document.getElementById('modal-image');
+            const modalFilename = document.getElementById('modal-filename');
+            const modalCounter = document.getElementById('modal-counter');
+            
+            console.log('Setting image source to:', imageSrc);
+            modalImage.src = imageSrc;
+            modalFilename.textContent = filename;
+            modalCounter.textContent = `${imageIndex} z ${total}`;
             
             // Show/hide navigation buttons
             const prevBtn = document.getElementById('prev-image');
@@ -342,13 +359,17 @@
                 nextBtn.classList.add('hidden');
             }
             
-            document.getElementById('image-gallery-modal').classList.remove('hidden');
+            // Show modal
+            modal.style.display = 'block';
             document.body.style.overflow = 'hidden';
+            
+            console.log('Modal display after:', modal.style.display);
+            console.log('Modal should be visible now!');
         };
 
         window.closeGalleryModal = function() {
             console.log('Closing gallery modal');
-            document.getElementById('image-gallery-modal').classList.add('hidden');
+            document.getElementById('image-gallery-modal').style.display = 'none';
             document.body.style.overflow = 'auto';
         }
 
@@ -384,7 +405,8 @@
 
         // Keyboard navigation
         document.addEventListener('keydown', function(e) {
-            if (document.getElementById('image-gallery-modal').classList.contains('hidden')) {
+            const modal = document.getElementById('image-gallery-modal');
+            if (modal.style.display === 'none' || modal.style.display === '') {
                 return;
             }
             
