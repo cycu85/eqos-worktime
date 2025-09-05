@@ -48,6 +48,26 @@
                         </div>
                         
                         <div>
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Lider zespołu</h4>
+                            @if($team->leader)
+                                <p class="text-gray-600 dark:text-gray-400">{{ $team->leader->name }}</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $team->leader->email }}</p>
+                            @else
+                                <p class="text-gray-500 dark:text-gray-400">Brak przypisanego lidera</p>
+                            @endif
+                        </div>
+
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Przypisany pojazd</h4>
+                            @if($team->vehicle)
+                                <p class="text-gray-600 dark:text-gray-400">{{ $team->vehicle->name }}</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $team->vehicle->registration }}</p>
+                            @else
+                                <p class="text-gray-500 dark:text-gray-400">Brak przypisanego pojazdu</p>
+                            @endif
+                        </div>
+
+                        <div>
                             <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Utworzył</h4>
                             <p class="text-gray-600 dark:text-gray-400">{{ $team->creator->name }} • {{ $team->created_at->format('d.m.Y H:i') }}</p>
                         </div>

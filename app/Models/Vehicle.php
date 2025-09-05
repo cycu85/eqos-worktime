@@ -25,6 +25,11 @@ class Vehicle extends Model
         return $this->hasMany(Task::class);
     }
 
+    public function teams()
+    {
+        return $this->hasMany(Team::class);
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

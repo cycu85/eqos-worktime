@@ -78,6 +78,27 @@
                             @enderror
                         </div>
 
+                        <!-- Vehicle Assignment -->
+                        <div>
+                            <label for="vehicle_id" class="form-kt-label">Przypisany pojazd</label>
+                            <select id="vehicle_id" 
+                                    name="vehicle_id" 
+                                    class="form-kt-select @error('vehicle_id') border-red-500 @enderror">
+                                <option value="">Brak przypisania</option>
+                                @foreach($vehicles as $vehicle)
+                                    <option value="{{ $vehicle->id }}" {{ old('vehicle_id', $team->vehicle_id) == $vehicle->id ? 'selected' : '' }}>
+                                        {{ $vehicle->name }} ({{ $vehicle->registration }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Opcjonalne przypisanie pojazdu do zespołu
+                            </p>
+                            @error('vehicle_id')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <!-- Team Workers -->
                         <div>
                             <label class="form-kt-label">Pracownicy zespołu</label>

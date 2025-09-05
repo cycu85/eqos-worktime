@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Team;
 use App\Models\User;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,7 +14,7 @@ class TeamController extends Controller
     {
         $this->authorize('viewAny', Team::class);
         
-        $query = Team::with(['creator', 'leader']);
+        $query = Team::with(['creator', 'leader', 'vehicle']);
         
         // Apply search
         if ($request->filled('search')) {
@@ -59,8 +60,9 @@ class TeamController extends Controller
         
         $leaders = User::where('role', 'lider')->orderBy('name')->get();
         $workers = User::where('role', 'pracownik')->orderBy('name')->get();
+        $vehicles = Vehicle::active()->orderBy('name')->get();
         
-        return view('teams.create', compact('leaders', 'workers'));
+        return view('teams.create', compact('leaders', 'workers', 'vehicles'));
     }
 
     public function store(Request $request)
@@ -71,6 +73,7 @@ class TeamController extends Controller
             'name' => 'required|string|max:255|unique:teams,name',
             'description' => 'nullable|string',
             'leader_id' => 'required|exists:users,id',
+            'vehicle_id' => 'nullable|exists:vehicles,id',
             'members' => 'nullable|array',
             'members.*' => 'exists:users,id'
         ]);
@@ -86,7 +89,7 @@ class TeamController extends Controller
     {
         $this->authorize('view', $team);
         
-        $team->load(['creator', 'tasks']);
+        $team->load(['creator', 'leader', 'vehicle', 'tasks']);
         
         return view('teams.show', compact('team'));
     }
@@ -97,8 +100,9 @@ class TeamController extends Controller
         
         $leaders = User::where('role', 'lider')->orderBy('name')->get();
         $workers = User::where('role', 'pracownik')->orderBy('name')->get();
+        $vehicles = Vehicle::active()->orderBy('name')->get();
         
-        return view('teams.edit', compact('team', 'leaders', 'workers'));
+        return view('teams.edit', compact('team', 'leaders', 'workers', 'vehicles'));
     }
 
     public function update(Request $request, Team $team)
@@ -109,6 +113,7 @@ class TeamController extends Controller
             'name' => 'required|string|max:255|unique:teams,name,' . $team->id,
             'description' => 'nullable|string',
             'leader_id' => 'required|exists:users,id',
+            'vehicle_id' => 'nullable|exists:vehicles,id',
             'members' => 'nullable|array',
             'members.*' => 'exists:users,id',
             'active' => 'boolean'

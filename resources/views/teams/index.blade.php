@@ -142,6 +142,7 @@
                                         </a>
                                     </th>
                                     <th>Lider</th>
+                                    <th>Pojazd</th>
                                     <th>Członkowie</th>
                                     <th>
                                         <a href="{{ request()->fullUrlWithQuery(['sort' => 'created_at', 'direction' => request('sort') == 'created_at' && request('direction', 'asc') == 'asc' ? 'desc' : 'asc']) }}" 
@@ -188,6 +189,18 @@
                                                 </div>
                                             @else
                                                 <span class="text-gray-400 dark:text-gray-500">Brak lidera</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($team->vehicle)
+                                                <div class="text-gray-900 dark:text-gray-100">
+                                                    {{ $team->vehicle->name }}
+                                                </div>
+                                                <div class="text-sm text-gray-500 dark:text-gray-400">
+                                                    {{ $team->vehicle->registration }}
+                                                </div>
+                                            @else
+                                                <span class="text-gray-400 dark:text-gray-500">Brak pojazdu</span>
                                             @endif
                                         </td>
                                         <td>

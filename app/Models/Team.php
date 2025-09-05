@@ -12,6 +12,7 @@ class Team extends Model
         'name',
         'description',
         'leader_id',
+        'vehicle_id',
         'members',
         'created_by',
         'active'
@@ -35,6 +36,11 @@ class Team extends Model
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class);
     }
 
     public function getMembersNamesAttribute(): string
