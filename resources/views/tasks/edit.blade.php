@@ -120,6 +120,41 @@
                             </div>
                         </div>
 
+                        @if(auth()->user()->isAdmin() || auth()->user()->isKierownik())
+                            <!-- Team Selection for Admin/Kierownik -->
+                            <div class="mb-6">
+                                <label for="team_id" class="form-kt-label">
+                                    Wybierz zespół <span class="text-gray-500">(opcjonalnie)</span>
+                                </label>
+                                <select id="team_id" 
+                                        name="team_id" 
+                                        class="form-kt-select @error('team_id') border-red-500 @enderror"
+                                        onchange="selectTeam()">
+                                    <option value="">-- Wybierz zespół --</option>
+                                    @foreach($teams as $team)
+                                        <option value="{{ $team->id }}" 
+                                                data-leader="{{ $team->leader->name ?? '' }}"
+                                                data-leader-id="{{ $team->leader_id ?? '' }}"
+                                                data-vehicle="{{ $team->vehicle_id ?? '' }}"
+                                                data-members="{{ implode(',', $team->members ?? []) }}"
+                                                data-members-names="{{ $team->members_names ?? '' }}"
+                                                {{ old('team_id', $task->team_id ?? '') == $team->id ? 'selected' : '' }}>
+                                            {{ $team->name }} 
+                                            @if($team->leader)
+                                                - {{ $team->leader->name }}
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    Wybierz zespół aby automatycznie załadować pojazdy, lidera i członków zespołu.
+                                </p>
+                                @error('team_id')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        @endif
+
                         <!-- Vehicle -->
                         <div class="mb-6">
                             <label class="form-kt-label">
@@ -493,6 +528,45 @@
             }
             
             closeTeamModal();
+        }
+
+        // Team selection function for Admin/Kierownik
+        function selectTeam() {
+            const teamSelect = document.getElementById('team_id');
+            const selectedOption = teamSelect.selectedOptions[0];
+            
+            if (!selectedOption || !selectedOption.value) {
+                // Don't clear existing data when deselecting team
+                return;
+            }
+            
+            // Get team data from option attributes
+            const vehicleId = selectedOption.dataset.vehicle;
+            const membersNames = selectedOption.dataset.membersNames;
+            const leaderName = selectedOption.dataset.leader;
+            
+            // Auto-select vehicle if team has one
+            if (vehicleId) {
+                selectedVehicles = [parseInt(vehicleId)];
+                updateVehiclesInputs();
+                updateVehiclesDisplay();
+            }
+            
+            // Auto-populate team members
+            if (membersNames) {
+                document.getElementById('team').value = membersNames;
+                // Update display with tags
+                const memberNames = membersNames.split(', ');
+                document.getElementById('team-display').innerHTML = 
+                    '<div class="flex flex-wrap gap-2">' + 
+                    memberNames.map(name => 
+                        '<span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">' +
+                        '<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">' +
+                        '<path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>' +
+                        '</svg>' + name + '</span>'
+                    ).join('') + 
+                    '</div>';
+            }
         }
 
         // Vehicle selection functions
