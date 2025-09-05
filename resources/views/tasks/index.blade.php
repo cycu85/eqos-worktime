@@ -257,8 +257,15 @@
                                             </a>
                                         </td>
                                         <td>
-                                            <div class="text-gray-900 dark:text-gray-100">{{ $task->vehicle->name }}</div>
-                                            <div class="text-sm text-gray-500 dark:text-gray-400">{{ $task->vehicle->registration }}</div>
+                                            @if($task->vehicles->count() > 0)
+                                                @foreach($task->vehicles as $vehicle)
+                                                    <div class="text-gray-900 dark:text-gray-100">{{ $vehicle->name }}</div>
+                                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $vehicle->registration }}</div>
+                                                    @if(!$loop->last)<hr class="my-1 border-gray-300 dark:border-gray-600">@endif
+                                                @endforeach
+                                            @else
+                                                <span class="text-gray-400 dark:text-gray-500">Brak pojazdów</span>
+                                            @endif
                                         </td>
                                         <td>
                                             {{ $task->leader->name }}

@@ -15,7 +15,6 @@ class Task extends Model
         'description',
         'start_datetime',
         'end_datetime',
-        'vehicle_id',
         'leader_id',
         'team_id',
         'team',
@@ -28,9 +27,9 @@ class Task extends Model
         'end_datetime' => 'datetime',
     ];
 
-    public function vehicle()
+    public function vehicles()
     {
-        return $this->belongsTo(Vehicle::class);
+        return $this->belongsToMany(Vehicle::class, 'task_vehicles');
     }
 
     public function leader()

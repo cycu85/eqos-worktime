@@ -22,7 +22,7 @@ class Vehicle extends Model
 
     public function tasks()
     {
-        return $this->hasMany(Task::class);
+        return $this->belongsToMany(Task::class, 'task_vehicles');
     }
 
     public function teams()

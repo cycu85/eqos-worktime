@@ -20,13 +20,13 @@ class TaskController extends Controller
         // Build base query
         if ($user->isAdmin() || $user->isKierownik()) {
             // Admin and Kierownik see all tasks
-            $query = Task::with(['vehicle', 'leader', 'team']);
+            $query = Task::with(['vehicles', 'leader', 'team']);
         } elseif ($user->isLider()) {
             // Lider sees only tasks assigned to them as leader
-            $query = Task::with(['vehicle', 'leader', 'team'])->forUser($user->id);
+            $query = Task::with(['vehicles', 'leader', 'team'])->forUser($user->id);
         } else {
             // Pracownik sees only tasks where they are part of the team
-            $query = $user->teamTasks()->with(['vehicle', 'leader', 'team']);
+            $query = $user->teamTasks()->with(['vehicles', 'leader', 'team']);
         }
         
         // Apply search
@@ -37,7 +37,7 @@ class TaskController extends Controller
                   ->orWhere('description', 'like', '%' . $search . '%')
                   ->orWhere('team', 'like', '%' . $search . '%')
                   ->orWhere('notes', 'like', '%' . $search . '%')
-                  ->orWhereHas('vehicle', function ($vq) use ($search) {
+                  ->orWhereHas('vehicles', function ($vq) use ($search) {
                       $vq->where('name', 'like', '%' . $search . '%')
                         ->orWhere('registration', 'like', '%' . $search . '%');
                   })
@@ -110,18 +110,20 @@ class TaskController extends Controller
         
         $vehicles = Vehicle::active()->orderBy('name')->get();
         $users = User::whereIn('role', ['lider', 'pracownik'])->orderBy('name')->get();
+        $teams = Team::with('vehicle')->active()->orderBy('name')->get();
         
         // Get user's team members if user is a leader
         $leaderTeamMembers = [];
+        $leaderTeam = null;
         $currentUser = Auth::user();
         if ($currentUser->isLider()) {
-            $leaderTeam = Team::where('leader_id', $currentUser->id)->first();
+            $leaderTeam = Team::with('vehicle')->where('leader_id', $currentUser->id)->first();
             if ($leaderTeam && $leaderTeam->members) {
                 $leaderTeamMembers = User::whereIn('id', $leaderTeam->members)->pluck('name')->toArray();
             }
         }
         
-        return view('tasks.create', compact('vehicles', 'users', 'leaderTeamMembers'));
+        return view('tasks.create', compact('vehicles', 'users', 'teams', 'leaderTeamMembers', 'leaderTeam'));
     }
 
     public function store(Request $request)
@@ -133,7 +135,8 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'start_datetime' => 'required|date',
             'end_datetime' => 'nullable|date|after:start_datetime',
-            'vehicle_id' => 'required|exists:vehicles,id',
+            'vehicles' => 'required|array|min:1',
+            'vehicles.*' => 'exists:vehicles,id',
             'team_id' => 'nullable|exists:teams,id',
             'team' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
@@ -141,8 +144,11 @@ class TaskController extends Controller
         ]);
 
         $validated['leader_id'] = Auth::id();
+        $vehicleIds = $validated['vehicles'];
+        unset($validated['vehicles']);
 
         $task = Task::create($validated);
+        $task->vehicles()->attach($vehicleIds);
 
         return redirect()->route('tasks.show', $task)
             ->with('success', 'Zadanie zostało utworzone pomyślnie.');
@@ -152,7 +158,7 @@ class TaskController extends Controller
     {
         $this->authorize('view', $task);
         
-        $task->load(['vehicle', 'leader', 'team']);
+        $task->load(['vehicles', 'leader', 'team']);
         
         return view('tasks.show', compact('task'));
     }
@@ -163,18 +169,20 @@ class TaskController extends Controller
         
         $vehicles = Vehicle::active()->orderBy('name')->get();
         $users = User::whereIn('role', ['lider', 'pracownik'])->orderBy('name')->get();
+        $teams = Team::with('vehicle')->active()->orderBy('name')->get();
         
         // Get user's team members if user is a leader
         $leaderTeamMembers = [];
+        $leaderTeam = null;
         $currentUser = Auth::user();
         if ($currentUser->isLider()) {
-            $leaderTeam = Team::where('leader_id', $currentUser->id)->first();
+            $leaderTeam = Team::with('vehicle')->where('leader_id', $currentUser->id)->first();
             if ($leaderTeam && $leaderTeam->members) {
                 $leaderTeamMembers = User::whereIn('id', $leaderTeam->members)->pluck('name')->toArray();
             }
         }
         
-        return view('tasks.edit', compact('task', 'vehicles', 'users', 'leaderTeamMembers'));
+        return view('tasks.edit', compact('task', 'vehicles', 'users', 'teams', 'leaderTeamMembers', 'leaderTeam'));
     }
 
     public function update(Request $request, Task $task)
@@ -186,13 +194,18 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'start_datetime' => 'required|date',
             'end_datetime' => 'nullable|date|after:start_datetime',
-            'vehicle_id' => 'required|exists:vehicles,id',
+            'vehicles' => 'required|array|min:1',
+            'vehicles.*' => 'exists:vehicles,id',
             'team' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'status' => 'in:planned,in_progress,completed,cancelled',
         ]);
 
+        $vehicleIds = $validated['vehicles'];
+        unset($validated['vehicles']);
+        
         $task->update($validated);
+        $task->vehicles()->sync($vehicleIds);
 
         return redirect()->route('tasks.show', $task)
             ->with('success', 'Zadanie zostało zaktualizowane pomyślnie.');

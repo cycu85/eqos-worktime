@@ -96,10 +96,15 @@
                             </div>
 
                             <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pojazd</dt>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pojazdy</dt>
                                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    {{ $task->vehicle->name }}<br>
-                                    <span class="text-gray-500 dark:text-gray-400">{{ $task->vehicle->registration }}</span>
+                                    @if($task->vehicles->count() > 0)
+                                        @foreach($task->vehicles as $vehicle)
+                                            {{ $vehicle->name }} ({{ $vehicle->registration }})@if(!$loop->last), @endif
+                                        @endforeach
+                                    @else
+                                        <span class="text-gray-500 dark:text-gray-400">Brak przypisanych pojazdów</span>
+                                    @endif
                                 </dd>
                             </div>
 
@@ -138,42 +143,6 @@
                     </div>
                 </div>
 
-                <!-- Vehicle Details -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Informacje o pojeździe</h4>
-                        
-                        <dl class="space-y-4">
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nazwa pojazdu</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $task->vehicle->name }}</dd>
-                            </div>
-
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Numer rejestracyjny</dt>
-                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $task->vehicle->registration }}</dd>
-                            </div>
-
-                            @if($task->vehicle->description)
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Opis pojazdu</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $task->vehicle->description }}</dd>
-                                </div>
-                            @endif
-
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status pojazdu</dt>
-                                <dd class="mt-1">
-                                    @if($task->vehicle->is_active)
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Aktywny</span>
-                                    @else
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Nieaktywny</span>
-                                    @endif
-                                </dd>
-                            </div>
-                        </dl>
-                    </div>
-                </div>
             </div>
 
             <!-- Notes -->

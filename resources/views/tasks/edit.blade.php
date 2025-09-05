@@ -120,28 +120,40 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <!-- Vehicle -->
-                            <div>
-                                <label for="vehicle_id" class="form-kt-label">
-                                    Pojazd <span class="text-red-500">*</span>
-                                </label>
-                                <select id="vehicle_id" 
-                                        name="vehicle_id" 
-                                        class="form-kt-select @error('vehicle_id') border-red-500 @enderror" 
-                                        required>
-                                    <option value="">Wybierz pojazd</option>
-                                    @foreach($vehicles as $vehicle)
-                                        <option value="{{ $vehicle->id }}" {{ old('vehicle_id', $task->vehicle_id) == $vehicle->id ? 'selected' : '' }}>
-                                            {{ $vehicle->name }} ({{ $vehicle->registration }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('vehicle_id')
-                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                @enderror
+                        <!-- Vehicle -->
+                        <div class="mb-6">
+                            <label class="form-kt-label">
+                                Pojazdy <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex items-center space-x-3 mt-1">
+                                <div id="vehicles-inputs">
+                                    <!-- Hidden inputs for vehicles will be generated here -->
+                                </div>
+                                
+                                <div class="flex-1">
+                                    <div id="selected-vehicles" class="min-h-[42px] p-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 rounded-md">
+                                        <div id="selected-vehicles-display" class="text-gray-500 dark:text-gray-400">
+                                            <!-- Selected vehicles will be displayed here -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="openVehiclesModal()" class="btn-kt-secondary">
+                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
+                                        <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"></path>
+                                    </svg>
+                                    Wybierz pojazdy
+                                </button>
                             </div>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Wybierz pojazdy potrzebne do wykonania zadania.
+                            </p>
+                            @error('vehicles')
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
 
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <!-- Status -->
                             <div>
                                 <label for="status" class="form-kt-label">
@@ -327,8 +339,75 @@
         </div>
     </div>
 
+    <!-- Vehicle Selection Modal -->
+    <div id="vehicles-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="vehicles-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeVehiclesModal()"></div>
+
+            <!-- Center modal -->
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                <div class="sm:flex sm:items-start">
+                    <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100 mb-4" id="vehicles-modal-title">
+                            Wybierz pojazdy
+                        </h3>
+                        
+                        <div class="mt-4 space-y-3 max-h-64 overflow-y-auto">
+                            @foreach($vehicles as $vehicle)
+                                <label class="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <input type="checkbox" 
+                                           value="{{ $vehicle->id }}" 
+                                           data-name="{{ $vehicle->name }}"
+                                           data-registration="{{ $vehicle->registration }}"
+                                           class="vehicle-checkbox h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700" />
+                                    <div class="ml-3 flex items-center">
+                                        <div class="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center mr-3">
+                                            <svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
+                                                <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $vehicle->name }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ $vehicle->registration }}</div>
+                                        </div>
+                                    </div>
+                                </label>
+                            @endforeach
+                        </div>
+
+                        @if($vehicles->isEmpty())
+                            <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                <p class="mt-2">Brak dostępnych pojazdów w systemie</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="saveVehiclesSelection()" class="btn-kt-success w-full sm:w-auto sm:ml-3">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        Zapisz wybór
+                    </button>
+                    <button type="button" onclick="closeVehiclesModal()" class="btn-kt-light w-full sm:w-auto mt-3 sm:mt-0">
+                        Anuluj
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let selectedTeamMembers = [];
+        let selectedVehicles = [];
 
         // Initialize team display on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -357,6 +436,12 @@
                 const teamString = leaderTeamMembers.join(', ');
                 document.getElementById('team').value = teamString;
             }
+            
+            // Initialize vehicle selection with current task vehicles
+            const taskVehicles = @json($task->vehicles->pluck('id') ?? []);
+            selectedVehicles = taskVehicles;
+            updateVehiclesInputs();
+            updateVehiclesDisplay();
         });
 
         function openTeamModal() {
@@ -412,10 +497,96 @@
             closeTeamModal();
         }
 
+        // Vehicle selection functions
+        function openVehiclesModal() {
+            document.getElementById('vehicles-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            // Restore previous selections
+            const checkboxes = document.querySelectorAll('.vehicle-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectedVehicles.includes(parseInt(checkbox.value));
+            });
+        }
+
+        function closeVehiclesModal() {
+            document.getElementById('vehicles-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function saveVehiclesSelection() {
+            const checkboxes = document.querySelectorAll('.vehicle-checkbox:checked');
+            selectedVehicles = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            
+            // Update hidden inputs
+            updateVehiclesInputs();
+            
+            // Update display
+            updateVehiclesDisplay();
+            
+            closeVehiclesModal();
+        }
+
+        function updateVehiclesInputs() {
+            const inputsContainer = document.getElementById('vehicles-inputs');
+            inputsContainer.innerHTML = '';
+            
+            selectedVehicles.forEach(vehicleId => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'vehicles[]';
+                input.value = vehicleId;
+                inputsContainer.appendChild(input);
+            });
+        }
+
+        function updateVehiclesDisplay() {
+            const displayContainer = document.getElementById('selected-vehicles-display');
+            
+            if (selectedVehicles.length === 0) {
+                displayContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm">Nie wybrano żadnych pojazdów</p>';
+                return;
+            }
+            
+            let html = '<div class="flex flex-wrap gap-2">';
+            selectedVehicles.forEach(vehicleId => {
+                const checkbox = document.querySelector(`input.vehicle-checkbox[value="${vehicleId}"]`);
+                if (checkbox) {
+                    const name = checkbox.dataset.name;
+                    const registration = checkbox.dataset.registration;
+                    html += `
+                        <div class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
+                                <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"></path>
+                            </svg>
+                            <span>${name}</span>
+                            <span class="ml-1 text-xs opacity-75">(${registration})</span>
+                            <button type="button" onclick="removeVehicle(${vehicleId})" class="ml-2 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                }
+            });
+            html += '</div>';
+            
+            displayContainer.innerHTML = html;
+        }
+
+        function removeVehicle(vehicleId) {
+            selectedVehicles = selectedVehicles.filter(id => id !== vehicleId);
+            updateVehiclesInputs();
+            updateVehiclesDisplay();
+        }
+
         // Close modal on Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeTeamModal();
+                closeVehiclesModal();
             }
         });
 
