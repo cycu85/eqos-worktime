@@ -58,7 +58,9 @@ class TaskController extends Controller
         
         // Apply vehicle filter
         if ($request->filled('vehicle_id')) {
-            $query->where('vehicle_id', $request->get('vehicle_id'));
+            $query->whereHas('vehicles', function ($q) use ($request) {
+                $q->where('vehicles.id', $request->get('vehicle_id'));
+            });
         }
         
         // Apply date range filter
@@ -90,6 +92,11 @@ class TaskController extends Controller
             $query->orderBy('title', 'asc');
         }
         
+        // Get all tasks for calendar (without pagination)
+        $allTasks = clone $query;
+        $allTasks = $allTasks->get();
+        
+        // Get paginated tasks for table
         $tasks = $query->paginate(15)->appends($request->query());
         
         // Get filter options
@@ -103,7 +110,20 @@ class TaskController extends Controller
             'accepted' => 'Zaakceptowane'
         ];
         
-        return view('tasks.index', compact('tasks', 'vehicles', 'users', 'statuses'));
+        // Prepare tasks data for JavaScript calendar
+        $calendarTasks = $allTasks->map(function($task) {
+            return [
+                'id' => $task->id,
+                'title' => $task->title,
+                'start_datetime' => $task->start_datetime->format('Y-m-d H:i:s'),
+                'status' => $task->status,
+                'leader' => $task->leader->name,
+                'vehicles' => $task->vehicles->pluck('name')->join(', '),
+                'url' => route('tasks.show', $task)
+            ];
+        });
+        
+        return view('tasks.index', compact('tasks', 'allTasks', 'calendarTasks', 'vehicles', 'users', 'statuses'));
     }
 
     public function create()

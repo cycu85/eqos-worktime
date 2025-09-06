@@ -71,6 +71,11 @@
     @apply inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 focus:bg-gray-200 active:bg-gray-300 border border-gray-300 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-800 uppercase tracking-wide shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out;
 }
 
+/* Button Size Variants */
+.btn-sm {
+    @apply px-2 py-1 text-xs;
+}
+
 /* Metronic Badges */
 .badge-kt-primary {
     @apply inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
