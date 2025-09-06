@@ -151,7 +151,17 @@
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-4 text-sm">
                             <span class="text-blue-700 dark:text-blue-300 font-medium">
-                                Znaleziono: {{ $tasks->total() }} {{ Str::plural('zadanie', $tasks->total()) }}
+                                @php
+                                    $count = $tasks->total();
+                                    if ($count == 1) {
+                                        $word = 'zadanie';
+                                    } elseif ($count % 10 >= 2 && $count % 10 <= 4 && ($count % 100 < 10 || $count % 100 >= 20)) {
+                                        $word = 'zadania';
+                                    } else {
+                                        $word = 'zadań';
+                                    }
+                                @endphp
+                                Znaleziono: {{ $count }} {{ $word }}
                             </span>
                             @if(request('search'))
                                 <span class="text-blue-600 dark:text-blue-400">
@@ -180,27 +190,33 @@
             <div class="kt-card mb-6" id="calendar-section">
                 <div class="kt-card-header">
                     <h3 class="kt-card-title">Kalendarz zadań</h3>
-                    <div class="flex items-center space-x-2">
-                        <!-- View Toggle -->
-                        <div class="flex items-center space-x-1 mr-4">
+                    <div class="flex items-center justify-between w-full">
+                        <!-- Navigation Left -->
+                        <div class="flex items-center space-x-2">
+                            <button id="prev-period" class="btn-kt-light btn-sm">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                            <span id="current-period" class="text-lg font-semibold text-gray-900 dark:text-gray-100 px-4 min-w-[200px] text-left"></span>
+                            <button id="next-period" class="btn-kt-light btn-sm">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <!-- View Toggle Center -->
+                        <div class="calendar-view-toggle">
                             <button id="month-view" class="btn-kt-primary btn-sm">Miesiąc</button>
                             <button id="week-view" class="btn-kt-light btn-sm">Tydzień</button>
                             <button id="day-view" class="btn-kt-light btn-sm">Dzień</button>
                         </div>
                         
-                        <!-- Navigation -->
-                        <button id="prev-period" class="btn-kt-light btn-sm">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                        <span id="current-period" class="text-lg font-semibold text-gray-900 dark:text-gray-100 px-4 min-w-[200px] text-center"></span>
-                        <button id="next-period" class="btn-kt-light btn-sm">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                        <button id="today-btn" class="btn-kt-secondary btn-sm ml-2">Dziś</button>
+                        <!-- Today Button Right -->
+                        <div>
+                            <button id="today-btn" class="btn-kt-secondary btn-sm">Dziś</button>
+                        </div>
                     </div>
                 </div>
                 <div class="kt-card-body">
@@ -564,6 +580,20 @@
             for (let i = 0; i < startingDay; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'h-32 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50';
+                
+                // Add previous month day number and click handler
+                const prevMonthDay = new Date(year, month, 0).getDate() - startingDay + i + 1;
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'text-xs font-medium text-gray-400 dark:text-gray-500 mb-1 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300';
+                dayNumber.textContent = prevMonthDay;
+                cell.appendChild(dayNumber);
+                
+                // Click handler for previous month day
+                cell.addEventListener('click', () => {
+                    currentDate = new Date(year, month - 1, prevMonthDay);
+                    switchView('day');
+                });
+                
                 grid.appendChild(cell);
             }
             
@@ -573,16 +603,17 @@
                 const today = new Date();
                 const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
                 
-                cell.className = `h-32 border border-gray-200 dark:border-gray-700 p-1 overflow-y-auto transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
+                cell.className = `h-32 border border-gray-200 dark:border-gray-700 p-1 overflow-y-auto transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer ${
                     isToday ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600' : 'bg-white dark:bg-gray-800'
                 }`;
                 
                 // Day number
                 const dayNumber = document.createElement('div');
-                dayNumber.className = `text-xs font-medium mb-1 ${
+                dayNumber.className = `text-xs font-medium mb-1 hover:underline ${
                     isToday ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-gray-900 dark:text-gray-100'
                 }`;
                 dayNumber.textContent = day;
+                dayNumber.title = 'Kliknij aby przejść do widoku dnia';
                 cell.appendChild(dayNumber);
                 
                 // Find tasks for this day
@@ -612,6 +643,18 @@
                     cell.appendChild(moreIndicator);
                 }
                 
+                // Add click handler to switch to day view
+                cell.addEventListener('click', (e) => {
+                    // Don't switch view if clicking on a task
+                    if (e.target.closest('.badge-kt-warning, .badge-kt-primary, .badge-kt-success, .badge-kt-danger, .badge-kt-info, .badge-kt-light')) {
+                        return;
+                    }
+                    
+                    // Set current date to the clicked day
+                    currentDate = new Date(year, month, day);
+                    switchView('day');
+                });
+                
                 grid.appendChild(cell);
             }
         }
@@ -640,7 +683,7 @@
                     const today = new Date();
                     const isToday = cellDate.toDateString() === today.toDateString();
                     
-                    cell.className = `h-12 border border-gray-200 dark:border-gray-700 p-1 text-xs ${
+                    cell.className = `h-12 border border-gray-200 dark:border-gray-700 p-1 text-xs cursor-pointer ${
                         isToday ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-white dark:bg-gray-800'
                     } hover:bg-gray-50 dark:hover:bg-gray-700/50`;
                     
@@ -657,8 +700,23 @@
                         taskEl.className = 'text-xs p-1 rounded cursor-pointer mb-1 ' + getStatusBadgeClass(task.status);
                         taskEl.textContent = task.title.length > 8 ? task.title.substring(0, 8) + '...' : task.title;
                         taskEl.title = `${task.title}\nLider: ${task.leader}\nStatus: ${getStatusLabel(task.status)}`;
-                        taskEl.onclick = () => window.location.href = task.url;
+                        taskEl.onclick = (e) => {
+                            e.stopPropagation();
+                            window.location.href = task.url;
+                        };
                         cell.appendChild(taskEl);
+                    });
+                    
+                    // Add click handler to switch to day view
+                    cell.addEventListener('click', (e) => {
+                        // Don't switch view if clicking on a task
+                        if (e.target.closest('.badge-kt-warning, .badge-kt-primary, .badge-kt-success, .badge-kt-danger, .badge-kt-info, .badge-kt-light')) {
+                            return;
+                        }
+                        
+                        // Set current date to the clicked day
+                        currentDate = new Date(cellDate);
+                        switchView('day');
                     });
                     
                     grid.appendChild(cell);
