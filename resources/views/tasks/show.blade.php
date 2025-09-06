@@ -230,22 +230,23 @@
 
             <!-- Modal content -->
             <div class="relative bg-transparent max-w-6xl max-h-full w-full">
-                <!-- Close button -->
-                <button type="button" onclick="closeGalleryModal()" class="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- Fixed positioned buttons relative to modal -->
+                <!-- Close button - fixed top right -->
+                <button type="button" onclick="closeGalleryModal()" class="absolute z-50 text-white hover:text-gray-300 transition-colors bg-black bg-opacity-80 hover:bg-opacity-100 rounded-full p-3 border-2 border-white" style="left: 80%; top: auto;">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
 
-                <!-- Navigation buttons -->
-                <button type="button" id="prev-image" onclick="previousImage()" class="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 text-white hover:text-gray-300 transition-colors bg-black bg-opacity-50 rounded-full p-3 hidden">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- Navigation buttons - fixed left and right -->
+                <button type="button" id="prev-image" onclick="previousImage()" class="absolute z-40 text-white hover:text-gray-300 transition-all duration-200 bg-black bg-opacity-80 hover:bg-opacity-100 rounded-full p-4 border-2 border-white hidden" style="top: 50%; left: 2%; transform: translateY(-50%);">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
                 </button>
                 
-                <button type="button" id="next-image" onclick="nextImage()" class="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 text-white hover:text-gray-300 transition-colors bg-black bg-opacity-50 rounded-full p-3 hidden">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button type="button" id="next-image" onclick="nextImage()" class="absolute z-40 text-white hover:text-gray-300 transition-all duration-200 bg-black bg-opacity-80 hover:bg-opacity-100 rounded-full p-4 border-2 border-white hidden" style="top: 50%; left: 95%; transform: translateY(-50%);">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </button>
@@ -274,46 +275,19 @@
             @if($task->images && count($task->images) > 0)
                 images = @json($task->images);
                 totalImages = images.length;
-                console.log('Gallery initialized with', totalImages, 'images');
-                console.log('Images data:', images);
-            @else
-                console.log('No images found for this task');
             @endif
-            
-            // Test if modal exists
-            const modal = document.getElementById('image-gallery-modal');
-            console.log('Modal element found:', modal ? 'YES' : 'NO');
-            
-            // Add test function to window for debugging
-            window.testModal = function() {
-                console.log('Testing modal...');
-                const modal = document.getElementById('image-gallery-modal');
-                if (modal) {
-                    console.log('Modal found, current style:', modal.style.cssText);
-                    console.log('Modal classes:', modal.classList.toString());
-                    
-                    // Try both approaches
-                    modal.classList.remove('hidden');
-                    modal.style.display = 'block';
-                    
-                    console.log('Modal should be visible now');
-                    console.log('New classes:', modal.classList.toString());
-                    console.log('New style:', modal.style.cssText);
-                } else {
-                    console.log('Modal not found');
-                }
-            };
             
             // Add event listeners to gallery images
             const galleryImages = document.querySelectorAll('.gallery-image');
-            console.log('Found', galleryImages.length, 'gallery images');
             
+            // Setup gallery image click handlers
             galleryImages.forEach(function(img, index) {
-                console.log('Adding event listener to image', index, img);
+                // Ensure images are clickable
+                img.style.cursor = 'pointer';
+                img.style.zIndex = '1';
+                img.style.position = 'relative';
                 
-                // Add multiple event types for debugging
                 img.addEventListener('click', function(e) {
-                    console.log('Click event triggered on image', index);
                     e.preventDefault();
                     e.stopPropagation();
                     
@@ -322,52 +296,20 @@
                     const imageIndex = parseInt(this.getAttribute('data-index'));
                     const total = parseInt(this.getAttribute('data-total'));
                     
-                    console.log('Image clicked:', imageSrc, filename, imageIndex, total);
                     openGalleryModal(imageSrc, filename, imageIndex, total);
                 });
-                
-                // Add hover events for testing
-                img.addEventListener('mouseenter', function() {
-                    console.log('Mouse entered image', index);
-                    this.style.border = '2px solid red'; // Visual feedback
-                });
-                
-                img.addEventListener('mouseleave', function() {
-                    console.log('Mouse left image', index);
-                    this.style.border = 'none';
-                });
-                
-                // Test if image is clickable
-                img.style.backgroundColor = 'rgba(255,0,0,0.1)'; // Slight red tint for testing
             });
             
-            // Add a simple test function
-            window.testImageClick = function() {
-                const firstImage = document.querySelector('.gallery-image');
-                if (firstImage) {
-                    console.log('Manually triggering click on first image');
-                    firstImage.click();
-                } else {
-                    console.log('No gallery images found');
-                }
-            };
         });
 
-        // Test function first
         window.openGalleryModal = function(imageSrc, filename, imageIndex, total) {
-            console.log('Opening gallery modal:', imageSrc, filename, imageIndex, total);
-            
-            // Check if modal exists
             const modal = document.getElementById('image-gallery-modal');
             if (!modal) {
                 console.error('Modal not found!');
                 return;
             }
             
-            console.log('Modal element:', modal);
-            console.log('Modal classes before:', modal.classList.toString());
-            
-            currentImageIndex = imageIndex - 1; // Convert to 0-based index
+            currentImageIndex = imageIndex - 1;
             totalImages = total;
             
             // Set image source
@@ -375,7 +317,6 @@
             const modalFilename = document.getElementById('modal-filename');
             const modalCounter = document.getElementById('modal-counter');
             
-            console.log('Setting image source to:', imageSrc);
             modalImage.src = imageSrc;
             modalFilename.textContent = filename;
             modalCounter.textContent = `${imageIndex} z ${total}`;
@@ -385,8 +326,10 @@
             const nextBtn = document.getElementById('next-image');
             
             if (total > 1) {
-                prevBtn.classList.toggle('hidden', currentImageIndex === 0);
-                nextBtn.classList.toggle('hidden', currentImageIndex === total - 1);
+                prevBtn.classList.remove('hidden');
+                nextBtn.classList.remove('hidden');
+                prevBtn.classList.toggle('opacity-50', currentImageIndex === 0);
+                nextBtn.classList.toggle('opacity-50', currentImageIndex === total - 1);
             } else {
                 prevBtn.classList.add('hidden');
                 nextBtn.classList.add('hidden');
@@ -395,26 +338,25 @@
             // Show modal
             modal.style.display = 'block';
             document.body.style.overflow = 'hidden';
-            
-            console.log('Modal display after:', modal.style.display);
-            console.log('Modal should be visible now!');
         };
 
         window.closeGalleryModal = function() {
-            console.log('Closing gallery modal');
-            document.getElementById('image-gallery-modal').style.display = 'none';
+            const modal = document.getElementById('image-gallery-modal');
+            modal.style.display = 'none';
             document.body.style.overflow = 'auto';
         }
 
-        function previousImage() {
-            if (currentImageIndex > 0) {
+        window.previousImage = function() {
+            const prevBtn = document.getElementById('prev-image');
+            if (currentImageIndex > 0 && !prevBtn.disabled) {
                 currentImageIndex--;
                 updateModalImage();
             }
         }
 
-        function nextImage() {
-            if (currentImageIndex < totalImages - 1) {
+        window.nextImage = function() {
+            const nextBtn = document.getElementById('next-image');
+            if (currentImageIndex < totalImages - 1 && !nextBtn.disabled) {
                 currentImageIndex++;
                 updateModalImage();
             }
@@ -428,12 +370,34 @@
             document.getElementById('modal-filename').textContent = image.original_name;
             document.getElementById('modal-counter').textContent = `${currentImageIndex + 1} z ${totalImages}`;
             
-            // Update navigation buttons
+            // Update navigation buttons visibility and state
             const prevBtn = document.getElementById('prev-image');
             const nextBtn = document.getElementById('next-image');
             
-            prevBtn.classList.toggle('hidden', currentImageIndex === 0);
-            nextBtn.classList.toggle('hidden', currentImageIndex === totalImages - 1);
+            if (totalImages > 1) {
+                // Show buttons but make them semi-transparent when disabled
+                prevBtn.classList.remove('hidden');
+                nextBtn.classList.remove('hidden');
+                
+                if (currentImageIndex === 0) {
+                    prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    prevBtn.disabled = true;
+                } else {
+                    prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    prevBtn.disabled = false;
+                }
+                
+                if (currentImageIndex === totalImages - 1) {
+                    nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    nextBtn.disabled = true;
+                } else {
+                    nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    nextBtn.disabled = false;
+                }
+            } else {
+                prevBtn.classList.add('hidden');
+                nextBtn.classList.add('hidden');
+            }
         }
 
         // Keyboard navigation
