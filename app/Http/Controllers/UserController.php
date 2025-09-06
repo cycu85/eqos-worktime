@@ -91,7 +91,7 @@ class UserController extends Controller
         $this->authorize('view', $user);
         
         $user->load(['tasks' => function ($query) {
-            $query->with('vehicle')->orderBy('start_datetime', 'desc');
+            $query->with('vehicles')->orderBy('start_datetime', 'desc');
         }]);
         
         return view('users.show', compact('user'));

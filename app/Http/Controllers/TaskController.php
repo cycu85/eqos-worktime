@@ -145,7 +145,16 @@ class TaskController extends Controller
             'status' => 'in:planned,in_progress,completed,cancelled',
         ]);
 
-        $validated['leader_id'] = Auth::id();
+        // Ustaw lidera na podstawie wybranego teamu lub aktualnego użytkownika
+        if ($validated['team_id']) {
+            // Jeśli wybrano team, ustaw lidera tego teamu jako lidera zadania
+            $team = \App\Models\Team::find($validated['team_id']);
+            $validated['leader_id'] = $team ? $team->leader_id : Auth::id();
+        } else {
+            // Jeśli nie wybrano teamu, aktualny użytkownik staje się liderem
+            $validated['leader_id'] = Auth::id();
+        }
+        
         $vehicleIds = $validated['vehicles'];
         unset($validated['vehicles']);
 

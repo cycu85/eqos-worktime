@@ -271,11 +271,12 @@
                                             {{ $task->leader->name }}
                                         </td>
                                         <td>
-                                            @if($task->team_id && $task->team)
-                                                <div class="text-gray-900 dark:text-gray-100">{{ $task->team->name }}</div>
-                                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $task->team->members_names }}</div>
-                                            @elseif($task->team)
-                                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $task->team }}</div>
+                                            @php
+                                                $teamString = $task->getAttributes()['team'] ?? '';
+                                            @endphp
+                                            
+                                            @if($teamString)
+                                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $teamString }}</div>
                                             @else
                                                 <span class="text-gray-400 dark:text-gray-500">-</span>
                                             @endif

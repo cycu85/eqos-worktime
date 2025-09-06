@@ -165,8 +165,12 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <div class="text-gray-900 dark:text-gray-100">{{ $task->vehicle->name }}</div>
-                                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $task->vehicle->registration }}</div>
+                                                @if($task->vehicles->count() > 0)
+                                                    <div class="text-gray-900 dark:text-gray-100">{{ $task->vehicles->pluck('name')->join(', ') }}</div>
+                                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $task->vehicles->pluck('registration')->join(', ') }}</div>
+                                                @else
+                                                    <div class="text-gray-900 dark:text-gray-100">Brak pojazdu</div>
+                                                @endif
                                             </td>
                                             <td>
                                                 @php

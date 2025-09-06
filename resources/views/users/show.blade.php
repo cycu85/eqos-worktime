@@ -180,8 +180,12 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <div>{{ $task->vehicle->name }}</div>
-                                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $task->vehicle->registration }}</div>
+                                                @if($task->vehicles->count() > 0)
+                                                    <div>{{ $task->vehicles->pluck('name')->join(', ') }}</div>
+                                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $task->vehicles->pluck('registration')->join(', ') }}</div>
+                                                @else
+                                                    <div>Brak pojazdu</div>
+                                                @endif
                                             </td>
                                             <td>{{ $task->start_datetime->format('d.m.Y H:i') }}</td>
                                             <td>

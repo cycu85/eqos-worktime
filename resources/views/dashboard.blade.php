@@ -201,7 +201,7 @@
                     </div>
                     <div class="kt-card-body">
                         <div class="space-y-4">
-                            @foreach(auth()->user()->tasks()->with('vehicle')->orderBy('start_datetime', 'desc')->limit(5)->get() as $task)
+                            @foreach(auth()->user()->tasks()->with('vehicles')->orderBy('start_datetime', 'desc')->limit(5)->get() as $task)
                                 <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
                                     <div class="flex items-center">
                                         <div class="p-2 rounded-lg mr-3
@@ -219,7 +219,12 @@
                                         </div>
                                         <div>
                                             <h4 class="font-medium text-gray-900 dark:text-gray-100 text-sm">{{ $task->title }}</h4>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $task->vehicle->name }} • {{ $task->start_datetime->format('d.m.Y H:i') }}</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                @if($task->vehicles->count() > 0)
+                                                    {{ $task->vehicles->pluck('name')->join(', ') }} • 
+                                                @endif
+                                                {{ $task->start_datetime->format('d.m.Y H:i') }}
+                                            </p>
                                         </div>
                                     </div>
                                     <span class="badge-kt-{{ $task->status === 'completed' ? 'success' : ($task->status === 'in_progress' ? 'primary' : ($task->status === 'cancelled' ? 'danger' : 'warning')) }}">

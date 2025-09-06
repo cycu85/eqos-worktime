@@ -27,11 +27,11 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         
         // Build base query - same as in TaskController
         if ($user->isAdmin() || $user->isKierownik()) {
-            $query = Task::with(['vehicle', 'leader', 'team']);
+            $query = Task::with(['vehicles', 'leader', 'team']);
         } elseif ($user->isLider()) {
-            $query = Task::with(['vehicle', 'leader', 'team'])->forUser($user->id);
+            $query = Task::with(['vehicles', 'leader', 'team'])->forUser($user->id);
         } else {
-            $query = $user->teamTasks()->with(['vehicle', 'leader', 'team']);
+            $query = $user->teamTasks()->with(['vehicles', 'leader', 'team']);
         }
         
         // Apply same filters as in TaskController
@@ -42,7 +42,7 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
                   ->orWhere('description', 'like', '%' . $search . '%')
                   ->orWhere('team', 'like', '%' . $search . '%')
                   ->orWhere('notes', 'like', '%' . $search . '%')
-                  ->orWhereHas('vehicle', function ($vq) use ($search) {
+                  ->orWhereHas('vehicles', function ($vq) use ($search) {
                       $vq->where('name', 'like', '%' . $search . '%')
                         ->orWhere('registration', 'like', '%' . $search . '%');
                   })
@@ -60,7 +60,9 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         }
         
         if ($this->request->filled('vehicle_id')) {
-            $query->where('vehicle_id', $this->request->get('vehicle_id'));
+            $query->whereHas('vehicles', function ($q) {
+                $q->where('vehicles.id', $this->request->get('vehicle_id'));
+            });
         }
         
         if ($this->request->filled('date_from')) {
@@ -107,6 +109,7 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'Data rozpoczęcia',
             'Data zakończenia',
             'Czas',
+            'Roboczogodziny',
             'Notatki',
             'Utworzono'
         ];
@@ -118,14 +121,15 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             $task->id,
             $task->title,
             $task->description,
-            $task->vehicle ? $task->vehicle->name : '',
-            $task->vehicle ? $task->vehicle->registration : '',
+            $task->vehicles->count() > 0 ? $task->vehicles->pluck('name')->join(', ') : '',
+            $task->vehicles->count() > 0 ? $task->vehicles->pluck('registration')->join(', ') : '',
             $task->leader ? $task->leader->name : '',
             $task->team,
             $this->getStatusLabel($task->status),
             $task->start_datetime ? $task->start_datetime->format('Y-m-d H:i') : '',
             $task->end_datetime ? $task->end_datetime->format('Y-m-d H:i') : '',
             $this->calculateDuration($task->start_datetime, $task->end_datetime),
+            $this->calculateWorkHours($task),
             $task->notes,
             $task->created_at->format('Y-m-d H:i')
         ];
@@ -167,5 +171,33 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         } else {
             return sprintf('%dmin', $minutes);
         }
+    }
+
+    private function calculateWorkHours($task)
+    {
+        // Jeśli zadanie nie ma czasu rozpoczęcia lub zakończenia
+        if (!$task->start_datetime || !$task->end_datetime) {
+            return '';
+        }
+
+        // Oblicz czas trwania w godzinach (z dokładnością do 2 miejsc po przecinku)
+        $start = \Carbon\Carbon::parse($task->start_datetime);
+        $end = \Carbon\Carbon::parse($task->end_datetime);
+        $durationHours = $start->diffInMinutes($end) / 60;
+
+        // Oblicz liczbę pracowników: 1 (lider) + liczba członków zespołu
+        $teamMembersCount = 0;
+        if ($task->team) {
+            // Zespół jest przechowywany jako string oddzielony przecinkami
+            $teamMembers = array_filter(array_map('trim', explode(',', $task->team)));
+            $teamMembersCount = count($teamMembers);
+        }
+        
+        $totalWorkers = 1 + $teamMembersCount; // 1 lider + członkowie zespołu
+
+        // Oblicz roboczogodziny: liczba pracowników × czas w godzinach
+        $workHours = $totalWorkers * $durationHours;
+
+        return round($workHours, 2);
     }
 }
