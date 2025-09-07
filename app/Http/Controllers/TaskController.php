@@ -239,6 +239,7 @@ class TaskController extends Controller
             'end_datetime' => 'nullable|date|after:start_datetime',
             'vehicles' => 'required|array|min:1',
             'vehicles.*' => 'exists:vehicles,id',
+            'team_id' => 'nullable|exists:teams,id',
             'team' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'images' => 'nullable|array',
@@ -252,6 +253,14 @@ class TaskController extends Controller
                 ->withErrors(['status' => 'Tylko Administrator i Kierownik mogą ustawiać status "Zaakceptowane".'])
                 ->withInput();
         }
+
+        // Ustaw lidera na podstawie wybranego teamu lub zachowaj obecnego
+        if (isset($validated['team_id']) && $validated['team_id']) {
+            // Jeśli wybrano team, ustaw lidera tego teamu jako lidera zadania
+            $team = \App\Models\Team::find($validated['team_id']);
+            $validated['leader_id'] = $team ? $team->leader_id : $task->leader_id;
+        }
+        // Jeśli team_id jest null lub pusty, zachowaj obecnego lidera (nie zmieniamy leader_id)
 
         $vehicleIds = $validated['vehicles'];
         unset($validated['vehicles']);
