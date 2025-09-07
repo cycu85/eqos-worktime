@@ -58,9 +58,21 @@ class TeamController extends Controller
     {
         $this->authorize('create', Team::class);
         
-        $leaders = User::where('role', 'lider')->orderBy('name')->get();
+        // Get leaders who are not already assigned to other teams
+        $assignedLeaderIds = Team::whereNotNull('leader_id')->pluck('leader_id');
+        $leaders = User::where('role', 'lider')
+            ->whereNotIn('id', $assignedLeaderIds)
+            ->orderBy('name')
+            ->get();
+            
         $workers = User::where('role', 'pracownik')->orderBy('name')->get();
-        $vehicles = Vehicle::active()->orderBy('name')->get();
+        
+        // Get vehicles that are not already assigned to other teams
+        $assignedVehicleIds = Team::whereNotNull('vehicle_id')->pluck('vehicle_id');
+        $vehicles = Vehicle::active()
+            ->whereNotIn('id', $assignedVehicleIds)
+            ->orderBy('name')
+            ->get();
         
         return view('teams.create', compact('leaders', 'workers', 'vehicles'));
     }
@@ -98,11 +110,41 @@ class TeamController extends Controller
     {
         $this->authorize('update', $team);
         
-        $leaders = User::where('role', 'lider')->orderBy('name')->get();
+        // Get leaders who are not already assigned to other teams (exclude current team)
+        $assignedLeaderIds = Team::whereNotNull('leader_id')
+            ->where('id', '!=', $team->id)
+            ->pluck('leader_id');
+        $leaders = User::where('role', 'lider')
+            ->whereNotIn('id', $assignedLeaderIds)
+            ->orderBy('name')
+            ->get();
+            
         $workers = User::where('role', 'pracownik')->orderBy('name')->get();
-        $vehicles = Vehicle::active()->orderBy('name')->get();
         
-        return view('teams.edit', compact('team', 'leaders', 'workers', 'vehicles'));
+        // Get vehicles that are not already assigned to other teams (exclude current team)
+        $assignedVehicleIds = Team::whereNotNull('vehicle_id')
+            ->where('id', '!=', $team->id)
+            ->pluck('vehicle_id');
+        $vehicles = Vehicle::active()
+            ->whereNotIn('id', $assignedVehicleIds)
+            ->orderBy('name')
+            ->get();
+
+        // Get current members with their details for JavaScript
+        $currentMembers = [];
+        if ($team->members) {
+            $currentMembers = User::whereIn('id', $team->members)
+                ->get()
+                ->map(function($user) {
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'role' => $user->role
+                    ];
+                })->toArray();
+        }
+        
+        return view('teams.edit', compact('team', 'leaders', 'workers', 'vehicles', 'currentMembers'));
     }
 
     public function update(Request $request, Team $team)

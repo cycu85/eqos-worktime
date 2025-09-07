@@ -214,7 +214,8 @@
     </div>
 
     <script>
-        let selectedMembers = @json(old('members', $team->members));
+        let selectedMembers = @json(old('members', $team->members ?? []));
+        let currentMembersData = @json($currentMembers ?? []);
 
         function openMembersModal() {
             document.getElementById('members-modal').classList.remove('hidden');
@@ -265,14 +266,25 @@
             
             let html = '<div class="flex flex-wrap gap-2">';
             selectedMembers.forEach(memberId => {
-                const checkbox = document.querySelector(`input[value="${memberId}"]`);
-                if (checkbox) {
-                    const name = checkbox.dataset.name;
-                    const role = checkbox.dataset.role;
+                // First try to get from currentMembersData (for existing members)
+                let memberData = currentMembersData.find(member => member.id === memberId);
+                
+                // If not found, try to get from checkbox data attributes (for newly selected)
+                if (!memberData) {
+                    const checkbox = document.querySelector(`input[value="${memberId}"]`);
+                    if (checkbox) {
+                        memberData = {
+                            name: checkbox.dataset.name,
+                            role: checkbox.dataset.role
+                        };
+                    }
+                }
+                
+                if (memberData) {
                     html += `
                         <div class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                            <span>${name}</span>
-                            <span class="ml-1 text-xs opacity-75">(${role})</span>
+                            <span>${memberData.name}</span>
+                            <span class="ml-1 text-xs opacity-75">(${memberData.role})</span>
                             <button type="button" onclick="removeMember(${memberId})" class="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200">
                                 <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
@@ -295,6 +307,10 @@
 
         // Initialize display on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // If no old form data, use current team members
+            if (!selectedMembers || selectedMembers.length === 0) {
+                selectedMembers = currentMembersData.map(member => member.id);
+            }
             updateMembersInputs();
             updateMembersDisplay();
         });
