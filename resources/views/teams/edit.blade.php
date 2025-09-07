@@ -307,6 +307,9 @@
 
         // Initialize display on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Convert selectedMembers to numbers to ensure consistent data types
+            selectedMembers = selectedMembers.map(id => parseInt(id));
+            
             // If no old form data, use current team members
             if (!selectedMembers || selectedMembers.length === 0) {
                 selectedMembers = currentMembersData.map(member => member.id);
