@@ -192,7 +192,7 @@
                                                     {{ $statusLabels[$task->status] ?? $task->status }}
                                                 </span>
                                             </td>
-                                            <td>{{ $task->start_datetime->format('d.m.Y H:i') }}</td>
+                                            <td>{{ $task->start_date->format('d.m.Y H:i') }}</td>
                                             <td class="text-right">
                                                 @can('view', $task)
                                                     <a href="{{ route('tasks.show', $task) }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-sm font-medium">Zobacz</a>

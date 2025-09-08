@@ -182,7 +182,7 @@
                                                 {{ $task->leader->name }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                                {{ $task->start_datetime->format('d.m.Y H:i') }}
+                                                {{ $task->start_date->format('d.m.Y H:i') }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 @php

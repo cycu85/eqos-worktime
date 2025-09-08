@@ -90,7 +90,7 @@ class VehicleController extends Controller
         $this->authorize('view', $vehicle);
         
         $vehicle->load(['tasks' => function ($query) {
-            $query->with('leader')->orderBy('start_datetime', 'desc');
+            $query->with('leader')->orderBy('start_date', 'desc');
         }]);
         
         return view('vehicles.show', compact('vehicle'));
