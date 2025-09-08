@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Task;
+use App\Models\TaskWorkLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,13 +26,13 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     {
         $user = Auth::user();
         
-        // Build base query - same as in TaskController
+        // Build base query - same as in TaskController, now with workLogs
         if ($user->isAdmin() || $user->isKierownik()) {
-            $query = Task::with(['vehicles', 'leader', 'team']);
+            $query = Task::with(['vehicles', 'leader', 'team', 'workLogs']);
         } elseif ($user->isLider()) {
-            $query = Task::with(['vehicles', 'leader', 'team'])->forUser($user->id);
+            $query = Task::with(['vehicles', 'leader', 'team', 'workLogs'])->forUser($user->id);
         } else {
-            $query = $user->teamTasks()->with(['vehicles', 'leader', 'team']);
+            $query = $user->teamTasks()->with(['vehicles', 'leader', 'team', 'workLogs']);
         }
         
         // Apply same filters as in TaskController
@@ -66,11 +67,11 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         }
         
         if ($this->request->filled('date_from')) {
-            $query->where('start_datetime', '>=', $this->request->get('date_from'));
+            $query->where('start_date', '>=', $this->request->get('date_from'));
         }
         
         if ($this->request->filled('date_to')) {
-            $query->where('start_datetime', '<=', $this->request->get('date_to') . ' 23:59:59');
+            $query->where('start_date', '<=', $this->request->get('date_to'));
         }
         
         if ($this->request->filled('user_id')) {
@@ -85,7 +86,7 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         $sortBy = $this->request->get('sort', 'title');
         $sortOrder = $this->request->get('direction', 'asc');
         
-        $allowedSorts = ['title', 'start_datetime', 'status', 'created_at'];
+        $allowedSorts = ['title', 'start_date', 'status', 'created_at'];
         if (in_array($sortBy, $allowedSorts)) {
             $query->orderBy($sortBy, $sortOrder);
         } else {
@@ -126,9 +127,9 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             $task->leader ? $task->leader->name : '',
             $task->team,
             $this->getStatusLabel($task->status),
-            $task->start_datetime ? $task->start_datetime->format('Y-m-d H:i') : '',
-            $task->end_datetime ? $task->end_datetime->format('Y-m-d H:i') : '',
-            $this->calculateDuration($task->start_datetime, $task->end_datetime),
+            $task->start_date ? $task->start_date->format('Y-m-d') : '',
+            $task->end_date ? $task->end_date->format('Y-m-d') : '',
+            $this->calculateDurationFromWorkLogs($task),
             $this->calculateWorkHours($task),
             $task->notes,
             $task->created_at->format('Y-m-d H:i')
@@ -153,18 +154,15 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         };
     }
 
-    private function calculateDuration($startDateTime, $endDateTime)
+    private function calculateDurationFromWorkLogs($task)
     {
-        if (!$startDateTime || !$endDateTime) {
+        if ($task->workLogs->isEmpty()) {
             return '';
         }
 
-        $start = \Carbon\Carbon::parse($startDateTime);
-        $end = \Carbon\Carbon::parse($endDateTime);
-        
-        $diffInMinutes = $start->diffInMinutes($end);
-        $hours = intval($diffInMinutes / 60);
-        $minutes = $diffInMinutes % 60;
+        $totalHours = $task->getTotalWorkHours();
+        $hours = intval($totalHours);
+        $minutes = intval(($totalHours - $hours) * 60);
         
         if ($hours > 0) {
             return sprintf('%dh %dmin', $hours, $minutes);
@@ -175,29 +173,13 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
 
     private function calculateWorkHours($task)
     {
-        // Jeśli zadanie nie ma czasu rozpoczęcia lub zakończenia
-        if (!$task->start_datetime || !$task->end_datetime) {
+        if ($task->workLogs->isEmpty()) {
             return '';
         }
 
-        // Oblicz czas trwania w godzinach (z dokładnością do 2 miejsc po przecinku)
-        $start = \Carbon\Carbon::parse($task->start_datetime);
-        $end = \Carbon\Carbon::parse($task->end_datetime);
-        $durationHours = $start->diffInMinutes($end) / 60;
+        // Używamy metod z modelu Task które już obliczają na podstawie work_logs
+        $roboczogodziny = $task->getTotalRoboczogodziny();
 
-        // Oblicz liczbę pracowników: 1 (lider) + liczba członków zespołu
-        $teamMembersCount = 0;
-        if ($task->team) {
-            // Zespół jest przechowywany jako string oddzielony przecinkami
-            $teamMembers = array_filter(array_map('trim', explode(',', $task->team)));
-            $teamMembersCount = count($teamMembers);
-        }
-        
-        $totalWorkers = 1 + $teamMembersCount; // 1 lider + członkowie zespołu
-
-        // Oblicz roboczogodziny: liczba pracowników × czas w godzinach
-        $workHours = $totalWorkers * $durationHours;
-
-        return round($workHours, 2);
+        return round($roboczogodziny, 2);
     }
 }
