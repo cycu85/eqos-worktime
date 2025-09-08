@@ -180,9 +180,10 @@ class TaskController extends Controller
         ]);
 
         // Ustaw lidera na podstawie wybranego teamu lub aktualnego użytkownika
-        if ($validated['team_id']) {
+        $teamId = $validated['team_id'] ?? null;
+        if ($teamId) {
             // Jeśli wybrano team, ustaw lidera tego teamu jako lidera zadania
-            $team = \App\Models\Team::find($validated['team_id']);
+            $team = \App\Models\Team::find($teamId);
             $validated['leader_id'] = $team ? $team->leader_id : Auth::id();
         } else {
             // Jeśli nie wybrano teamu, aktualny użytkownik staje się liderem
@@ -190,7 +191,7 @@ class TaskController extends Controller
         }
         
         $vehicleIds = $validated['vehicles'];
-        unset($validated['vehicles']);
+        unset($validated['vehicles'], $validated['team_id']);
 
         $task = Task::create($validated);
         $task->vehicles()->attach($vehicleIds);
