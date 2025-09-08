@@ -391,7 +391,7 @@
                                             @endif
                                         </td>
                                         <td>
-                                            {{ $task->start_datetime->format('d.m.Y H:i') }}
+                                            {{ $task->start_date->format('d.m.Y') }} - {{ $task->end_date->format('d.m.Y') }}
                                         </td>
                                         <td>
                                             @php
@@ -656,13 +656,11 @@
                 dayNumber.title = 'Kliknij aby przejść do widoku dnia';
                 cell.appendChild(dayNumber);
                 
-                // Find tasks for this day
+                // Find tasks for this day - now using work_date from work_logs
                 const dayDate = new Date(year, month, day);
+                const formattedDayDate = dayDate.toISOString().split('T')[0]; // YYYY-MM-DD format
                 const dayTasks = tasksData.filter(task => {
-                    const taskDate = new Date(task.start_datetime);
-                    return taskDate.getDate() === day && 
-                           taskDate.getMonth() === month && 
-                           taskDate.getFullYear() === year;
+                    return task.work_date === formattedDayDate;
                 });
                 
                 // Add tasks (show max 2, then indicate more)
@@ -670,7 +668,7 @@
                     const taskEl = document.createElement('div');
                     taskEl.className = 'text-xs p-1 mb-1 rounded cursor-pointer hover:opacity-80 transition-opacity shadow-sm ' + getStatusBadgeClass(task.status);
                     taskEl.textContent = task.title.length > 12 ? task.title.substring(0, 12) + '...' : task.title;
-                    taskEl.title = `${task.title}\nLider: ${task.leader}\nStatus: ${getStatusLabel(task.status)}\nPojazdy: ${task.vehicles || 'Brak'}`;
+                    taskEl.title = `${task.title}\nCzas: ${task.start_time} - ${task.end_time} (${task.duration_hours}h)\nStatus dnia: ${getStatusLabel(task.status)}\nStatus zadania: ${getStatusLabel(task.task_status)}\nLider: ${task.leader}\nPojazdy: ${task.vehicles || 'Brak'}${task.notes ? '\nNotatki: ' + task.notes : ''}`;
                     taskEl.onclick = () => window.location.href = task.url;
                     cell.appendChild(taskEl);
                 });
@@ -727,11 +725,15 @@
                         isToday ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-white dark:bg-gray-800'
                     } hover:bg-gray-50 dark:hover:bg-gray-700/50`;
                     
-                    // Find tasks for this hour and day
+                    // Find tasks for this hour and day - now using work_logs
+                    const formattedCellDate = cellDate.toISOString().split('T')[0];
                     const hourTasks = tasksData.filter(task => {
-                        const taskDate = new Date(task.start_datetime);
-                        return taskDate.toDateString() === cellDate.toDateString() && 
-                               taskDate.getHours() === hour;
+                        if (task.work_date !== formattedCellDate) return false;
+                        
+                        // Check if this task's time range covers this hour
+                        const startHour = parseInt(task.start_time.split(':')[0]);
+                        const endHour = parseInt(task.end_time.split(':')[0]);
+                        return hour >= startHour && hour < endHour;
                     });
                     
                     // Add tasks
@@ -739,7 +741,7 @@
                         const taskEl = document.createElement('div');
                         taskEl.className = 'text-xs p-1 rounded cursor-pointer mb-1 ' + getStatusBadgeClass(task.status);
                         taskEl.textContent = task.title.length > 8 ? task.title.substring(0, 8) + '...' : task.title;
-                        taskEl.title = `${task.title}\nLider: ${task.leader}\nStatus: ${getStatusLabel(task.status)}`;
+                        taskEl.title = `${task.title}\nCzas: ${task.start_time} - ${task.end_time} (${task.duration_hours}h)\nStatus dnia: ${getStatusLabel(task.status)}\nLider: ${task.leader}`;
                         taskEl.onclick = (e) => {
                             e.stopPropagation();
                             window.location.href = task.url;
@@ -783,11 +785,15 @@
                 const tasks = document.createElement('div');
                 tasks.className = 'flex-1 ml-4 space-y-1';
                 
-                // Find tasks for this hour
+                // Find tasks for this hour - now using work_logs
+                const formattedCurrentDate = currentDate.toISOString().split('T')[0];
                 const hourTasks = tasksData.filter(task => {
-                    const taskDate = new Date(task.start_datetime);
-                    return taskDate.toDateString() === currentDate.toDateString() && 
-                           taskDate.getHours() === hour;
+                    if (task.work_date !== formattedCurrentDate) return false;
+                    
+                    // Check if this task's time range covers this hour
+                    const startHour = parseInt(task.start_time.split(':')[0]);
+                    const endHour = parseInt(task.end_time.split(':')[0]);
+                    return hour >= startHour && hour < endHour;
                 });
                 
                 if (hourTasks.length > 0) {
@@ -807,10 +813,10 @@
                 grid.appendChild(timeSlot);
             }
             
-            // All tasks for the day
+            // All tasks for the day - now using work_logs
+            const formattedCurrentDate = currentDate.toISOString().split('T')[0];
             const dayTasks = tasksData.filter(task => {
-                const taskDate = new Date(task.start_datetime);
-                return taskDate.toDateString() === currentDate.toDateString();
+                return task.work_date === formattedCurrentDate;
             });
             
             if (dayTasks.length > 0) {

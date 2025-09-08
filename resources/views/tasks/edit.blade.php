@@ -63,62 +63,92 @@
                             @enderror
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <!-- Start DateTime -->
-                            <div>
-                                <label for="start_datetime" class="form-kt-label">
-                                    Data i godzina rozpoczęcia <span class="text-red-500">*</span>
-                                </label>
-                                <div class="datetime-container">
-                                    <input id="start_datetime" 
-                                           class="form-kt-control @error('start_datetime') border-red-500 @enderror" 
-                                           type="datetime-local" 
-                                           name="start_datetime" 
-                                           value="{{ old('start_datetime', $task->start_datetime?->format('Y-m-d\TH:i')) }}" 
+                        @if(auth()->user()->isAdmin() || auth()->user()->isKierownik())
+                            <!-- Date fields - only for Admin/Kierownik -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <!-- Start Date -->
+                                <div>
+                                    <label for="start_date" class="form-kt-label">
+                                        Data rozpoczęcia <span class="text-red-500">*</span>
+                                    </label>
+                                    <input id="start_date" 
+                                           class="form-kt-control @error('start_date') border-red-500 @enderror" 
+                                           type="date" 
+                                           name="start_date" 
+                                           value="{{ old('start_date', $task->start_date?->format('Y-m-d')) }}" 
                                            required />
-                                    <!-- Fallback for browsers that don't support datetime-local properly -->
-                                    <div id="start_datetime_fallback" class="datetime-fallback hidden grid grid-cols-2 gap-2">
-                                        <input type="date" 
-                                               id="start_date_fallback" 
-                                               class="form-kt-control @error('start_datetime') border-red-500 @enderror" 
-                                               required />
-                                        <input type="time" 
-                                               id="start_time_fallback" 
-                                               class="form-kt-control @error('start_datetime') border-red-500 @enderror" 
-                                               required />
-                                    </div>
+                                    @error('start_date')
+                                        <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
                                 </div>
-                                @error('start_datetime')
-                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                @enderror
-                            </div>
 
-                            <!-- End DateTime -->
-                            <div>
-                                <label for="end_datetime" class="form-kt-label">
-                                    Data i godzina zakończenia <span class="text-gray-500">(opcjonalna)</span>
-                                </label>
-                                <div class="datetime-container">
-                                    <input id="end_datetime" 
-                                           class="form-kt-control @error('end_datetime') border-red-500 @enderror" 
-                                           type="datetime-local" 
-                                           name="end_datetime" 
-                                           value="{{ old('end_datetime', $task->end_datetime?->format('Y-m-d\TH:i')) }}" />
-                                    <!-- Fallback for browsers that don't support datetime-local properly -->
-                                    <div id="end_datetime_fallback" class="datetime-fallback hidden grid grid-cols-2 gap-2">
-                                        <input type="date" 
-                                               id="end_date_fallback" 
-                                               class="form-kt-control @error('end_datetime') border-red-500 @enderror" />
-                                        <input type="time" 
-                                               id="end_time_fallback" 
-                                               class="form-kt-control @error('end_datetime') border-red-500 @enderror" />
-                                    </div>
+                                <!-- End Date -->
+                                <div>
+                                    <label for="end_date" class="form-kt-label">
+                                        Data zakończenia <span class="text-red-500">*</span>
+                                    </label>
+                                    <input id="end_date" 
+                                           class="form-kt-control @error('end_date') border-red-500 @enderror" 
+                                           type="date" 
+                                           name="end_date" 
+                                           value="{{ old('end_date', $task->end_date?->format('Y-m-d')) }}" 
+                                           required />
+                                    @error('end_date')
+                                        <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
                                 </div>
-                                @error('end_datetime')
-                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                @enderror
                             </div>
-                        </div>
+                            
+                            <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-start">
+                                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div>
+                                            <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">Edycja dat zadania</h4>
+                                            <p class="text-sm text-blue-800 dark:text-blue-200">
+                                                Zmiana dat spowoduje automatyczną regenerację harmonogramu pracy. Istniejące wpisy mogą zostać usunięte lub dodane nowe dni.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <a href="{{ route('tasks.work-logs', $task) }}" 
+                                       class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700 transition-colors">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4m-3 9v-7m-6 7h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v9a2 2 0 002 2z"></path>
+                                        </svg>
+                                        Edytuj harmonogram
+                                    </a>
+                                </div>
+                            </div>
+                        @else
+                            <!-- Read-only date display for other users -->
+                            <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Okres realizacji</h4>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                            <div>
+                                                <span class="font-medium">Data rozpoczęcia:</span> {{ $task->start_date?->format('d.m.Y') ?? 'Nie określona' }}
+                                            </div>
+                                            <div>
+                                                <span class="font-medium">Data zakończenia:</span> {{ $task->end_date?->format('d.m.Y') ?? 'Nie określona' }}
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                            Tylko administratorzy i kierownicy mogą edytować daty zadania.
+                                        </p>
+                                    </div>
+                                    <a href="{{ route('tasks.work-logs', $task) }}" 
+                                       class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-500 transition-colors ml-4">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4m-3 9v-7m-6 7h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v9a2 2 0 002 2z"></path>
+                                        </svg>
+                                        Zobacz harmonogram
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
 
                         @if(auth()->user()->isAdmin() || auth()->user()->isKierownik())
                             <!-- Team Selection for Admin/Kierownik -->
@@ -539,9 +569,6 @@
 
         // Initialize team display on page load
         document.addEventListener('DOMContentLoaded', function() {
-            // Check datetime-local support and setup fallback if needed
-            setupDateTimeFallback();
-            
             const leaderTeamMembers = @json($leaderTeamMembers ?? []);
             const existingTeam = document.getElementById('team').value;
             
@@ -849,72 +876,5 @@
             }
         }
 
-        // Function to test datetime-local support and setup fallback
-        function setupDateTimeFallback() {
-            // Force fallback for desktop browsers to ensure time picker is always available
-            const isDesktop = window.innerWidth > 768 && !('ontouchstart' in window);
-            const userAgent = navigator.userAgent.toLowerCase();
-            
-            // Use fallback for desktop Chrome, Safari, Edge, and Firefox
-            const needsFallback = isDesktop && (
-                userAgent.includes('chrome') || 
-                userAgent.includes('safari') || 
-                userAgent.includes('edge') ||
-                userAgent.includes('firefox')
-            );
-            
-            // Debug logging
-            console.log('Desktop detected:', isDesktop);
-            console.log('User agent:', userAgent);
-            console.log('Needs fallback:', needsFallback);
-            
-            if (needsFallback) {
-                console.log('Activating datetime fallback');
-                // Use fallback inputs
-                document.getElementById('start_datetime').style.display = 'none';
-                document.getElementById('start_datetime_fallback').classList.remove('hidden');
-                document.getElementById('end_datetime').style.display = 'none';
-                document.getElementById('end_datetime_fallback').classList.remove('hidden');
-                
-                // Setup event listeners to sync fallback inputs with main inputs
-                setupFallbackSync('start');
-                setupFallbackSync('end');
-            }
-        }
-
-        // Function to setup synchronization between fallback inputs and main datetime input
-        function setupFallbackSync(prefix) {
-            const datetimeInput = document.getElementById(prefix + '_datetime');
-            const dateInput = document.getElementById(prefix + '_date_fallback');
-            const timeInput = document.getElementById(prefix + '_time_fallback');
-            
-            function updateDateTime() {
-                const date = dateInput.value;
-                const time = timeInput.value;
-                if (date && time) {
-                    datetimeInput.value = date + 'T' + time;
-                } else if (date) {
-                    datetimeInput.value = date + 'T00:00';
-                } else {
-                    datetimeInput.value = '';
-                }
-            }
-            
-            function updateFallbacks() {
-                const datetime = datetimeInput.value;
-                if (datetime) {
-                    const [date, time] = datetime.split('T');
-                    dateInput.value = date || '';
-                    timeInput.value = time || '';
-                }
-            }
-            
-            // Sync fallback -> main
-            dateInput.addEventListener('change', updateDateTime);
-            timeInput.addEventListener('change', updateDateTime);
-            
-            // Sync main -> fallback (for initial values)
-            updateFallbacks();
-        }
     </script>
 </x-app-layout>
