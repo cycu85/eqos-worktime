@@ -65,11 +65,11 @@ class TaskController extends Controller
         
         // Apply date range filter
         if ($request->filled('date_from')) {
-            $query->where('start_datetime', '>=', $request->get('date_from'));
+            $query->where('start_date', '>=', $request->get('date_from'));
         }
         
         if ($request->filled('date_to')) {
-            $query->where('start_datetime', '<=', $request->get('date_to') . ' 23:59:59');
+            $query->where('start_date', '<=', $request->get('date_to'));
         }
         
         // Apply user filter
@@ -85,7 +85,7 @@ class TaskController extends Controller
         $sortBy = $request->get('sort', 'title');
         $sortOrder = $request->get('direction', 'asc');
         
-        $allowedSorts = ['title', 'start_datetime', 'status', 'created_at'];
+        $allowedSorts = ['title', 'start_date', 'status', 'created_at'];
         if (in_array($sortBy, $allowedSorts)) {
             $query->orderBy($sortBy, $sortOrder);
         } else {

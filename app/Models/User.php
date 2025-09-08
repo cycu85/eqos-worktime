@@ -77,6 +77,6 @@ class User extends Authenticatable
      */
     public function teamTasks()
     {
-        return Task::whereRaw("FIND_IN_SET(?, REPLACE(team, ', ', ','))", [$this->name])->orderBy('start_datetime', 'desc');
+        return Task::whereRaw("FIND_IN_SET(?, REPLACE(team, ', ', ','))", [$this->name])->orderBy('start_date', 'desc');
     }
 }

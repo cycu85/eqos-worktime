@@ -415,26 +415,25 @@
             const leaderTeamMembers = @json($leaderTeamMembers ?? []);
             const existingTeam = document.getElementById('team').value;
             
-            // Check datetime-local support and setup fallback if needed
-            setupDateTimeFallback();
+            // No datetime fallback needed for simple date fields
             
-            // Set default start datetime to current local time if no old value exists
-            const startDateTimeInput = document.getElementById('start_datetime');
-            if (!startDateTimeInput.value) {
+            // Set default start date to current date if no old value exists
+            const startDateInput = document.getElementById('start_date');
+            if (!startDateInput.value) {
                 const now = new Date();
-                // Format to datetime-local format (YYYY-MM-DDTHH:MM)
+                // Format to date format (YYYY-MM-DD)
                 const year = now.getFullYear();
                 const month = String(now.getMonth() + 1).padStart(2, '0');
                 const day = String(now.getDate()).padStart(2, '0');
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                const defaultDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
-                startDateTimeInput.value = defaultDateTime;
+                const defaultDate = `${year}-${month}-${day}`;
+                startDateInput.value = defaultDate;
                 
-                // Also set fallback inputs if they're visible
-                if (!startDateTimeInput.offsetParent) {
-                    document.getElementById('start_date_fallback').value = `${year}-${month}-${day}`;
-                    document.getElementById('start_time_fallback').value = `${hours}:${minutes}`;
+                // Also set fallback inputs if they exist
+                const startDateFallback = document.getElementById('start_date_fallback');
+                const startTimeFallback = document.getElementById('start_time_fallback');
+                if (startDateFallback && startTimeFallback) {
+                    startDateFallback.value = `${year}-${month}-${day}`;
+                    startTimeFallback.value = '08:00';
                 }
             }
             
@@ -461,73 +460,6 @@
             }
         });
 
-        // Function to test datetime-local support and setup fallback
-        function setupDateTimeFallback() {
-            // Force fallback for desktop browsers to ensure time picker is always available
-            const isDesktop = window.innerWidth > 768 && !('ontouchstart' in window);
-            const userAgent = navigator.userAgent.toLowerCase();
-            
-            // Use fallback for desktop Chrome, Safari, Edge, and Firefox
-            const needsFallback = isDesktop && (
-                userAgent.includes('chrome') || 
-                userAgent.includes('safari') || 
-                userAgent.includes('edge') ||
-                userAgent.includes('firefox')
-            );
-            
-            // Debug logging
-            console.log('Desktop detected:', isDesktop);
-            console.log('User agent:', userAgent);
-            console.log('Needs fallback:', needsFallback);
-            
-            if (needsFallback) {
-                console.log('Activating datetime fallback');
-                // Use fallback inputs
-                document.getElementById('start_datetime').style.display = 'none';
-                document.getElementById('start_datetime_fallback').classList.remove('hidden');
-                document.getElementById('end_datetime').style.display = 'none';
-                document.getElementById('end_datetime_fallback').classList.remove('hidden');
-                
-                // Setup event listeners to sync fallback inputs with main inputs
-                setupFallbackSync('start');
-                setupFallbackSync('end');
-            }
-        }
-
-        // Function to setup synchronization between fallback inputs and main datetime input
-        function setupFallbackSync(prefix) {
-            const datetimeInput = document.getElementById(prefix + '_datetime');
-            const dateInput = document.getElementById(prefix + '_date_fallback');
-            const timeInput = document.getElementById(prefix + '_time_fallback');
-            
-            function updateDateTime() {
-                const date = dateInput.value;
-                const time = timeInput.value;
-                if (date && time) {
-                    datetimeInput.value = date + 'T' + time;
-                } else if (date) {
-                    datetimeInput.value = date + 'T00:00';
-                } else {
-                    datetimeInput.value = '';
-                }
-            }
-            
-            function updateFallbacks() {
-                const datetime = datetimeInput.value;
-                if (datetime) {
-                    const [date, time] = datetime.split('T');
-                    dateInput.value = date || '';
-                    timeInput.value = time || '';
-                }
-            }
-            
-            // Sync fallback -> main
-            dateInput.addEventListener('change', updateDateTime);
-            timeInput.addEventListener('change', updateDateTime);
-            
-            // Sync main -> fallback (for initial values)
-            updateFallbacks();
-        }
 
         function openTeamModal() {
             document.getElementById('team-modal').classList.remove('hidden');

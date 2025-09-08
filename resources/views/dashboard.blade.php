@@ -201,7 +201,7 @@
                     </div>
                     <div class="kt-card-body">
                         <div class="space-y-4">
-                            @foreach(auth()->user()->tasks()->with('vehicles')->orderBy('start_datetime', 'desc')->limit(5)->get() as $task)
+                            @foreach(auth()->user()->tasks()->with('vehicles')->orderBy('start_date', 'desc')->limit(5)->get() as $task)
                                 <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
                                     <div class="flex items-center">
                                         <div class="p-2 rounded-lg mr-3
@@ -223,7 +223,7 @@
                                                 @if($task->vehicles->count() > 0)
                                                     {{ $task->vehicles->pluck('name')->join(', ') }} • 
                                                 @endif
-                                                {{ $task->start_datetime->format('d.m.Y H:i') }}
+                                                {{ $task->start_date->format('d.m.Y') }}
                                             </p>
                                         </div>
                                     </div>
