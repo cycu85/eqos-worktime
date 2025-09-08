@@ -372,10 +372,15 @@
                                         <td>
                                             @php
                                                 $teamString = $task->getAttributes()['team'] ?? '';
+                                                $teamMembers = $teamString ? explode(', ', $teamString) : [];
                                             @endphp
                                             
-                                            @if($teamString)
-                                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $teamString }}</div>
+                                            @if(count($teamMembers) > 0)
+                                                <div class="text-sm text-gray-500 dark:text-gray-400 space-y-1">
+                                                    @foreach($teamMembers as $member)
+                                                        <div>{{ trim($member) }}</div>
+                                                    @endforeach
+                                                </div>
                                             @else
                                                 <span class="text-gray-400 dark:text-gray-500">-</span>
                                             @endif
