@@ -643,7 +643,7 @@
                 const today = new Date();
                 const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
                 
-                cell.className = `h-32 border border-gray-200 dark:border-gray-700 p-1 overflow-y-auto transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer ${
+                cell.className = `h-40 border border-gray-200 dark:border-gray-700 p-1 overflow-y-auto transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer flex flex-col ${
                     isToday ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600' : 'bg-white dark:bg-gray-800'
                 }`;
                 
@@ -658,28 +658,37 @@
                 
                 // Find tasks for this day - now using work_date from work_logs
                 const dayDate = new Date(year, month, day);
-                const formattedDayDate = dayDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+                const formattedDayDate = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0'); // YYYY-MM-DD format without timezone conversion
                 const dayTasks = tasksData.filter(task => {
                     return task.work_date === formattedDayDate;
                 });
                 
-                // Add tasks (show max 2, then indicate more)
-                dayTasks.slice(0, 2).forEach(task => {
+                // Container for tasks to ensure proper vertical layout
+                const tasksContainer = document.createElement('div');
+                tasksContainer.className = 'flex-1 space-y-1 overflow-y-auto';
+                
+                // Add tasks (show max 4 now with higher cells, then indicate more)
+                dayTasks.slice(0, 4).forEach(task => {
                     const taskEl = document.createElement('div');
-                    taskEl.className = 'text-xs p-1 mb-1 rounded cursor-pointer hover:opacity-80 transition-opacity shadow-sm ' + getStatusBadgeClass(task.status);
-                    taskEl.textContent = task.title.length > 12 ? task.title.substring(0, 12) + '...' : task.title;
+                    taskEl.className = 'text-xs px-1 py-0.5 rounded cursor-pointer hover:opacity-80 transition-opacity shadow-sm block w-full ' + getStatusBadgeClass(task.status);
+                    taskEl.textContent = task.title.length > 15 ? task.title.substring(0, 15) + '...' : task.title;
                     taskEl.title = `${task.title}\nCzas: ${task.start_time} - ${task.end_time} (${task.duration_hours}h)\nStatus dnia: ${getStatusLabel(task.status)}\nStatus zadania: ${getStatusLabel(task.task_status)}\nLider: ${task.leader}\nPojazdy: ${task.vehicles || 'Brak'}${task.notes ? '\nNotatki: ' + task.notes : ''}`;
-                    taskEl.onclick = () => window.location.href = task.url;
-                    cell.appendChild(taskEl);
+                    taskEl.onclick = (e) => {
+                        e.stopPropagation();
+                        window.location.href = task.url;
+                    };
+                    tasksContainer.appendChild(taskEl);
                 });
                 
-                // Show more indicator if there are more than 2 tasks
-                if (dayTasks.length > 2) {
+                // Show more indicator if there are more than 4 tasks
+                if (dayTasks.length > 4) {
                     const moreIndicator = document.createElement('div');
-                    moreIndicator.className = 'text-xs text-gray-500 dark:text-gray-400 font-medium';
-                    moreIndicator.textContent = `+${dayTasks.length - 2} więcej`;
-                    cell.appendChild(moreIndicator);
+                    moreIndicator.className = 'text-xs text-gray-500 dark:text-gray-400 font-medium px-1';
+                    moreIndicator.textContent = `+${dayTasks.length - 4} więcej`;
+                    tasksContainer.appendChild(moreIndicator);
                 }
+                
+                cell.appendChild(tasksContainer);
                 
                 // Add click handler to switch to day view
                 cell.addEventListener('click', (e) => {
@@ -721,12 +730,12 @@
                     const today = new Date();
                     const isToday = cellDate.toDateString() === today.toDateString();
                     
-                    cell.className = `h-12 border border-gray-200 dark:border-gray-700 p-1 text-xs cursor-pointer ${
+                    cell.className = `h-16 border border-gray-200 dark:border-gray-700 p-1 text-xs cursor-pointer flex flex-col overflow-y-auto ${
                         isToday ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-white dark:bg-gray-800'
                     } hover:bg-gray-50 dark:hover:bg-gray-700/50`;
                     
                     // Find tasks for this hour and day - now using work_logs
-                    const formattedCellDate = cellDate.toISOString().split('T')[0];
+                    const formattedCellDate = cellDate.getFullYear() + '-' + String(cellDate.getMonth() + 1).padStart(2, '0') + '-' + String(cellDate.getDate()).padStart(2, '0');
                     const hourTasks = tasksData.filter(task => {
                         if (task.work_date !== formattedCellDate) return false;
                         
@@ -736,18 +745,24 @@
                         return hour >= startHour && hour < endHour;
                     });
                     
+                    // Create container for tasks to ensure proper vertical layout
+                    const tasksContainer = document.createElement('div');
+                    tasksContainer.className = 'flex-1 space-y-0.5 overflow-y-auto';
+                    
                     // Add tasks
                     hourTasks.forEach(task => {
                         const taskEl = document.createElement('div');
-                        taskEl.className = 'text-xs p-1 rounded cursor-pointer mb-1 ' + getStatusBadgeClass(task.status);
-                        taskEl.textContent = task.title.length > 8 ? task.title.substring(0, 8) + '...' : task.title;
+                        taskEl.className = 'text-xs px-1 py-0.5 rounded cursor-pointer block w-full ' + getStatusBadgeClass(task.status);
+                        taskEl.textContent = task.title.length > 10 ? task.title.substring(0, 10) + '...' : task.title;
                         taskEl.title = `${task.title}\nCzas: ${task.start_time} - ${task.end_time} (${task.duration_hours}h)\nStatus dnia: ${getStatusLabel(task.status)}\nLider: ${task.leader}`;
                         taskEl.onclick = (e) => {
                             e.stopPropagation();
                             window.location.href = task.url;
                         };
-                        cell.appendChild(taskEl);
+                        tasksContainer.appendChild(taskEl);
                     });
+                    
+                    cell.appendChild(tasksContainer);
                     
                     // Add click handler to switch to day view
                     cell.addEventListener('click', (e) => {
@@ -786,7 +801,7 @@
                 tasks.className = 'flex-1 ml-4 space-y-1';
                 
                 // Find tasks for this hour - now using work_logs
-                const formattedCurrentDate = currentDate.toISOString().split('T')[0];
+                const formattedCurrentDate = currentDate.getFullYear() + '-' + String(currentDate.getMonth() + 1).padStart(2, '0') + '-' + String(currentDate.getDate()).padStart(2, '0');
                 const hourTasks = tasksData.filter(task => {
                     if (task.work_date !== formattedCurrentDate) return false;
                     
@@ -814,7 +829,7 @@
             }
             
             // All tasks for the day - now using work_logs
-            const formattedCurrentDate = currentDate.toISOString().split('T')[0];
+            const formattedCurrentDate = currentDate.getFullYear() + '-' + String(currentDate.getMonth() + 1).padStart(2, '0') + '-' + String(currentDate.getDate()).padStart(2, '0');
             const dayTasks = tasksData.filter(task => {
                 return task.work_date === formattedCurrentDate;
             });
