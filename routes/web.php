@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskWorkLogController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleController;
@@ -26,6 +27,12 @@ Route::middleware('auth')->group(function () {
     
     // Tasks routes - available for all authenticated users
     Route::resource('tasks', TaskController::class);
+    
+    // Task work logs
+    Route::get('tasks/{task}/work-logs', [TaskController::class, 'workLogs'])->name('tasks.work-logs');
+    Route::post('tasks/{task}/work-logs/bulk-update', [TaskWorkLogController::class, 'bulkUpdate'])->name('tasks.work-logs.bulk-update');
+    Route::post('tasks/{task}/work-logs/add', [TaskWorkLogController::class, 'addWorkDay'])->name('tasks.work-logs.add');
+    Route::delete('tasks/{task}/work-logs/{workLog}', [TaskWorkLogController::class, 'destroy'])->name('tasks.work-logs.destroy');
     
     // Task image removal
     Route::delete('tasks/{task}/images/{imageIndex}', [TaskController::class, 'removeImage'])->name('tasks.removeImage');

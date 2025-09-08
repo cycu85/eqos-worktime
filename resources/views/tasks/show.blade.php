@@ -127,29 +127,32 @@
                             @endif
 
                             <div>
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Data rozpoczęcia</dt>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                    Okres realizacji
+                                </dt>
                                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                    {{ $task->start_datetime->format('d.m.Y H:i') }}
-                                    <span class="text-gray-500 dark:text-gray-400">({{ $task->start_datetime->diffForHumans() }})</span>
+                                    {{ $task->start_date->format('d.m.Y') }} - {{ $task->end_date->format('d.m.Y') }}
+                                    <span class="text-gray-500 dark:text-gray-400">({{ $task->workLogs->count() }} dni pracy)</span>
                                 </dd>
                             </div>
 
-                            @if($task->end_datetime)
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Data zakończenia</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                        {{ $task->end_datetime->format('d.m.Y H:i') }}
-                                        <span class="text-gray-500 dark:text-gray-400">({{ $task->end_datetime->diffForHumans() }})</span>
-                                    </dd>
-                                </div>
-
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Czas trwania</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                        {{ $task->duration_hours }}h ({{ $task->duration }} minut)
-                                    </dd>
-                                </div>
-                            @endif
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Łączny czas pracy</dt>
+                                <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                    {{ $task->duration_hours }}h 
+                                    <span class="text-gray-500 dark:text-gray-400">({{ $task->getTotalRoboczogodziny() }}h roboczogodziny)</span>
+                                    @can('update', $task)
+                                        <div class="mt-2">
+                                            <a href="{{ route('tasks.work-logs', $task) }}" class="btn-kt-secondary text-xs">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                                                </svg>
+                                                Edytuj harmonogram
+                                            </a>
+                                        </div>
+                                    @endcan
+                                </dd>
+                            </div>
                         </dl>
                     </div>
                 </div>

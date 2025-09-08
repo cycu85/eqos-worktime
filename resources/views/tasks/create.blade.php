@@ -60,59 +60,51 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <!-- Start DateTime -->
+                            <!-- Start Date -->
                             <div>
-                                <label for="start_datetime" class="form-kt-label">
-                                    Data i godzina rozpoczęcia <span class="text-red-500">*</span>
+                                <label for="start_date" class="form-kt-label">
+                                    Data rozpoczęcia <span class="text-red-500">*</span>
                                 </label>
-                                <div class="datetime-container">
-                                    <input id="start_datetime" 
-                                           class="form-kt-control @error('start_datetime') border-red-500 @enderror" 
-                                           type="datetime-local" 
-                                           name="start_datetime" 
-                                           value="{{ old('start_datetime') }}" 
-                                           required />
-                                    <!-- Fallback for browsers that don't support datetime-local properly -->
-                                    <div id="start_datetime_fallback" class="datetime-fallback hidden grid grid-cols-2 gap-2">
-                                        <input type="date" 
-                                               id="start_date_fallback" 
-                                               class="form-kt-control @error('start_datetime') border-red-500 @enderror" 
-                                               required />
-                                        <input type="time" 
-                                               id="start_time_fallback" 
-                                               class="form-kt-control @error('start_datetime') border-red-500 @enderror" 
-                                               required />
-                                    </div>
-                                </div>
-                                @error('start_datetime')
+                                <input id="start_date" 
+                                       class="form-kt-control @error('start_date') border-red-500 @enderror" 
+                                       type="date" 
+                                       name="start_date" 
+                                       value="{{ old('start_date') }}" 
+                                       required />
+                                @error('start_date')
                                     <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                 @enderror
                             </div>
 
-                            <!-- End DateTime -->
+                            <!-- End Date -->
                             <div>
-                                <label for="end_datetime" class="form-kt-label">
-                                    Data i godzina zakończenia <span class="text-gray-500">(opcjonalna)</span>
+                                <label for="end_date" class="form-kt-label">
+                                    Data zakończenia <span class="text-red-500">*</span>
                                 </label>
-                                <div class="datetime-container">
-                                    <input id="end_datetime" 
-                                           class="form-kt-control @error('end_datetime') border-red-500 @enderror" 
-                                           type="datetime-local" 
-                                           name="end_datetime" 
-                                           value="{{ old('end_datetime') }}" />
-                                    <!-- Fallback for browsers that don't support datetime-local properly -->
-                                    <div id="end_datetime_fallback" class="datetime-fallback hidden grid grid-cols-2 gap-2">
-                                        <input type="date" 
-                                               id="end_date_fallback" 
-                                               class="form-kt-control @error('end_datetime') border-red-500 @enderror" />
-                                        <input type="time" 
-                                               id="end_time_fallback" 
-                                               class="form-kt-control @error('end_datetime') border-red-500 @enderror" />
-                                    </div>
-                                </div>
-                                @error('end_datetime')
+                                <input id="end_date" 
+                                       class="form-kt-control @error('end_date') border-red-500 @enderror" 
+                                       type="date" 
+                                       name="end_date" 
+                                       value="{{ old('end_date') }}" 
+                                       required />
+                                @error('end_date')
                                     <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                 @enderror
+                            </div>
+                        </div>
+
+                        <!-- Info o zadaniach wielodniowych -->
+                        <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div>
+                                    <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-1">Zadanie wielodniowe</h4>
+                                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                                        Każde zadanie jest traktowane jako wielodniowe. Zostanie automatycznie utworzony harmonogram pracy dla każdego dnia (włączając weekendy) z domyślnymi godzinami 8:00-16:00. Po utworzeniu będzie można dostosować godziny dla każdego dnia osobno.
+                                    </p>
+                                </div>
                             </div>
                         </div>
 

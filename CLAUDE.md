@@ -2,6 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Communication Language
+**IMPORTANT**: Always communicate in Polish when working on this project. All responses, explanations, and discussions should be in Polish language.
+
 ## Project Overview
 
 EQOS WorkTime is a Laravel-based work time management system for tracking employee tasks, vehicles, and time logging. The application uses MySQL database and is designed with a role-based access system (Admin, Kierownik/Manager, Lider/Leader).

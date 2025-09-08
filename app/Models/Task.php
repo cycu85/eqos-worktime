@@ -13,8 +13,8 @@ class Task extends Model
     protected $fillable = [
         'title',
         'description',
-        'start_datetime',
-        'end_datetime',
+        'start_date',
+        'end_date',
         'leader_id',
         'team_id',
         'team',
@@ -24,8 +24,8 @@ class Task extends Model
     ];
 
     protected $casts = [
-        'start_datetime' => 'datetime',
-        'end_datetime' => 'datetime',
+        'start_date' => 'date',
+        'end_date' => 'date',
         'images' => 'array',
     ];
 
@@ -44,18 +44,15 @@ class Task extends Model
         return $this->belongsTo(Team::class);
     }
 
-    public function getDurationAttribute()
+    public function workLogs()
     {
-        if (!$this->end_datetime) {
-            return null;
-        }
-        return $this->start_datetime->diffInMinutes($this->end_datetime);
+        return $this->hasMany(TaskWorkLog::class)->orderBy('work_date');
     }
 
     public function getDurationHoursAttribute()
     {
-        $duration = $this->getDurationAttribute();
-        return $duration ? round($duration / 60, 2) : null;
+        // Wszystkie zadania opierają się na work_logs
+        return $this->getTotalWorkHours();
     }
 
     public function scopeActive($query)
@@ -88,5 +85,68 @@ class Task extends Model
     public function canSetAcceptedStatus($user)
     {
         return $user->isAdmin() || $user->isKierownik();
+    }
+
+    /**
+     * Generuj wpisy pracy dla każdego dnia zadania
+     */
+    public function generateWorkLogs()
+    {
+        if (!$this->start_date || !$this->end_date) {
+            return;
+        }
+
+        $period = new \DatePeriod(
+            new \DateTime($this->start_date->format('Y-m-d')),
+            new \DateInterval('P1D'),
+            new \DateTime($this->end_date->format('Y-m-d') . ' +1 day')
+        );
+
+        foreach ($period as $date) {
+            TaskWorkLog::firstOrCreate([
+                'task_id' => $this->id,
+                'work_date' => $date->format('Y-m-d')
+            ], [
+                'start_time' => '08:00',
+                'end_time' => '16:00',
+                'status' => 'planned'
+            ]);
+        }
+    }
+
+    /**
+     * Oblicz łączne godziny pracy ze wszystkich work_logs
+     */
+    public function getTotalWorkHours()
+    {
+        return $this->workLogs->sum(function($log) {
+            return $log->getDurationHours() ?? 0;
+        });
+    }
+
+    /**
+     * Oblicz łączne roboczogodziny (godziny * liczba pracowników)
+     */
+    public function getTotalRoboczogodziny()
+    {
+        $totalHours = $this->getTotalWorkHours();
+        $teamSize = $this->getTeamSize();
+        return $totalHours * $teamSize;
+    }
+
+    /**
+     * Pobierz liczbę pracowników w zespole (włączając lidera)
+     */
+    public function getTeamSize()
+    {
+        $teamMembers = 0;
+        
+        if ($this->team) {
+            // Jeśli team to string z nazwami oddzielone przecinkami
+            $teamMembers = count(explode(',', trim($this->team)));
+        }
+        
+        // Zawsze dodaj lidera (lider + członkowie zespołu)
+        return $teamMembers + 1;
     }
 }
