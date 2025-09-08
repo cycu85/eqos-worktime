@@ -187,7 +187,7 @@
                                                     <div>Brak pojazdu</div>
                                                 @endif
                                             </td>
-                                            <td>{{ $task->start_datetime->format('d.m.Y H:i') }}</td>
+                                            <td>{{ $task->start_date->format('d.m.Y H:i') }}</td>
                                             <td>
                                                 @php
                                                     $badgeClass = match($task->status) {
