@@ -38,7 +38,7 @@
                                     <h3 class="text-sm font-medium text-blue-600 dark:text-blue-400">Aktywne zadania</h3>
                                 </div>
                                 <p class="text-3xl font-bold text-blue-900 dark:text-blue-100">
-                                    {{ auth()->user()->tasks()->active()->count() }}
+                                    {{ auth()->user()->allAccessibleTasks()->active()->count() }}
                                 </p>
                             </div>
                         </div>
@@ -56,7 +56,7 @@
                                     <h3 class="text-sm font-medium text-green-600 dark:text-green-400">Ukończone zadania</h3>
                                 </div>
                                 <p class="text-3xl font-bold text-green-900 dark:text-green-100">
-                                    {{ auth()->user()->tasks()->completed()->count() }}
+                                    {{ auth()->user()->allAccessibleTasks()->completed()->count() }}
                                 </p>
                             </div>
                         </div>
@@ -100,23 +100,6 @@
                     </div>
                 @endif
 
-                <div class="stats-card-warning">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <div class="flex items-center mb-2">
-                                <div class="p-2 bg-yellow-600 rounded-lg mr-3">
-                                    <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <h3 class="text-sm font-medium text-yellow-600 dark:text-yellow-400">Aktywne pojazdy</h3>
-                            </div>
-                            <p class="text-3xl font-bold text-yellow-900 dark:text-yellow-100">
-                                {{ \App\Models\Vehicle::active()->count() }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Quick Actions Card -->
@@ -194,14 +177,14 @@
             </div>
 
             <!-- Recent Activity Card (if user has tasks) -->
-            @if(auth()->user()->isLider() && auth()->user()->tasks()->count() > 0)
+            @if(auth()->user()->isLider() && auth()->user()->allAccessibleTasks()->count() > 0)
                 <div class="kt-card">
                     <div class="kt-card-header">
                         <h3 class="kt-card-title">Ostatnie zadania</h3>
                     </div>
                     <div class="kt-card-body">
                         <div class="space-y-4">
-                            @foreach(auth()->user()->tasks()->with('vehicles')->orderBy('start_date', 'desc')->limit(5)->get() as $task)
+                            @foreach(auth()->user()->allAccessibleTasks()->with('vehicles')->limit(5)->get() as $task)
                                 <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
                                     <div class="flex items-center">
                                         <div class="p-2 rounded-lg mr-3

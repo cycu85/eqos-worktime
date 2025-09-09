@@ -79,4 +79,23 @@ class User extends Authenticatable
     {
         return Task::whereRaw("FIND_IN_SET(?, REPLACE(team, ', ', ','))", [$this->name])->orderBy('start_date', 'desc');
     }
+
+    /**
+     * Get all tasks accessible to this user (as leader OR team member)
+     * For liders: shows both led tasks and team tasks
+     * For pracowniks: shows only team tasks
+     */
+    public function allAccessibleTasks()
+    {
+        if ($this->isLider()) {
+            // Lider sees tasks where they are leader OR part of the team
+            return Task::where(function ($q) {
+                $q->where('leader_id', $this->id)
+                  ->orWhereRaw("FIND_IN_SET(?, REPLACE(team, ', ', ','))", [$this->name]);
+            })->orderBy('start_date', 'desc');
+        } else {
+            // Pracownik sees only tasks where they are part of the team
+            return $this->teamTasks();
+        }
+    }
 }

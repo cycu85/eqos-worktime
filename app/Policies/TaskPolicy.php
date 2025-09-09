@@ -26,9 +26,18 @@ class TaskPolicy
             return true;
         }
         
-        // Lider widzi tylko swoje zadania
-        if ($user->isLider() && $task->leader_id === $user->id) {
-            return true;
+        // Lider widzi zadania gdzie jest liderem LUB członkiem zespołu
+        if ($user->isLider()) {
+            // Sprawdź czy jest liderem zadania
+            if ($task->leader_id === $user->id) {
+                return true;
+            }
+            
+            // Sprawdź czy jest członkiem zespołu
+            if ($task->team) {
+                $teamMembers = array_map('trim', explode(',', $task->team));
+                return in_array($user->name, $teamMembers);
+            }
         }
         
         // Pracownik widzi zadania gdzie jest w zespole
@@ -59,9 +68,22 @@ class TaskPolicy
             return true;
         }
         
-        // Lider może edytować tylko swoje zadania, ale nie te ze statusem "accepted"
-        if ($user->isLider() && $task->leader_id === $user->id) {
-            return !$task->isLockedForUser($user);
+        // Lider może edytować zadania gdzie jest liderem LUB członkiem zespołu, ale nie te ze statusem "accepted"
+        if ($user->isLider()) {
+            // Sprawdź czy jest liderem zadania
+            $isLeader = $task->leader_id === $user->id;
+            
+            // Sprawdź czy jest członkiem zespołu
+            $isTeamMember = false;
+            if ($task->team) {
+                $teamMembers = array_map('trim', explode(',', $task->team));
+                $isTeamMember = in_array($user->name, $teamMembers);
+            }
+            
+            // Może edytować jeśli jest liderem LUB członkiem zespołu (i zadanie nie jest zablokowane)
+            if ($isLeader || $isTeamMember) {
+                return !$task->isLockedForUser($user);
+            }
         }
         
         return false;

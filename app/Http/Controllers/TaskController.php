@@ -23,8 +23,12 @@ class TaskController extends Controller
             // Admin and Kierownik see all tasks
             $query = Task::with(['vehicles', 'leader', 'team']);
         } elseif ($user->isLider()) {
-            // Lider sees only tasks assigned to them as leader
-            $query = Task::with(['vehicles', 'leader', 'team'])->forUser($user->id);
+            // Lider sees tasks where they are leader OR part of the team
+            $query = Task::with(['vehicles', 'leader', 'team'])
+                ->where(function ($q) use ($user) {
+                    $q->where('leader_id', $user->id)
+                      ->orWhereRaw("FIND_IN_SET(?, REPLACE(team, ', ', ','))", [$user->name]);
+                });
         } else {
             // Pracownik sees only tasks where they are part of the team
             $query = $user->teamTasks()->with(['vehicles', 'leader', 'team']);
