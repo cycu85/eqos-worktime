@@ -13,6 +13,7 @@ class Task extends Model
     protected $fillable = [
         'title',
         'description',
+        'task_type_id',
         'start_date',
         'end_date',
         'leader_id',
@@ -42,6 +43,11 @@ class Task extends Model
     public function team()
     {
         return $this->belongsTo(Team::class);
+    }
+
+    public function taskType()
+    {
+        return $this->belongsTo(TaskType::class);
     }
 
     public function workLogs()
@@ -107,8 +113,8 @@ class Task extends Model
                 'task_id' => $this->id,
                 'work_date' => $date->format('Y-m-d')
             ], [
-                'start_time' => '08:00',
-                'end_time' => '16:00',
+                'start_time' => '07:00',
+                'end_time' => '18:00',
                 'status' => 'planned'
             ]);
         }

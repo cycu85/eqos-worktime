@@ -24,7 +24,14 @@
                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                         </svg>
-                        Eksport do Excel
+                        Eksport zadań
+                    </a>
+                    <a href="{{ route('tasks.export.daily') }}{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="btn-kt-secondary">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm5 2a1 1 0 00-1 1v2H6a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Raport dzienny
                     </a>
                 @endif
                 @can('create', App\Models\Task::class)
@@ -298,6 +305,7 @@
                                             @endif
                                         </a>
                                     </th>
+                                    <th>Rodzaj</th>
                                     <th>Pojazd</th>
                                     <th>Lider</th>
                                     <th>Zespół</th>
@@ -354,6 +362,15 @@
                                                     </div>
                                                 @endif
                                             </a>
+                                        </td>
+                                        <td>
+                                            @if($task->taskType)
+                                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                                                    {{ $task->taskType->name }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400 dark:text-gray-500">-</span>
+                                            @endif
                                         </td>
                                         <td>
                                             @if($task->vehicles->count() > 0)

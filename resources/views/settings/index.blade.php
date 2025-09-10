@@ -26,6 +26,35 @@
                 </div>
             @endif
 
+            <!-- Quick Actions -->
+            <div class="kt-card mb-6">
+                <div class="kt-card-header">
+                    <h3 class="kt-card-title">Zarządzanie systemem</h3>
+                </div>
+                <div class="kt-card-body">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <a href="{{ route('settings.task-types.index') }}" 
+                           class="flex items-center p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors duration-200 group">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors duration-200">
+                                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                    Typy zadań
+                                </h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    Zarządzaj rodzajami zadań
+                                </p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <!-- Settings Form -->
             <div class="kt-card">
                 <div class="kt-card-header">

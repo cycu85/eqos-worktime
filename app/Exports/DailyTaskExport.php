@@ -5,15 +5,16 @@ namespace App\Exports;
 use App\Models\Task;
 use App\Models\TaskWorkLog;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
+class DailyTaskExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
     private $request;
 
@@ -22,11 +23,11 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         $this->request = $request;
     }
 
-    public function query()
+    public function collection()
     {
         $user = Auth::user();
         
-        // Build base query - same as in TaskController, now with workLogs
+        // Build base query - same as in TaskController
         if ($user->isAdmin() || $user->isKierownik()) {
             $query = Task::with(['vehicles', 'leader', 'team', 'taskType', 'workLogs']);
         } elseif ($user->isLider()) {
@@ -82,59 +83,63 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             });
         }
         
-        // Apply sorting
-        $sortBy = $this->request->get('sort', 'title');
-        $sortOrder = $this->request->get('direction', 'asc');
+        // Get tasks and expand to work logs
+        $tasks = $query->get();
+        $workLogs = collect();
         
-        $allowedSorts = ['title', 'start_date', 'status', 'created_at'];
-        if (in_array($sortBy, $allowedSorts)) {
-            $query->orderBy($sortBy, $sortOrder);
-        } else {
-            $query->orderBy('title', 'asc');
+        foreach ($tasks as $task) {
+            foreach ($task->workLogs as $workLog) {
+                $workLogs->push($workLog);
+            }
         }
-
-        return $query;
+        
+        // Sort work logs by date
+        return $workLogs->sortBy('work_date');
     }
 
     public function headings(): array
     {
         return [
-            'ID',
-            'Tytuł',
-            'Opis',
+            'ID Zadania',
+            'Tytuł zadania',
             'Rodzaj zadania',
-            'Pojazd',
-            'Rejestracja',
-            'Lider',
-            'Zespół',
-            'Status',
-            'Data rozpoczęcia',
-            'Data zakończenia',
-            'Czas',
-            'Roboczogodziny',
-            'Notatki',
-            'Utworzono'
+            'Data pracy',
+            'Dzień tygodnia',
+            'Godzina rozpoczęcia',
+            'Godzina zakończenia', 
+            'Czas trwania (godziny)',
+            'Ilość wykonanych zadań',
+            'Status dnia',
+            'Lider zespołu',
+            'Skład zespołu',
+            'Pojazdy - nazwa',
+            'Pojazdy - rejestracja',
+            'Notatki dnia',
+            'Notatki zadania'
         ];
     }
 
-    public function map($task): array
+    public function map($workLog): array
     {
+        $task = $workLog->task;
+        
         return [
             $task->id,
             $task->title,
-            $task->description,
             $task->taskType ? $task->taskType->name : '',
+            $workLog->work_date->format('Y-m-d'),
+            $workLog->work_date->locale('pl')->isoFormat('dddd'),
+            substr($workLog->start_time, 0, 5),
+            substr($workLog->end_time, 0, 5),
+            $workLog->getDurationHours() ?? 0,
+            $workLog->completed_tasks_count ?? 0,
+            $this->getWorkLogStatusLabel($workLog->status),
+            $task->leader ? $task->leader->name : '',
+            $task->team ?: '',
             $task->vehicles->count() > 0 ? $task->vehicles->pluck('name')->join(', ') : '',
             $task->vehicles->count() > 0 ? $task->vehicles->pluck('registration')->join(', ') : '',
-            $task->leader ? $task->leader->name : '',
-            $task->team,
-            $this->getStatusLabel($task->status),
-            $task->start_date ? $task->start_date->format('Y-m-d') : '',
-            $task->end_date ? $task->end_date->format('Y-m-d') : '',
-            $this->calculateDurationFromWorkLogs($task),
-            $this->calculateWorkHours($task),
-            $task->notes,
-            $task->created_at->format('Y-m-d H:i')
+            $workLog->notes ?: '',
+            $task->notes ?: ''
         ];
     }
 
@@ -145,7 +150,7 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         ];
     }
 
-    private function getStatusLabel($status)
+    private function getWorkLogStatusLabel($status)
     {
         return match($status) {
             'planned' => 'Planowane',
@@ -154,34 +159,5 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'cancelled' => 'Anulowane',
             default => $status
         };
-    }
-
-    private function calculateDurationFromWorkLogs($task)
-    {
-        if ($task->workLogs->isEmpty()) {
-            return '';
-        }
-
-        $totalHours = $task->getTotalWorkHours();
-        $hours = intval($totalHours);
-        $minutes = intval(($totalHours - $hours) * 60);
-        
-        if ($hours > 0) {
-            return sprintf('%dh %dmin', $hours, $minutes);
-        } else {
-            return sprintf('%dmin', $minutes);
-        }
-    }
-
-    private function calculateWorkHours($task)
-    {
-        if ($task->workLogs->isEmpty()) {
-            return '';
-        }
-
-        // Używamy metod z modelu Task które już obliczają na podstawie work_logs
-        $roboczogodziny = $task->getTotalRoboczogodziny();
-
-        return round($roboczogodziny, 2);
     }
 }

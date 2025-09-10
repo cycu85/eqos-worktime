@@ -59,6 +59,29 @@
                             @enderror
                         </div>
 
+                        <!-- Task Type -->
+                        <div class="mb-6">
+                            <label for="task_type_id" class="form-kt-label">
+                                Rodzaj zadania
+                            </label>
+                            <select id="task_type_id" 
+                                    name="task_type_id" 
+                                    class="form-kt-select @error('task_type_id') border-red-500 @enderror">
+                                <option value="">-- Wybierz rodzaj zadania --</option>
+                                @foreach($taskTypes as $taskType)
+                                    <option value="{{ $taskType->id }}" {{ old('task_type_id') == $taskType->id ? 'selected' : '' }}>
+                                        {{ $taskType->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Określ rodzaj wykonywanego zadania (opcjonalnie).
+                            </p>
+                            @error('task_type_id')
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <!-- Start Date -->
                             <div>

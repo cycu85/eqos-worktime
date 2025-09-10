@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskTypeController;
 use App\Http\Controllers\TaskWorkLogController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserController;
@@ -39,6 +40,7 @@ Route::middleware('auth')->group(function () {
     
     // Task export - only for admin and kierownik
     Route::get('tasks/export/excel', [TaskController::class, 'export'])->name('tasks.export')->middleware('role:admin,kierownik');
+    Route::get('tasks/export/daily', [TaskController::class, 'exportDaily'])->name('tasks.export.daily')->middleware('role:admin,kierownik');
     
     // Admin only routes
     Route::middleware('role:admin')->group(function () {
@@ -49,6 +51,13 @@ Route::middleware('auth')->group(function () {
         // Settings routes
         Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
         Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+        
+        // Task Types management
+        Route::get('settings/task-types', [TaskTypeController::class, 'index'])->name('settings.task-types.index');
+        Route::post('settings/task-types', [TaskTypeController::class, 'store'])->name('settings.task-types.store');
+        Route::put('settings/task-types/{taskType}', [TaskTypeController::class, 'update'])->name('settings.task-types.update');
+        Route::delete('settings/task-types/{taskType}', [TaskTypeController::class, 'destroy'])->name('settings.task-types.destroy');
+        Route::patch('settings/task-types/{taskType}/toggle-active', [TaskTypeController::class, 'toggleActive'])->name('settings.task-types.toggle-active');
     });
 });
 

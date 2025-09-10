@@ -18,6 +18,7 @@ class TaskWorkLogController extends Controller
             'logs.*.end_time' => 'required|date_format:H:i|after:logs.*.start_time',
             'logs.*.status' => 'required|in:planned,in_progress,completed,cancelled',
             'logs.*.notes' => 'nullable|string',
+            'logs.*.completed_tasks_count' => 'nullable|integer|min:0|max:99',
         ]);
 
         foreach ($validated['logs'] as $logId => $logData) {
@@ -75,8 +76,8 @@ class TaskWorkLogController extends Controller
         TaskWorkLog::create([
             'task_id' => $task->id,
             'work_date' => $selectedDate->format('Y-m-d'),
-            'start_time' => '08:00:00',
-            'end_time' => '16:00:00',
+            'start_time' => '07:00:00',
+            'end_time' => '18:00:00',
             'status' => 'planned'
         ]);
 

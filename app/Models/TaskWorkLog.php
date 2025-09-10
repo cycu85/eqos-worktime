@@ -18,6 +18,7 @@ class TaskWorkLog extends Model
         'actual_start_datetime',
         'actual_end_datetime',
         'notes',
+        'completed_tasks_count',
         'status',
     ];
 

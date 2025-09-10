@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Exports\TaskExport;
+use App\Exports\DailyTaskExport;
 use App\Models\Task;
+use App\Models\TaskType;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -21,17 +23,17 @@ class TaskController extends Controller
         // Build base query
         if ($user->isAdmin() || $user->isKierownik()) {
             // Admin and Kierownik see all tasks
-            $query = Task::with(['vehicles', 'leader', 'team']);
+            $query = Task::with(['vehicles', 'leader', 'team', 'taskType']);
         } elseif ($user->isLider()) {
             // Lider sees tasks where they are leader OR part of the team
-            $query = Task::with(['vehicles', 'leader', 'team'])
+            $query = Task::with(['vehicles', 'leader', 'team', 'taskType'])
                 ->where(function ($q) use ($user) {
                     $q->where('leader_id', $user->id)
                       ->orWhereRaw("FIND_IN_SET(?, REPLACE(team, ', ', ','))", [$user->name]);
                 });
         } else {
             // Pracownik sees only tasks where they are part of the team
-            $query = $user->teamTasks()->with(['vehicles', 'leader', 'team']);
+            $query = $user->teamTasks()->with(['vehicles', 'leader', 'team', 'taskType']);
         }
         
         // Apply search
@@ -151,6 +153,7 @@ class TaskController extends Controller
         $vehicles = Vehicle::active()->orderBy('name')->get();
         $users = User::whereIn('role', ['lider', 'pracownik'])->orderBy('name')->get();
         $teams = Team::with('vehicle')->active()->orderBy('name')->get();
+        $taskTypes = TaskType::active()->orderBy('name')->get();
         
         // Get user's team members if user is a leader
         $leaderTeamMembers = [];
@@ -163,7 +166,7 @@ class TaskController extends Controller
             }
         }
         
-        return view('tasks.create', compact('vehicles', 'users', 'teams', 'leaderTeamMembers', 'leaderTeam'));
+        return view('tasks.create', compact('vehicles', 'users', 'teams', 'taskTypes', 'leaderTeamMembers', 'leaderTeam'));
     }
 
     public function store(Request $request)
@@ -173,6 +176,7 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'task_type_id' => 'nullable|exists:task_types,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'vehicles' => 'required|array|min:1',
@@ -220,7 +224,7 @@ class TaskController extends Controller
     {
         $this->authorize('view', $task);
         
-        $task->load(['vehicles', 'leader', 'team']);
+        $task->load(['vehicles', 'leader', 'team', 'taskType']);
         
         return view('tasks.show', compact('task'));
     }
@@ -238,6 +242,7 @@ class TaskController extends Controller
         $vehicles = Vehicle::active()->orderBy('name')->get();
         $users = User::whereIn('role', ['lider', 'pracownik'])->orderBy('name')->get();
         $teams = Team::with('vehicle')->active()->orderBy('name')->get();
+        $taskTypes = TaskType::active()->orderBy('name')->get();
         
         // Get user's team members if user is a leader
         $leaderTeamMembers = [];
@@ -250,7 +255,7 @@ class TaskController extends Controller
             }
         }
         
-        return view('tasks.edit', compact('task', 'vehicles', 'users', 'teams', 'leaderTeamMembers', 'leaderTeam'));
+        return view('tasks.edit', compact('task', 'vehicles', 'users', 'teams', 'taskTypes', 'leaderTeamMembers', 'leaderTeam'));
     }
 
     public function update(Request $request, Task $task)
@@ -266,6 +271,7 @@ class TaskController extends Controller
         $validationRules = [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'task_type_id' => 'nullable|exists:task_types,id',
             'vehicles' => 'required|array|min:1',
             'vehicles.*' => 'exists:vehicles,id',
             'team_id' => 'nullable|exists:teams,id',
@@ -425,6 +431,18 @@ class TaskController extends Controller
         $fileName = 'zadania_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
         
         return Excel::download(new TaskExport($request), $fileName);
+    }
+
+    public function exportDaily(Request $request)
+    {
+        // Only admin and kierownik can export
+        if (!auth()->user()->isAdmin() && !auth()->user()->isKierownik()) {
+            abort(403);
+        }
+        
+        $fileName = 'raport_dzienny_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        
+        return Excel::download(new DailyTaskExport($request), $fileName);
     }
 
     public function removeImage(Task $task, $imageIndex)

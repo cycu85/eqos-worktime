@@ -125,13 +125,25 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- Notes -->
-                                    <div class="mt-4">
-                                        <label class="form-kt-label text-xs">Notatki</label>
-                                        <textarea name="logs[{{ $log->id }}][notes]" 
-                                                  rows="2"
-                                                  class="form-kt-control text-sm"
-                                                  placeholder="Opcjonalne notatki do tego dnia...">{{ $log->notes }}</textarea>
+                                    <!-- Completed Tasks Count and Notes -->
+                                    <div class="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                        <div>
+                                            <label class="form-kt-label text-xs">Ilość wykonanych zadań</label>
+                                            <select name="logs[{{ $log->id }}][completed_tasks_count]" class="form-kt-select text-sm">
+                                                @for($i = 0; $i <= 99; $i++)
+                                                    <option value="{{ $i }}" {{ ($log->completed_tasks_count ?? 0) == $i ? 'selected' : '' }}>
+                                                        {{ $i }}
+                                                    </option>
+                                                @endfor
+                                            </select>
+                                        </div>
+                                        <div class="sm:col-span-3">
+                                            <label class="form-kt-label text-xs">Notatki</label>
+                                            <textarea name="logs[{{ $log->id }}][notes]" 
+                                                      rows="2"
+                                                      class="form-kt-control text-sm"
+                                                      placeholder="Opcjonalne notatki do tego dnia...">{{ $log->notes }}</textarea>
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
