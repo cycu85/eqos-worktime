@@ -122,7 +122,7 @@
                                     <div class="space-y-2">
                                         <div>
                                             <span class="text-sm text-gray-600 dark:text-gray-400">Imię i nazwisko:</span>
-                                            <span class="ml-2 font-medium">{{ $delegation->full_name }}</span>
+                                            <span class="ml-2 font-medium text-gray-900 dark:text-gray-100">{{ $delegation->full_name }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -133,11 +133,11 @@
                                     <div class="space-y-2">
                                         <div>
                                             <span class="text-sm text-gray-600 dark:text-gray-400">Data polecenia:</span>
-                                            <span class="ml-2 font-medium">{{ $delegation->order_date->format('d.m.Y') }}</span>
+                                            <span class="ml-2 font-medium text-gray-900 dark:text-gray-100">{{ $delegation->order_date->format('d.m.Y') }}</span>
                                         </div>
                                         <div>
                                             <span class="text-sm text-gray-600 dark:text-gray-400">Wyjazd:</span>
-                                            <span class="ml-2 font-medium">
+                                            <span class="ml-2 font-medium text-gray-900 dark:text-gray-100">
                                                 @if($delegation->departure_date)
                                                     {{ $delegation->departure_date->format('d.m.Y') }}
                                                     @if($delegation->departure_time)
@@ -150,7 +150,7 @@
                                         </div>
                                         <div>
                                             <span class="text-sm text-gray-600 dark:text-gray-400">Przyjazd:</span>
-                                            <span class="ml-2 font-medium">
+                                            <span class="ml-2 font-medium text-gray-900 dark:text-gray-100">
                                                 @if($delegation->arrival_date)
                                                     {{ $delegation->arrival_date->format('d.m.Y') }}
                                                     @if($delegation->arrival_time)
@@ -164,7 +164,7 @@
                                         @if($delegation->delegation_duration)
                                         <div>
                                             <span class="text-sm text-gray-600 dark:text-gray-400">Czas trwania:</span>
-                                            <span class="ml-2 font-medium">{{ $delegation->delegation_duration }}</span>
+                                            <span class="ml-2 font-medium text-gray-900 dark:text-gray-100">{{ $delegation->delegation_duration }}</span>
                                         </div>
                                         @endif
                                     </div>
@@ -177,7 +177,7 @@
                                     @if($delegation->project)
                                     <div class="mt-2">
                                         <span class="text-sm text-gray-600 dark:text-gray-400">Projekt:</span>
-                                        <span class="ml-2 font-medium">{{ $delegation->project }}</span>
+                                        <span class="ml-2 font-medium text-gray-900 dark:text-gray-100">{{ $delegation->project }}</span>
                                     </div>
                                     @endif
                                 </div>
@@ -188,11 +188,11 @@
                                     <div class="space-y-2">
                                         <div>
                                             <span class="text-sm text-gray-600 dark:text-gray-400">Miejscowość:</span>
-                                            <span class="ml-2 font-medium">{{ $delegation->destination_city }}</span>
+                                            <span class="ml-2 font-medium text-gray-900 dark:text-gray-100">{{ $delegation->destination_city }}</span>
                                         </div>
                                         <div>
                                             <span class="text-sm text-gray-600 dark:text-gray-400">Kraj:</span>
-                                            <span class="ml-2 font-medium">{{ $delegation->country }}</span>
+                                            <span class="ml-2 font-medium text-gray-900 dark:text-gray-100">{{ $delegation->country }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -203,7 +203,7 @@
                                     @if($delegation->vehicle_registration)
                                     <div>
                                         <span class="text-sm text-gray-600 dark:text-gray-400">Pojazd:</span>
-                                        <span class="ml-2 font-medium">{{ $delegation->vehicle_registration }}</span>
+                                        <span class="ml-2 font-medium text-gray-900 dark:text-gray-100">{{ $delegation->vehicle_registration }}</span>
                                     </div>
                                     @else
                                     <span class="text-gray-500 italic">Nie określono pojazdu</span>
@@ -289,36 +289,36 @@
                             <!-- Kwota diety -->
                             <div class="flex justify-between">
                                 <span class="text-gray-600 dark:text-gray-400">Kwota diety PLN:</span>
-                                <span class="font-medium">{{ number_format($delegation->diet_amount_pln, 2, ',', ' ') }} PLN</span>
+                                <span class="font-medium text-gray-900 dark:text-gray-100">{{ number_format($delegation->diet_amount_pln, 2, ',', ' ') }} PLN</span>
                             </div>
 
                             @if($delegation->diet_amount_currency)
                             <div class="flex justify-between">
                                 <span class="text-gray-600 dark:text-gray-400">Kwota diety waluta:</span>
-                                <span class="font-medium">{{ number_format($delegation->diet_amount_currency, 2, ',', ' ') }} EUR</span>
+                                <span class="font-medium text-gray-900 dark:text-gray-100">{{ number_format($delegation->diet_amount_currency, 2, ',', ' ') }} EUR</span>
                             </div>
                             @endif
 
                             <!-- NBP -->
                             @if($delegation->exchange_rate)
                             <div class="border-t pt-4">
-                                <h4 class="font-medium mb-2">Kurs NBP</h4>
+                                <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Kurs NBP</h4>
                                 <div class="space-y-2 text-sm">
                                     @if($delegation->nbp_table_date)
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Data:</span>
-                                        <span>{{ $delegation->nbp_table_date->format('d.m.Y') }}</span>
+                                        <span class="text-gray-900 dark:text-gray-100">{{ $delegation->nbp_table_date->format('d.m.Y') }}</span>
                                     </div>
                                     @endif
                                     @if($delegation->nbp_table_number)
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Numer tabeli:</span>
-                                        <span>{{ $delegation->nbp_table_number }}</span>
+                                        <span class="text-gray-900 dark:text-gray-100">{{ $delegation->nbp_table_number }}</span>
                                     </div>
                                     @endif
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Kurs:</span>
-                                        <span>{{ number_format($delegation->exchange_rate, 4, ',', ' ') }}</span>
+                                        <span class="text-gray-900 dark:text-gray-100">{{ number_format($delegation->exchange_rate, 4, ',', ' ') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -326,29 +326,29 @@
 
                             <!-- Noclegi i posiłki -->
                             <div class="border-t pt-4">
-                                <h4 class="font-medium mb-2">Noclegi i posiłki</h4>
+                                <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Noclegi i posiłki</h4>
                                 <div class="space-y-2 text-sm">
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Ilość noclegów:</span>
-                                        <span>{{ $delegation->nights_count }}</span>
+                                        <span class="text-gray-900 dark:text-gray-100">{{ $delegation->nights_count }}</span>
                                     </div>
                                     @if($delegation->accommodation_limit)
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Limit za nocleg:</span>
-                                        <span>{{ number_format($delegation->accommodation_limit, 2, ',', ' ') }} PLN</span>
+                                        <span class="text-gray-900 dark:text-gray-100">{{ number_format($delegation->accommodation_limit, 2, ',', ' ') }} PLN</span>
                                     </div>
                                     @endif
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Śniadania:</span>
-                                        <span>{{ $delegation->breakfasts }}</span>
+                                        <span class="text-gray-900 dark:text-gray-100">{{ $delegation->breakfasts }}</span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Obiady:</span>
-                                        <span>{{ $delegation->lunches }}</span>
+                                        <span class="text-gray-900 dark:text-gray-100">{{ $delegation->lunches }}</span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Kolacje:</span>
-                                        <span>{{ $delegation->dinners }}</span>
+                                        <span class="text-gray-900 dark:text-gray-100">{{ $delegation->dinners }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -358,21 +358,21 @@
                                 <div class="space-y-2">
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Suma diet należnych:</span>
-                                        <span class="font-medium">{{ number_format($delegation->total_diet_pln, 2, ',', ' ') }} PLN</span>
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ number_format($delegation->total_diet_pln, 2, ',', ' ') }} PLN</span>
                                     </div>
                                     @if($delegation->total_diet_currency)
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Suma diet waluta:</span>
-                                        <span class="font-medium">{{ number_format($delegation->total_diet_currency, 2, ',', ' ') }}</span>
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ number_format($delegation->total_diet_currency, 2, ',', ' ') }}</span>
                                     </div>
                                     @endif
                                     <div class="flex justify-between">
                                         <span class="text-gray-600 dark:text-gray-400">Suma poniesionych:</span>
-                                        <span class="font-medium">{{ number_format($delegation->total_expenses, 2, ',', ' ') }} PLN</span>
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ number_format($delegation->total_expenses, 2, ',', ' ') }} PLN</span>
                                     </div>
                                     <div class="flex justify-between text-lg font-semibold text-green-600 dark:text-green-400 border-t pt-2">
                                         <span>Do wypłaty:</span>
-                                        <span>{{ number_format($delegation->amount_to_pay, 2, ',', ' ') }} PLN</span>
+                                        <span class="text-gray-900 dark:text-gray-100">{{ number_format($delegation->amount_to_pay, 2, ',', ' ') }} PLN</span>
                                     </div>
                                 </div>
                             </div>
