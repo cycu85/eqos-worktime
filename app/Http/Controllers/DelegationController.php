@@ -476,13 +476,11 @@ class DelegationController extends Controller
         }
 
         $delegation->update([
-            'employee_approval_status' => null,
-            'employee_approval_date' => null,
-            'supervisor_approval_status' => null,
+            'supervisor_approval_status' => 'pending',
             'supervisor_approval_date' => null,
-            'delegation_status' => 'draft'
+            'delegation_status' => 'employee_approved'
         ]);
 
-        return redirect()->back()->with('success', 'Akceptacja delegacji została cofnięta.');
+        return redirect()->back()->with('success', 'Akceptacja kierownika została cofnięta. Delegacja powróciła do stanu zaakceptowanej przez pracownika.');
     }
 }

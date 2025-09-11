@@ -47,8 +47,8 @@ class Delegation extends Model
         'order_date' => 'date',
         'departure_date' => 'date', 
         'arrival_date' => 'date',
-        'employee_approval_date' => 'date',
-        'supervisor_approval_date' => 'date',
+        'employee_approval_date' => 'datetime',
+        'supervisor_approval_date' => 'datetime',
         'nbp_table_date' => 'date'
     ];
 
