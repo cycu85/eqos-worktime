@@ -40,14 +40,24 @@
                         <!-- Dane pracownika -->
                         <div>
                             <label for="employee_full_name" class="form-kt-label">Pracownik <span class="text-red-500">*</span></label>
-                            <select class="form-kt-select" id="employee_full_name" name="employee_full_name" required>
-                                <option value="">Wybierz pracownika</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->name }}" {{ old('employee_full_name') == $user->name ? 'selected' : '' }}>
-                                        {{ $user->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            @if(auth()->user()->isAdmin() || auth()->user()->isKierownik())
+                                <select class="form-kt-select" id="employee_full_name" name="employee_full_name" required>
+                                    <option value="">Wybierz pracownika</option>
+                                    @foreach($users as $user)
+                                        <option value="{{ $user->name }}" {{ old('employee_full_name') == $user->name ? 'selected' : '' }}>
+                                            {{ $user->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <input type="text" class="form-kt-control bg-gray-100 cursor-not-allowed" 
+                                       id="employee_full_name" name="employee_full_name" 
+                                       value="{{ auth()->user()->name }}" 
+                                       readonly required>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    Jako pracownik/lider możesz tworzyć delegacje tylko dla siebie
+                                </p>
+                            @endif
                         </div>
 
                         <!-- Daty -->
