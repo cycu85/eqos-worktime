@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DelegationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TaskController;
@@ -35,6 +36,14 @@ Route::middleware('auth')->group(function () {
     Route::post('tasks/{task}/work-logs/add', [TaskWorkLogController::class, 'addWorkDay'])->name('tasks.work-logs.add');
     Route::delete('tasks/{task}/work-logs/{workLog}', [TaskWorkLogController::class, 'destroy'])->name('tasks.work-logs.destroy');
     
+    // Delegations routes - available for all authenticated users
+    Route::resource('delegations', DelegationController::class);
+    
+    // Delegation approval routes
+    Route::post('delegations/{delegation}/employee-approval', [DelegationController::class, 'employeeApproval'])->name('delegations.employee-approval');
+    Route::post('delegations/{delegation}/supervisor-approval', [DelegationController::class, 'supervisorApproval'])->name('delegations.supervisor-approval');
+    Route::post('delegations/{delegation}/revoke-approval', [DelegationController::class, 'revokeApproval'])->name('delegations.revoke-approval');
+    
     // Task image removal
     Route::delete('tasks/{task}/images/{imageIndex}', [TaskController::class, 'removeImage'])->name('tasks.removeImage');
     
@@ -58,6 +67,11 @@ Route::middleware('auth')->group(function () {
         Route::put('settings/task-types/{taskType}', [TaskTypeController::class, 'update'])->name('settings.task-types.update');
         Route::delete('settings/task-types/{taskType}', [TaskTypeController::class, 'destroy'])->name('settings.task-types.destroy');
         Route::patch('settings/task-types/{taskType}/toggle-active', [TaskTypeController::class, 'toggleActive'])->name('settings.task-types.toggle-active');
+        
+        // Delegation Settings management
+        Route::get('settings/delegations', [\App\Http\Controllers\Settings\DelegationSettingsController::class, 'index'])->name('settings.delegations.index');
+        Route::put('settings/delegations', [\App\Http\Controllers\Settings\DelegationSettingsController::class, 'update'])->name('settings.delegations.update');
+        Route::put('settings/delegations/defaults', [\App\Http\Controllers\Settings\DelegationSettingsController::class, 'updateDefaults'])->name('settings.delegations.update-defaults');
     });
 });
 
