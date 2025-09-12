@@ -138,7 +138,7 @@
                 ROZLICZENIE DELEGACJI
             </td>
             <td class="header-right" style="width: 40%;">
-                {{ $delegation->employee_full_name }}
+                {{ $delegation->employee_full_name ?: '{Imię i Nazwisko}' }}
             </td>
         </tr>
     </table>
@@ -147,48 +147,46 @@
     <table class="main-table">
         <tr>
             <td class="gray-bg">Polecenie wyjazdu z dnia</td>
-            <td class="red-text">{{ $delegation->order_date ? \Carbon\Carbon::parse($delegation->order_date)->format('d.m.Y') : '' }}</td>
+            <td class="red-text">{{ $delegation->order_date ? \Carbon\Carbon::parse($delegation->order_date)->format('d.m.Y') : '{Data polecenia wyjazdu}' }}</td>
             <td colspan="2"></td>
             <td class="gray-bg">Nr delegacji</td>
             <td class="red-text">{{ $delegation->id }}</td>
         </tr>
         <tr>
             <td>Data wyjazdu - przekroczenia granicy</td>
-            <td class="red-text">{{ $delegation->departure_date ? \Carbon\Carbon::parse($delegation->departure_date)->format('d.m.Y') : '' }}</td>
+            <td class="red-text">{{ $delegation->departure_date ? \Carbon\Carbon::parse($delegation->departure_date)->format('d.m.Y') : '{Data wyjazdu}' }}</td>
             <td>Data przyjazdu - przekroczenia granicy</td>
-            <td class="red-text">{{ $delegation->arrival_date ? \Carbon\Carbon::parse($delegation->arrival_date)->format('d.m.Y') : '' }}</td>
-            <td>Data przyjazdu - przekroczenia granicy</td>
-            <td class="red-text">{{ $delegation->arrival_date ? \Carbon\Carbon::parse($delegation->arrival_date)->format('d.m.Y') : '' }}</td>
+            <td class="red-text">{{ $delegation->arrival_date ? \Carbon\Carbon::parse($delegation->arrival_date)->format('d.m.Y') : '{Data przyjazdu}' }}</td>
+            <td colspan="2"></td>
         </tr>
         <tr>
             <td>Godzina wyjazdu - przekroczenia granicy</td>
-            <td class="red-text">{{ $delegation->departure_time ?: '' }}</td>
+            <td class="red-text">{{ $delegation->departure_time ?: '{Godzina wyjazdu}' }}</td>
             <td>Godzina przyjazdu - przekroczenia granicy</td>
-            <td class="red-text">{{ $delegation->arrival_time ?: '' }}</td>
-            <td>Godzina przyjazdu - przekroczenia granicy</td>
-            <td class="red-text">{{ $delegation->arrival_time ?: '' }}</td>
+            <td class="red-text">{{ $delegation->arrival_time ?: '{Godzina przyjazdu}' }}</td>
+            <td colspan="2"></td>
         </tr>
         <tr>
             <td>Czas delegacji:</td>
-            <td colspan="5" class="red-text">{{ $delegation->getDurationText() ?: '' }}</td>
+            <td colspan="5" class="red-text">{{ $delegation->getDurationText() ?: '{Czas delegacji "doby godziny:minuty"}' }}</td>
         </tr>
         <tr>
             <td>Cel podróży:</td>
-            <td class="red-text">{{ $delegation->travel_purpose ?: '' }}</td>
+            <td class="red-text">{{ $delegation->travel_purpose ?: '{Cel podróży}' }}</td>
             <td>Środki lokomocji:</td>
-            <td class="red-text">{{ $delegation->vehicle_registration ?: '' }}</td>
+            <td class="red-text">{{ $delegation->vehicle_registration ?: '{Pojazd}' }}</td>
             <td colspan="2"></td>
         </tr>
         <tr>
             <td>Projekt</td>
-            <td class="red-text">{{ $delegation->project ?: '' }}</td>
+            <td class="red-text">{{ $delegation->project ?: '{Projekt}' }}</td>
             <td>Do miejscowość:</td>
-            <td class="red-text">{{ $delegation->destination_city ?: '' }}</td>
+            <td class="red-text">{{ $delegation->destination_city ?: '{Miejscowość}' }}</td>
             <td colspan="2"></td>
         </tr>
         <tr>
             <td colspan="2">Kraj</td>
-            <td colspan="4" class="red-text">{{ $delegation->country }}</td>
+            <td colspan="4" class="red-text">{{ $delegation->country ?: '{Kraj}' }}</td>
         </tr>
     </table>
 
@@ -198,8 +196,8 @@
     <table class="main-table">
         <tr>
             <td>Kwota diety</td>
-            <td class="red-text">{{ number_format($delegation->delegation_rate_eur ?: 0, 2) }} EUR</td>
-            <td class="red-text">{{ number_format($delegation->delegation_rate ?: 0, 2) }} PLN</td>
+            <td class="red-text">{{ $delegation->delegation_rate_eur ? number_format($delegation->delegation_rate_eur, 2) : '{Kwota diety waluta}' }} EUR</td>
+            <td class="red-text">{{ $delegation->delegation_rate ? number_format($delegation->delegation_rate, 2) : '{Kwota diety PLN}' }} PLN</td>
             <td colspan="3"></td>
         </tr>
         <tr>
@@ -214,15 +212,15 @@
     <table class="main-table">
         <tr>
             <td style="width: 40%">Tabela kursów NBP z dnia</td>
-            <td style="width: 60%" class="red-text">{{ $delegation->exchange_rate_date ? \Carbon\Carbon::parse($delegation->exchange_rate_date)->format('d.m.Y') : '' }}</td>
+            <td style="width: 60%" class="red-text">{{ $delegation->exchange_rate_date ? \Carbon\Carbon::parse($delegation->exchange_rate_date)->format('d.m.Y') : '{Kurs NBP.Data}' }}</td>
         </tr>
         <tr>
             <td>Tabela kursów NBP numer:</td>
-            <td class="red-text">{{ $delegation->exchange_rate_table ?: '' }}</td>
+            <td class="red-text">{{ $delegation->exchange_rate_table ?: '{kurs NBP. Numer tabeli}' }}</td>
         </tr>
         <tr>
             <td>Kurs</td>
-            <td class="red-text">{{ $delegation->exchange_rate ? number_format($delegation->exchange_rate, 4) : '' }}</td>
+            <td class="red-text">{{ $delegation->exchange_rate ? number_format($delegation->exchange_rate, 4) : '{Kurs NBP.Kurs}' }}</td>
         </tr>
     </table>
 
@@ -233,7 +231,7 @@
         </tr>
         <tr>
             <td class="gray-bg">Ilość noclegów</td>
-            <td class="red-text">{{ $delegation->nights_count ?: 0 }}</td>
+            <td class="red-text">{{ $delegation->nights_count ?: '{Ilość noclegów}' }}</td>
             <td>Śniadanie wliczone w koszt noclegu</td>
             <td colspan="3"></td>
         </tr>
@@ -248,15 +246,15 @@
     <table class="main-table">
         <tr>
             <td>śniadanie (ilość)</td>
-            <td class="red-text">{{ $delegation->breakfasts ?: 0 }}</td>
+            <td class="red-text">{{ $delegation->breakfasts ?: '{Śniadania}' }}</td>
             <td>śniadanie (ilość)</td>
             <td>obiad (ilość)</td>
-            <td class="red-text">{{ $delegation->lunches ?: 0 }}</td>
+            <td class="red-text">{{ $delegation->lunches ?: '{Obiady}' }}</td>
             <td>obiad (ilość)</td>
         </tr>
         <tr>
             <td>kolacja (ilość)</td>
-            <td class="red-text">{{ $delegation->dinners ?: 0 }}</td>
+            <td class="red-text">{{ $delegation->dinners ?: '{Kolacje}' }}</td>
             <td>kolacja (ilość)</td>
             <td colspan="3"></td>
         </tr>
@@ -266,8 +264,8 @@
     <table class="main-table">
         <tr>
             <td style="width: 40%">Suma diet należnych:</td>
-            <td style="width: 30%" class="red-text">{{ number_format($delegation->getTotalDietEUR(), 2) }} EUR</td>
-            <td style="width: 30%" class="red-text">{{ number_format($delegation->getTotalDietPLN(), 2) }} PLN</td>
+            <td style="width: 30%" class="red-text">{{ $delegation->getTotalDietEUR() ? number_format($delegation->getTotalDietEUR(), 2) : '{Suma diet waluta}' }} EUR</td>
+            <td style="width: 30%" class="red-text">{{ $delegation->getTotalDietPLN() ? number_format($delegation->getTotalDietPLN(), 2) : '{Suma diet należnych}' }} PLN</td>
         </tr>
     </table>
 
