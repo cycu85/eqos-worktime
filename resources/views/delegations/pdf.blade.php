@@ -7,344 +7,330 @@
     <style>
         body {
             font-family: 'DejaVu Sans', sans-serif;
-            font-size: 11px;
-            line-height: 1.2;
+            font-size: 9px;
+            line-height: 1.1;
             margin: 0;
-            padding: 15px;
+            padding: 10px;
         }
         
-        .header {
-            text-align: center;
-            font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        
-        .section {
-            margin-bottom: 15px;
-        }
-        
-        table {
+        .main-header {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         
-        table, th, td {
-            border: 1px solid #333;
+        .main-header td {
+            border: 1px solid #000;
+            padding: 3px;
+            vertical-align: middle;
         }
         
-        th, td {
-            padding: 4px;
-            text-align: left;
-            vertical-align: top;
-        }
-        
-        th {
-            background-color: #f0f0f0;
+        .header-left {
+            background-color: #fff;
+            text-align: center;
             font-weight: bold;
+            font-size: 10px;
+        }
+        
+        .header-right {
+            background-color: #c0c0c0;
+            text-align: center;
+            font-weight: bold;
+            color: red;
+        }
+        
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 3px;
+        }
+        
+        .main-table td, .main-table th {
+            border: 1px solid #000;
+            padding: 2px;
+            vertical-align: top;
+            font-size: 8px;
         }
         
         .gray-bg {
             background-color: #e0e0e0;
         }
         
-        .no-border {
-            border: none;
+        .red-text {
+            color: red;
+            font-weight: bold;
         }
         
-        .text-center {
+        .center {
             text-align: center;
-        }
-        
-        .text-right {
-            text-align: right;
         }
         
         .bold {
             font-weight: bold;
         }
         
-        .small {
-            font-size: 9px;
-        }
-        
-        .info-table {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        
-        .info-table td {
-            border: 1px solid #333;
-            padding: 3px;
-        }
-        
-        .signature-section {
-            margin-top: 30px;
-        }
-        
-        .signature-box {
-            border: 1px solid #333;
-            height: 60px;
-            margin: 10px 0;
-        }
-        
-        .checkbox {
-            margin-right: 5px;
+        .small-text {
+            font-size: 7px;
         }
         
         .expenses-table {
             width: 100%;
-            margin: 10px 0;
+            border-collapse: collapse;
+            margin: 3px 0;
+        }
+        
+        .expenses-table th, .expenses-table td {
+            border: 1px solid #000;
+            padding: 1px;
+            font-size: 7px;
+            text-align: center;
+            vertical-align: middle;
         }
         
         .expenses-table th {
-            font-size: 9px;
-            padding: 2px;
+            background-color: #f0f0f0;
         }
         
-        .expenses-table td {
-            font-size: 9px;
-            padding: 2px;
-            height: 15px;
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 3px 0;
         }
         
-        .summary-section {
-            margin-top: 20px;
+        .summary-table td {
+            border: 1px solid #000;
+            padding: 2px;
+            font-size: 8px;
+        }
+        
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0;
+        }
+        
+        .signature-table td {
+            border: 1px solid #000;
+            padding: 15px;
+            text-align: center;
+            font-size: 8px;
+            font-weight: bold;
+        }
+        
+        .checkbox-section {
+            margin: 3px 0;
+        }
+        
+        .checkbox {
+            margin-right: 3px;
+        }
+        
+        .no-wrap {
+            white-space: nowrap;
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        ROZLICZENIE DELEGACJI {{ $delegation->employee_full_name }}<br>
-        <span class="small">Nr delegacji {{ $delegation->id }}</span>
-    </div>
-    
-    <!-- Main information table -->
-    <table class="info-table">
+    <!-- Main Header -->
+    <table class="main-header">
         <tr>
-            <td class="gray-bg bold">Polecenie wyjazdu z dnia</td>
-            <td>{{ $delegation->order_date ? \Carbon\Carbon::parse($delegation->order_date)->format('d.m.Y') : '' }}</td>
-            <td colspan="2" class="small">* wypełniamy tylko szare pola</td>
+            <td class="header-left" style="width: 60%;">
+                ROZLICZENIE DELEGACJI
+            </td>
+            <td class="header-right" style="width: 40%;">
+                {{ $delegation->employee_full_name }}
+            </td>
+        </tr>
+    </table>
+
+    <!-- Basic Info Table -->
+    <table class="main-table">
+        <tr>
+            <td class="gray-bg">Polecenie wyjazdu z dnia</td>
+            <td class="red-text">{{ $delegation->order_date ? \Carbon\Carbon::parse($delegation->order_date)->format('d.m.Y') : '' }}</td>
+            <td colspan="2"></td>
+            <td class="gray-bg">Nr delegacji</td>
+            <td class="red-text">{{ $delegation->id }}</td>
         </tr>
         <tr>
             <td>Data wyjazdu - przekroczenia granicy</td>
-            <td>{{ $delegation->departure_date ? \Carbon\Carbon::parse($delegation->departure_date)->format('d.m.Y') : '' }}</td>
+            <td class="red-text">{{ $delegation->departure_date ? \Carbon\Carbon::parse($delegation->departure_date)->format('d.m.Y') : '' }}</td>
             <td>Data przyjazdu - przekroczenia granicy</td>
-            <td>{{ $delegation->arrival_date ? \Carbon\Carbon::parse($delegation->arrival_date)->format('d.m.Y') : '' }}</td>
+            <td class="red-text">{{ $delegation->arrival_date ? \Carbon\Carbon::parse($delegation->arrival_date)->format('d.m.Y') : '' }}</td>
+            <td>Data przyjazdu - przekroczenia granicy</td>
+            <td class="red-text">{{ $delegation->arrival_date ? \Carbon\Carbon::parse($delegation->arrival_date)->format('d.m.Y') : '' }}</td>
         </tr>
         <tr>
             <td>Godzina wyjazdu - przekroczenia granicy</td>
-            <td>{{ $delegation->departure_time ?: '' }}</td>
+            <td class="red-text">{{ $delegation->departure_time ?: '' }}</td>
             <td>Godzina przyjazdu - przekroczenia granicy</td>
-            <td>{{ $delegation->arrival_time ?: '' }}</td>
+            <td class="red-text">{{ $delegation->arrival_time ?: '' }}</td>
+            <td>Godzina przyjazdu - przekroczenia granicy</td>
+            <td class="red-text">{{ $delegation->arrival_time ?: '' }}</td>
         </tr>
         <tr>
             <td>Czas delegacji:</td>
-            <td colspan="3">{{ $delegation->getDurationText() }}</td>
+            <td colspan="5" class="red-text">{{ $delegation->getDurationText() ?: '' }}</td>
         </tr>
         <tr>
             <td>Cel podróży:</td>
-            <td>{{ $delegation->travel_purpose }}</td>
+            <td class="red-text">{{ $delegation->travel_purpose ?: '' }}</td>
             <td>Środki lokomocji:</td>
-            <td>{{ $delegation->vehicle_registration ?: '' }}</td>
+            <td class="red-text">{{ $delegation->vehicle_registration ?: '' }}</td>
+            <td colspan="2"></td>
         </tr>
         <tr>
             <td>Projekt</td>
-            <td>{{ $delegation->project ?: '' }}</td>
+            <td class="red-text">{{ $delegation->project ?: '' }}</td>
             <td>Do miejscowość:</td>
-            <td>{{ $delegation->destination_city }}, {{ $delegation->country }}</td>
+            <td class="red-text">{{ $delegation->destination_city ?: '' }}</td>
+            <td colspan="2"></td>
+        </tr>
+        <tr>
+            <td colspan="2">Kraj</td>
+            <td colspan="4" class="red-text">{{ $delegation->country }}</td>
         </tr>
     </table>
-    
-    <div class="small">UWAGA: zawsze należy wybrać kraj docelowy</div>
-    
-    <!-- Currency and rates section -->
-    <table class="info-table">
+
+    <div class="small-text bold">UWAGA: zawsze należy wybrać kraj docelowy</div>
+
+    <!-- Currency rates -->
+    <table class="main-table">
         <tr>
-            <td class="gray-bg">Kwota diety</td>
-            <td>{{ number_format($delegation->delegation_rate_eur, 2) }} EUR</td>
-            <td>{{ number_format($delegation->delegation_rate, 2) }} PLN</td>
+            <td>Kwota diety</td>
+            <td class="red-text">{{ number_format($delegation->delegation_rate_eur ?: 0, 2) }} EUR</td>
+            <td class="red-text">{{ number_format($delegation->delegation_rate ?: 0, 2) }} PLN</td>
+            <td colspan="3"></td>
         </tr>
         <tr>
-            <td class="gray-bg">Kwota limitu za nocleg</td>
+            <td>Kwota limitu za nocleg</td>
             <td>EUR</td>
             <td>PLN</td>
+            <td colspan="3"></td>
         </tr>
     </table>
-    
-    <!-- NBP exchange rate info -->
-    <table class="info-table">
+
+    <!-- NBP Table -->
+    <table class="main-table">
         <tr>
-            <td>Tabela kursów NBP z dnia</td>
-            <td>{{ $delegation->exchange_rate_date ? \Carbon\Carbon::parse($delegation->exchange_rate_date)->format('d.m.Y') : '' }}</td>
+            <td style="width: 40%">Tabela kursów NBP z dnia</td>
+            <td style="width: 60%" class="red-text">{{ $delegation->exchange_rate_date ? \Carbon\Carbon::parse($delegation->exchange_rate_date)->format('d.m.Y') : '' }}</td>
         </tr>
         <tr>
             <td>Tabela kursów NBP numer:</td>
-            <td>{{ $delegation->exchange_rate_table ?: '' }}</td>
+            <td class="red-text">{{ $delegation->exchange_rate_table ?: '' }}</td>
         </tr>
         <tr>
             <td>Kurs</td>
-            <td>{{ $delegation->exchange_rate ? number_format($delegation->exchange_rate, 4) : '' }}</td>
+            <td class="red-text">{{ $delegation->exchange_rate ? number_format($delegation->exchange_rate, 4) : '' }}</td>
         </tr>
     </table>
-    
-    <!-- Accommodation and meals -->
-    <table class="info-table">
+
+    <!-- Meals Options -->
+    <table class="main-table">
+        <tr>
+            <td colspan="6" class="bold">Opcje wyżywienia (na koszt pracodawcy):</td>
+        </tr>
         <tr>
             <td class="gray-bg">Ilość noclegów</td>
-            <td>{{ $delegation->nights_count }}</td>
+            <td class="red-text">{{ $delegation->nights_count ?: 0 }}</td>
+            <td>Śniadanie wliczone w koszt noclegu</td>
+            <td colspan="3"></td>
         </tr>
-    </table>
-    
-    <!-- Meal options -->
-    <div class="section">
-        <div class="bold">Opcje wyżywienia (na koszt pracodawcy):</div>
-        <div>
-            <input type="checkbox" class="checkbox"> Wyżywienie za granicą na koszt pracodawcy - OPCJA 1 
-            <input type="checkbox" class="checkbox"> Różne w okresie trwania delegacji - OPCJA 2
-        </div>
-        <div>
-            <input type="checkbox" class="checkbox"> Śniadanie wliczone w koszt noclegu
-        </div>
-        
-        <table class="info-table" style="margin-top: 10px;">
-            <tr>
-                <td>śniadanie (ilość)</td>
-                <td>{{ $delegation->breakfasts }}</td>
-                <td>śniadanie (ilość)</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>obiad (ilość)</td>
-                <td>{{ $delegation->lunches }}</td>
-                <td>obiad (ilość)</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>kolacja (ilość)</td>
-                <td>{{ $delegation->dinners }}</td>
-                <td>kolacja (ilość)</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
-    
-    <!-- Diet summary -->
-    <table class="info-table">
         <tr>
-            <td class="gray-bg">Suma diet należnych:</td>
-            <td>{{ number_format($delegation->getTotalDietEUR(), 2) }} SEK</td>
-            <td>{{ number_format($delegation->getTotalDietPLN(), 2) }} PLN</td>
+            <td>☐ Wyżywienie za granicą na koszt pracodawcy - OPCJA 1</td>
+            <td colspan="2">☐ Różne w okresie trwania delegacji - OPCJA 2</td>
+            <td colspan="3"></td>
         </tr>
     </table>
+
+    <!-- Meals counts -->
+    <table class="main-table">
+        <tr>
+            <td>śniadanie (ilość)</td>
+            <td class="red-text">{{ $delegation->breakfasts ?: 0 }}</td>
+            <td>śniadanie (ilość)</td>
+            <td>obiad (ilość)</td>
+            <td class="red-text">{{ $delegation->lunches ?: 0 }}</td>
+            <td>obiad (ilość)</td>
+        </tr>
+        <tr>
+            <td>kolacja (ilość)</td>
+            <td class="red-text">{{ $delegation->dinners ?: 0 }}</td>
+            <td>kolacja (ilość)</td>
+            <td colspan="3"></td>
+        </tr>
+    </table>
+
+    <!-- Diet Summary -->
+    <table class="main-table">
+        <tr>
+            <td style="width: 40%">Suma diet należnych:</td>
+            <td style="width: 30%" class="red-text">{{ number_format($delegation->getTotalDietEUR(), 2) }} EUR</td>
+            <td style="width: 30%" class="red-text">{{ number_format($delegation->getTotalDietPLN(), 2) }} PLN</td>
+        </tr>
+    </table>
+
+    <div class="small-text">Wydatki opłacone kartą lub przelewem proszę wpisać informacyjnie - wydatki tego samego rodzaju opłacone w różny sposób wpisać w oddzielnych pozycjach. Proszę wpisać także</div>
+
+    <!-- Expenses Table -->
+    <table class="expenses-table">
+        <tr>
+            <th>Wydatkowano wg załączników:</th>
+            <th>waluta (wartość)</th>
+            <th>ilość noclegów</th>
+            <th>forma płatności</th>
+            <th>symbol waluty</th>
+            <th>kurs waluty</th>
+            <th>Nr faktury</th>
+            <th>kwota w PLN</th>
+        </tr>
+        @for($i = 1; $i <= 6; $i++)
+        <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>dla PLN 1,0</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+        </tr>
+        @endfor
+    </table>
+
+    <!-- Final Summary -->
+    <table class="summary-table">
+        <tr>
+            <td class="bold">Suma wydatków poniesionych (PLN)</td>
+            <td class="bold red-text">{{ number_format($delegation->total_expenses ?: 0, 2) }}</td>
+            <td class="bold">Do wypłaty dla pracownika(PLN)</td>
+            <td class="bold red-text">{{ number_format($delegation->getTotalPaymentAmount(), 2) }}</td>
+        </tr>
+        <tr>
+            <td>Suma wydatków nie opłaconych gotówką (PLN)</td>
+            <td>0,00</td>
+            <td>Przekroczenie limitu za nocleg (PLN)</td>
+            <td>0,00</td>
+        </tr>
+    </table>
+
+    <div class="small-text">Oświadczam, że zgodnie z treścią artykułu 233 Kodeksu Karnego ponoszę odpowiedzialność za podanie danych niezgodnych z prawdą.</div>
+
+    <!-- Signatures -->
+    <table class="signature-table">
+        <tr>
+            <td>DATA I PODPIS OSOBY DELEGOWANEJ</td>
+            <td>DATA I PODPIS KIEROWNIKA PROJEKTU/DYREKTORA/<br>ZLECAJĄCEGO WYJAZD</td>
+        </tr>
+    </table>
+
+    <div class="center bold" style="margin: 5px 0;">SPRAWDZONO POD WZGLĘDEM FORMALNO-RACHUNKOWYM</div>
     
-    <!-- Expenses table -->
-    <div class="section">
-        <div class="small">Wydatki opłacone kartą lub przelewem proszę wpisać informacyjnie - wydatki tego samego rodzaju opłacone w różny sposób wpisać w oddzielnych pozycjach. Proszę wpisać także</div>
-        
-        <table class="expenses-table">
-            <tr>
-                <th>Wydatkowano wg załączników:</th>
-                <th>waluta (wartość)</th>
-                <th>Ilość noclegów</th>
-                <th>forma płatności</th>
-                <th>symbol waluty</th>
-                <th>kurs waluty</th>
-                <th>Nr faktury</th>
-                <th>kwota w PLN</th>
-            </tr>
-            @for($i = 1; $i <= 8; $i++)
-            <tr>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>dla PLN 1,0</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-            </tr>
-            @endfor
-        </table>
-    </div>
-    
-    <!-- Summary section -->
-    <div class="summary-section">
-        <table class="info-table">
-            <tr>
-                <td class="gray-bg">Suma wydatków poniesionych (PLN)</td>
-                <td>{{ number_format($delegation->total_expenses, 2) }}</td>
-            </tr>
-            <tr>
-                <td class="gray-bg">Do wypłaty dla pracownika(PLN)</td>
-                <td>{{ number_format($delegation->getTotalPaymentAmount(), 2) }}</td>
-            </tr>
-            <tr>
-                <td>Suma wydatków nie opłaconych gotówką (PLN)</td>
-                <td>0,00</td>
-            </tr>
-            <tr>
-                <td>Przekroczenie limitu za nocleg (PLN)</td>
-                <td>0,00</td>
-            </tr>
-        </table>
-    </div>
-    
-    <!-- Declaration -->
-    <div class="section small">
-        Oświadczam, że zgodnie z treścią artykułu 233 Kodeksu Karnego ponoszę odpowiedzialność za podanie danych niezgodnych z prawdą.
-    </div>
-    
-    <!-- Signature sections -->
-    <div class="signature-section">
-        <table class="info-table">
-            <tr>
-                <td class="text-center bold">DATA I PODPIS OSOBY DELEGOWANEJ</td>
-                <td class="text-center bold">DATA I PODPIS KIEROWNIKA PROJEKTU/DYREKTORA/<br>ZLECAJĄCEGO WYJAZD</td>
-            </tr>
-            <tr>
-                <td class="signature-box"></td>
-                <td class="signature-box"></td>
-            </tr>
-        </table>
-        
-        <div class="text-center bold" style="margin-top: 20px;">
-            SPRAWDZONO POD WZGLĘDEM FORMALNO-RACHUNKOWYM
-        </div>
-        
-        <div class="signature-box" style="margin-top: 10px;"></div>
-        <div class="text-center">DATA I PODPIS</div>
-    </div>
-    
-    <!-- Vehicle information -->
-    <div class="section" style="margin-top: 30px;">
-        <div class="bold">Informacja o pojazdach</div>
-        <table class="info-table">
-            <tr>
-                <td class="bold">Kierowca:</td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td class="bold">Data</td>
-                <td class="bold">Godzina</td>
-                <td class="bold">Data</td>
-                <td class="bold">Godzina</td>
-                <td class="bold">Data</td>
-                <td class="bold">Godzina</td>
-            </tr>
-            @for($i = 1; $i <= 3; $i++)
-            <tr>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-            </tr>
-            @endfor
-        </table>
-    </div>
+    <table class="signature-table">
+        <tr>
+            <td>DATA I PODPIS</td>
+        </tr>
+    </table>
 </body>
 </html>
