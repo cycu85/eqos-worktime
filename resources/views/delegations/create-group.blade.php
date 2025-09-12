@@ -408,54 +408,25 @@
         function debugFormSubmit(event) {
             console.log('Form submission - selected employees array:', selectedEmployees);
             
-            // First, make sure we have the latest inputs
+            // First, ensure we have the selected employees if any were chosen
             if (selectedEmployees.length > 0) {
-                updateEmployeesInputs();
-            }
-            
-            // Debug DOM before creating FormData
-            const form = event.target;
-            const hiddenInputs = form.querySelectorAll('input[name="selected_employees[]"]');
-            console.log('DOM hidden inputs found:', hiddenInputs.length);
-            hiddenInputs.forEach((input, index) => {
-                console.log(`Hidden input ${index}:`, input.name, input.value, 'in form:', form.contains(input));
-            });
-            
-            // Check container content
-            const container = document.getElementById('selected-employees-inputs');
-            console.log('Container innerHTML:', container.innerHTML);
-            console.log('Container children:', container.children.length);
-            
-            // Create FormData and check
-            const formData = new FormData(event.target);
-            const selectedEmployeesFromForm = formData.getAll('selected_employees[]');
-            const jsonData = formData.get('selected_employees_json');
-            console.log('Form data selected_employees[]:', selectedEmployeesFromForm);
-            console.log('Form data selected_employees_json:', jsonData);
-            
-            // If neither approach works, try to fix it
-            if (selectedEmployeesFromForm.length === 0 && !jsonData && selectedEmployees.length > 0) {
-                console.error('No selected employees found in form data!');
-                console.log('All form data:');
-                for (let [key, value] of formData.entries()) {
-                    console.log(key, value);
-                }
-                
-                console.log('Attempting to fix by re-creating inputs...');
-                event.preventDefault();
-                
-                // Clear and recreate inputs with both approaches
+                // Force update inputs right before submission
+                const form = event.target;
                 const inputsContainer = document.getElementById('selected-employees-inputs');
+                
+                // Clear existing inputs
                 inputsContainer.innerHTML = '';
                 
-                // JSON approach
+                console.log('Creating final inputs for submission:', selectedEmployees);
+                
+                // Create JSON input
                 const jsonInput = document.createElement('input');
                 jsonInput.type = 'hidden';
-                jsonInput.name = 'selected_employees_json';
+                jsonInput.name = 'selected_employees_json';  
                 jsonInput.value = JSON.stringify(selectedEmployees.map(emp => emp.id));
                 inputsContainer.appendChild(jsonInput);
                 
-                // Array approach
+                // Create array inputs as backup
                 selectedEmployees.forEach(employee => {
                     const input = document.createElement('input');
                     input.type = 'hidden';
@@ -464,17 +435,31 @@
                     inputsContainer.appendChild(input);
                 });
                 
-                console.log('Recreated inputs, trying again...');
+                // Force browser to recognize new inputs by adding them directly to form
+                const extraContainer = document.createElement('div');
+                extraContainer.style.display = 'none';
                 
-                // Try again after a brief delay
-                setTimeout(() => {
-                    form.submit();
-                }, 100);
+                // Add more backup inputs directly to form
+                selectedEmployees.forEach(employee => {
+                    const backupInput = document.createElement('input');
+                    backupInput.type = 'hidden';
+                    backupInput.name = 'selected_employees[]';
+                    backupInput.value = employee.id;
+                    backupInput.className = 'backup-employee-input';
+                    extraContainer.appendChild(backupInput);
+                });
                 
-                return false;
+                form.appendChild(extraContainer);
+                
+                console.log('Final DOM state before submission:');
+                console.log('Container children:', inputsContainer.children.length);
+                console.log('All employee inputs:', form.querySelectorAll('input[name="selected_employees[]"]').length);
+                console.log('JSON input:', form.querySelector('input[name="selected_employees_json"]') ? 'YES' : 'NO');
+            } else if (selectedEmployees.length === 0) {
+                console.error('No employees selected!');
             }
             
-            // Continue with normal submission
+            // Continue with normal submission - let the backend handle validation
             return true;
         }
 
