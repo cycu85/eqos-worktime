@@ -331,8 +331,6 @@
                 name: cb.dataset.name
             }));
             
-            console.log('Selected employees:', selectedEmployees); // Debug log
-            
             updateEmployeesDisplay();
             closeEmployeesModal();
         }
@@ -363,14 +361,10 @@
         }
 
         function updateEmployeesInputs() {
-            // Use the dedicated container for inputs  
             const inputsContainer = document.getElementById('selected-employees-inputs');
-            console.log('Inputs container found:', inputsContainer); // Debug log
             
             // Clear existing inputs in container
             inputsContainer.innerHTML = '';
-            
-            console.log('Creating JSON input for:', selectedEmployees); // Debug log
             
             // Create a single JSON input instead of multiple array inputs
             if (selectedEmployees.length > 0) {
@@ -379,7 +373,6 @@
                 jsonInput.name = 'selected_employees_json';
                 jsonInput.value = JSON.stringify(selectedEmployees.map(emp => emp.id));
                 inputsContainer.appendChild(jsonInput);
-                console.log('Added JSON input:', jsonInput.name, jsonInput.value);
                 
                 // Also keep the array approach as backup
                 selectedEmployees.forEach(employee => {
@@ -391,13 +384,6 @@
                     inputsContainer.appendChild(input);
                 });
             }
-            
-            // Debug: Count all inputs with this name in the form
-            const form = document.querySelector('form');
-            const inputsInForm = form.querySelectorAll('input[name="selected_employees[]"]');
-            const jsonInput = form.querySelector('input[name="selected_employees_json"]');
-            console.log('Total selected_employees[] inputs in form:', inputsInForm.length);
-            console.log('JSON input in form:', jsonInput ? 'YES' : 'NO');
         }
 
         function removeEmployee(employeeId) {
@@ -406,9 +392,7 @@
         }
 
         function debugFormSubmit(event) {
-            console.log('Form submission - selected employees array:', selectedEmployees);
-            
-            // First, ensure we have the selected employees if any were chosen
+            // Ensure we have the selected employees if any were chosen
             if (selectedEmployees.length > 0) {
                 // Force update inputs right before submission
                 const form = event.target;
@@ -416,8 +400,6 @@
                 
                 // Clear existing inputs
                 inputsContainer.innerHTML = '';
-                
-                console.log('Creating final inputs for submission:', selectedEmployees);
                 
                 // Create JSON input
                 const jsonInput = document.createElement('input');
@@ -450,31 +432,19 @@
                 });
                 
                 form.appendChild(extraContainer);
-                
-                console.log('Final DOM state before submission:');
-                console.log('Container children:', inputsContainer.children.length);
-                console.log('All employee inputs:', form.querySelectorAll('input[name="selected_employees[]"]').length);
-                console.log('JSON input:', form.querySelector('input[name="selected_employees_json"]') ? 'YES' : 'NO');
-            } else if (selectedEmployees.length === 0) {
-                console.error('No employees selected!');
             }
             
-            // Continue with normal submission - let the backend handle validation
             return true;
         }
 
         // Initialize form with old values if validation failed
         document.addEventListener('DOMContentLoaded', function() {
             @if(old('selected_employees'))
-                console.log('Old selected employees found:', {!! json_encode(old('selected_employees')) !!});
                 const oldEmployeeIds = {!! json_encode(old('selected_employees')) !!};
                 const allEmployees = {!! $users->map(function($user) { return ['id' => $user->id, 'name' => $user->name]; })->toJson() !!};
                 
                 selectedEmployees = allEmployees.filter(emp => oldEmployeeIds.includes(emp.id.toString()));
-                console.log('Restored selected employees:', selectedEmployees);
                 updateEmployeesDisplay();
-            @else
-                console.log('No old selected employees found');
             @endif
         });
     </script>

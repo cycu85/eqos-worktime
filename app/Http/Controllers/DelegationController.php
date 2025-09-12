@@ -519,9 +519,6 @@ class DelegationController extends Controller
             abort(403, 'Brak uprawnień do tworzenia delegacji grupowych.');
         }
 
-        // Debug: Log what we received
-        \Log::info('Group delegation request data:', $request->all());
-
         // Handle selected employees from JSON or array
         $selectedEmployees = $request->input('selected_employees', []);
         if (empty($selectedEmployees) && $request->has('selected_employees_json')) {
@@ -531,13 +528,11 @@ class DelegationController extends Controller
                     $selectedEmployees = $jsonData;
                     // Merge the decoded data into the request for validation
                     $request->merge(['selected_employees' => $selectedEmployees]);
-                    \Log::info('Used JSON data for selected employees:', $selectedEmployees);
                 }
             } catch (\Exception $e) {
-                \Log::error('Error decoding selected_employees_json: ' . $e->getMessage());
+                // Silently handle JSON decode errors
             }
         }
-        \Log::info('Final selected employees array:', $selectedEmployees);
 
         $validated = $request->validate([
             'selected_employees' => 'required|array|min:1',
