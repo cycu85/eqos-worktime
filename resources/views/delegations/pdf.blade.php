@@ -138,7 +138,7 @@
                 ROZLICZENIE DELEGACJI
             </td>
             <td class="header-right" style="width: 40%;">
-                {{ $delegation->employee_full_name ?: '{Imię i Nazwisko}' }}
+                {{ ($delegation->first_name && $delegation->last_name) ? $delegation->first_name . ' ' . $delegation->last_name : '{Imię i Nazwisko}' }}
             </td>
         </tr>
     </table>
@@ -196,7 +196,7 @@
     <table class="main-table">
         <tr>
             <td>Kwota diety</td>
-            <td class="red-text">{{ $delegation->delegation_rate_eur ? number_format($delegation->delegation_rate_eur, 2) : '{Kwota diety waluta}' }} EUR</td>
+            <td class="red-text">{{ $delegation->diet_amount_currency ? number_format($delegation->diet_amount_currency, 2) : '{Kwota diety waluta}' }} EUR</td>
             <td class="red-text">{{ $delegation->delegation_rate ? number_format($delegation->delegation_rate, 2) : '{Kwota diety PLN}' }} PLN</td>
             <td colspan="3"></td>
         </tr>
@@ -212,11 +212,11 @@
     <table class="main-table">
         <tr>
             <td style="width: 40%">Tabela kursów NBP z dnia</td>
-            <td style="width: 60%" class="red-text">{{ $delegation->exchange_rate_date ? \Carbon\Carbon::parse($delegation->exchange_rate_date)->format('d.m.Y') : '{Kurs NBP.Data}' }}</td>
+            <td style="width: 60%" class="red-text">{{ $delegation->nbp_table_date ? \Carbon\Carbon::parse($delegation->nbp_table_date)->format('d.m.Y') : '{Kurs NBP.Data}' }}</td>
         </tr>
         <tr>
             <td>Tabela kursów NBP numer:</td>
-            <td class="red-text">{{ $delegation->exchange_rate_table ?: '{kurs NBP. Numer tabeli}' }}</td>
+            <td class="red-text">{{ $delegation->nbp_table_number ?: '{kurs NBP. Numer tabeli}' }}</td>
         </tr>
         <tr>
             <td>Kurs</td>
@@ -246,15 +246,15 @@
     <table class="main-table">
         <tr>
             <td>śniadanie (ilość)</td>
-            <td class="red-text">{{ $delegation->breakfasts ?: '{Śniadania}' }}</td>
+            <td class="red-text">{{ $delegation->breakfasts ?? 0 }}</td>
             <td>śniadanie (ilość)</td>
             <td>obiad (ilość)</td>
-            <td class="red-text">{{ $delegation->lunches ?: '{Obiady}' }}</td>
+            <td class="red-text">{{ $delegation->lunches ?? 0 }}</td>
             <td>obiad (ilość)</td>
         </tr>
         <tr>
             <td>kolacja (ilość)</td>
-            <td class="red-text">{{ $delegation->dinners ?: '{Kolacje}' }}</td>
+            <td class="red-text">{{ $delegation->dinners ?? 0 }}</td>
             <td>kolacja (ilość)</td>
             <td colspan="3"></td>
         </tr>
