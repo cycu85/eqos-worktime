@@ -363,29 +363,41 @@
         }
 
         function updateEmployeesInputs() {
-            // Use the dedicated container for inputs
+            // Use the dedicated container for inputs  
             const inputsContainer = document.getElementById('selected-employees-inputs');
             console.log('Inputs container found:', inputsContainer); // Debug log
             
             // Clear existing inputs in container
             inputsContainer.innerHTML = '';
             
-            console.log('Creating hidden inputs for:', selectedEmployees); // Debug log
+            console.log('Creating JSON input for:', selectedEmployees); // Debug log
             
-            selectedEmployees.forEach(employee => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'selected_employees[]';
-                input.value = employee.id;
-                input.className = 'employee-hidden-input';
-                inputsContainer.appendChild(input);
-                console.log('Added hidden input:', input.name, input.value); // Debug log
-            });
+            // Create a single JSON input instead of multiple array inputs
+            if (selectedEmployees.length > 0) {
+                const jsonInput = document.createElement('input');
+                jsonInput.type = 'hidden';
+                jsonInput.name = 'selected_employees_json';
+                jsonInput.value = JSON.stringify(selectedEmployees.map(emp => emp.id));
+                inputsContainer.appendChild(jsonInput);
+                console.log('Added JSON input:', jsonInput.name, jsonInput.value);
+                
+                // Also keep the array approach as backup
+                selectedEmployees.forEach(employee => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'selected_employees[]';
+                    input.value = employee.id;
+                    input.className = 'employee-hidden-input';
+                    inputsContainer.appendChild(input);
+                });
+            }
             
             // Debug: Count all inputs with this name in the form
             const form = document.querySelector('form');
             const inputsInForm = form.querySelectorAll('input[name="selected_employees[]"]');
+            const jsonInput = form.querySelector('input[name="selected_employees_json"]');
             console.log('Total selected_employees[] inputs in form:', inputsInForm.length);
+            console.log('JSON input in form:', jsonInput ? 'YES' : 'NO');
         }
 
         function removeEmployee(employeeId) {
@@ -417,45 +429,49 @@
             // Create FormData and check
             const formData = new FormData(event.target);
             const selectedEmployeesFromForm = formData.getAll('selected_employees[]');
+            const jsonData = formData.get('selected_employees_json');
             console.log('Form data selected_employees[]:', selectedEmployeesFromForm);
+            console.log('Form data selected_employees_json:', jsonData);
             
-            if (selectedEmployeesFromForm.length === 0) {
-                console.error('No selected_employees[] found in form data!');
+            // If neither approach works, try to fix it
+            if (selectedEmployeesFromForm.length === 0 && !jsonData && selectedEmployees.length > 0) {
+                console.error('No selected employees found in form data!');
                 console.log('All form data:');
                 for (let [key, value] of formData.entries()) {
                     console.log(key, value);
                 }
                 
-                // Try to manually collect values
-                const manualValues = Array.from(form.querySelectorAll('input[name="selected_employees[]"]'))
-                    .map(input => input.value);
-                console.log('Manual collection:', manualValues);
+                console.log('Attempting to fix by re-creating inputs...');
+                event.preventDefault();
                 
-                // If we have employees selected but FormData doesn't see them, 
-                // let's try a different approach
-                if (selectedEmployees.length > 0 && selectedEmployeesFromForm.length === 0) {
-                    console.log('Attempting to fix by re-creating inputs...');
-                    event.preventDefault();
-                    
-                    // Clear and recreate inputs
-                    const inputsContainer = document.getElementById('selected-employees-inputs');
-                    inputsContainer.innerHTML = '';
-                    
-                    selectedEmployees.forEach(employee => {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'selected_employees[]';
-                        input.value = employee.id;
-                        inputsContainer.appendChild(input);
-                    });
-                    
-                    // Try again after a brief delay
-                    setTimeout(() => {
-                        form.submit();
-                    }, 100);
-                    
-                    return false;
-                }
+                // Clear and recreate inputs with both approaches
+                const inputsContainer = document.getElementById('selected-employees-inputs');
+                inputsContainer.innerHTML = '';
+                
+                // JSON approach
+                const jsonInput = document.createElement('input');
+                jsonInput.type = 'hidden';
+                jsonInput.name = 'selected_employees_json';
+                jsonInput.value = JSON.stringify(selectedEmployees.map(emp => emp.id));
+                inputsContainer.appendChild(jsonInput);
+                
+                // Array approach
+                selectedEmployees.forEach(employee => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'selected_employees[]';
+                    input.value = employee.id;
+                    inputsContainer.appendChild(input);
+                });
+                
+                console.log('Recreated inputs, trying again...');
+                
+                // Try again after a brief delay
+                setTimeout(() => {
+                    form.submit();
+                }, 100);
+                
+                return false;
             }
             
             // Continue with normal submission
