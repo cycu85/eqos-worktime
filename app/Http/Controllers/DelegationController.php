@@ -483,4 +483,137 @@ class DelegationController extends Controller
 
         return redirect()->back()->with('success', 'Akceptacja kierownika została cofnięta. Delegacja powróciła do stanu zaakceptowanej przez pracownika.');
     }
+
+    public function createGroup()
+    {
+        // Only admin and kierownik can create group delegations
+        $user = auth()->user();
+        if (!$user->isAdmin() && !$user->isKierownik()) {
+            abort(403, 'Brak uprawnień do tworzenia delegacji grupowych.');
+        }
+
+        $vehicles = Vehicle::active()->get();
+        $users = User::orderBy('name')->get();
+        $teams = \App\Models\Team::all();
+        $countries = [
+            'Polska', 'Niemcy', 'Francja', 'Włochy', 'Hiszpania', 
+            'Czechy', 'Słowacja', 'Austria', 'Holandia', 'Belgia'
+        ];
+        
+        // Get default values from settings
+        $defaults = [
+            'project' => \App\Models\DelegationSetting::get('default_project', ''),
+            'travel_purpose' => \App\Models\DelegationSetting::get('default_travel_purpose', ''),
+            'country' => \App\Models\DelegationSetting::get('default_country', 'Polska'),
+            'destination_city' => \App\Models\DelegationSetting::get('default_city', ''),
+        ];
+        
+        return view('delegations.create-group', compact('vehicles', 'users', 'teams', 'countries', 'defaults'));
+    }
+
+    public function storeGroup(Request $request)
+    {
+        // Only admin and kierownik can store group delegations
+        $user = auth()->user();
+        if (!$user->isAdmin() && !$user->isKierownik()) {
+            abort(403, 'Brak uprawnień do tworzenia delegacji grupowych.');
+        }
+
+        // Debug: Log what we received
+        \Log::info('Group delegation request data:', $request->all());
+
+        $validated = $request->validate([
+            'selected_employees' => 'required|array|min:1',
+            'selected_employees.*' => 'exists:users,id',
+            'order_date' => 'required|date',
+            'departure_date' => 'nullable|date|after_or_equal:order_date',
+            'departure_time' => 'nullable|date_format:H:i',
+            'arrival_date' => 'nullable|date|after_or_equal:departure_date',
+            'arrival_time' => 'nullable|date_format:H:i',
+            'travel_purpose' => 'required|string',
+            'project' => 'nullable|string|max:255',
+            'destination_city' => 'required|string|max:255',
+            'country' => 'required|string|max:100',
+            'vehicle_registration' => 'nullable|string|max:20',
+            'accommodation_limit' => 'nullable|numeric|min:0',
+            'nights_count' => 'integer|min:0',
+            'breakfasts' => 'integer|min:0',
+            'lunches' => 'integer|min:0',
+            'dinners' => 'integer|min:0',
+            'total_expenses' => 'nullable|numeric|min:0',
+        ], [
+            'departure_date.after_or_equal' => 'Data wyjazdu nie może być wcześniejsza niż data polecenia wyjazdu.',
+            'arrival_date.after_or_equal' => 'Data przyjazdu nie może być wcześniejsza niż data wyjazdu.',
+            'selected_employees.required' => 'Musisz wybrać co najmniej jednego pracownika.',
+        ]);
+
+        $createdDelegations = [];
+        $selectedUsers = User::whereIn('id', $validated['selected_employees'])->get();
+
+        foreach ($selectedUsers as $selectedUser) {
+            $delegationData = $validated;
+            
+            // Set employee data
+            $nameParts = explode(' ', trim($selectedUser->name), 2);
+            $delegationData['first_name'] = $nameParts[0] ?? '';
+            $delegationData['last_name'] = $nameParts[1] ?? '';
+
+            // Handle currency and exchange rates
+            if ($validated['country'] !== 'Polska' && !empty($validated['arrival_date'])) {
+                $arrivalDate = \Carbon\Carbon::parse($validated['arrival_date']);
+                $rateDateString = $arrivalDate->subDay()->format('Y-m-d');
+                
+                $nbpData = $this->nbpService->getRateForDate('EUR', $rateDateString);
+                if ($nbpData) {
+                    $delegationData['exchange_rate'] = $nbpData['rate'];
+                    $delegationData['nbp_table_number'] = $nbpData['no'];
+                    $delegationData['nbp_table_date'] = $nbpData['effectiveDate'];
+                } else {
+                    $nbpData = $this->nbpService->getCurrentRates();
+                    if ($nbpData) {
+                        $delegationData['exchange_rate'] = $nbpData['rate'];
+                        $delegationData['nbp_table_number'] = $nbpData['no'];
+                        $delegationData['nbp_table_date'] = $nbpData['effectiveDate'];
+                    }
+                }
+            }
+
+            $delegationData['delegation_rate'] = $this->nbpService->getDelegationRates($validated['country']);
+            
+            if ($validated['country'] === 'Polska') {
+                $delegationData['diet_amount_pln'] = $delegationData['delegation_rate'];
+                $delegationData['diet_amount_currency'] = null;
+            } else {
+                $delegationData['diet_amount_currency'] = $delegationData['delegation_rate'];
+                if (isset($delegationData['exchange_rate'])) {
+                    $delegationData['diet_amount_pln'] = $delegationData['delegation_rate'] * $delegationData['exchange_rate'];
+                } else {
+                    $delegationData['diet_amount_pln'] = $delegationData['delegation_rate'];
+                }
+            }
+            
+            // Initialize calculated fields
+            $delegationData['total_diet_pln'] = 0;
+            $delegationData['total_diet_currency'] = 0;
+            $delegationData['amount_to_pay'] = 0;
+            $delegationData['delegation_duration'] = null;
+            $delegationData['delegation_status'] = 'draft';
+
+            // Remove selected_employees array from data
+            unset($delegationData['selected_employees']);
+
+            $delegation = Delegation::create($delegationData);
+            
+            $delegation->calculateDuration()
+                      ->calculateTotalDiet()
+                      ->calculateAmountToPay()
+                      ->save();
+
+            $createdDelegations[] = $delegation;
+        }
+
+        $count = count($createdDelegations);
+        return redirect()->route('delegations.index')
+                        ->with('success', "Utworzono {$count} delegacji grupowych.");
+    }
 }

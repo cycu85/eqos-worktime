@@ -36,6 +36,10 @@ Route::middleware('auth')->group(function () {
     Route::post('tasks/{task}/work-logs/add', [TaskWorkLogController::class, 'addWorkDay'])->name('tasks.work-logs.add');
     Route::delete('tasks/{task}/work-logs/{workLog}', [TaskWorkLogController::class, 'destroy'])->name('tasks.work-logs.destroy');
     
+    // Group delegation routes (admin/kierownik only) - MUST be before resource routes
+    Route::get('delegations/create-group', [DelegationController::class, 'createGroup'])->name('delegations.create-group')->middleware('role:admin,kierownik');
+    Route::post('delegations/store-group', [DelegationController::class, 'storeGroup'])->name('delegations.store-group')->middleware('role:admin,kierownik');
+    
     // Delegations routes - available for all authenticated users
     Route::resource('delegations', DelegationController::class);
     
