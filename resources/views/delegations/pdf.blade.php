@@ -197,7 +197,7 @@
         <tr>
             <td>Kwota diety</td>
             <td class="red-text">{{ $delegation->diet_amount_currency ? number_format($delegation->diet_amount_currency, 2) : '{Kwota diety waluta}' }} EUR</td>
-            <td class="red-text">{{ $delegation->delegation_rate ? number_format($delegation->delegation_rate, 2) : '{Kwota diety PLN}' }} PLN</td>
+            <td class="red-text">{{ $delegation->diet_amount_pln ? number_format($delegation->diet_amount_pln, 2) : '{Kwota diety PLN}' }} PLN</td>
             <td colspan="3"></td>
         </tr>
         <tr>
