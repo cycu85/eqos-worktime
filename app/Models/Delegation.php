@@ -175,8 +175,23 @@ class Delegation extends Model
             return '';
         }
         
-        $start = Carbon::parse($this->departure_date . ' ' . ($this->departure_time ?: '00:00'));
-        $end = Carbon::parse($this->arrival_date . ' ' . ($this->arrival_time ?: '00:00'));
+        // Safely parse dates - handle both date and datetime formats
+        $departureDate = Carbon::parse($this->departure_date)->format('Y-m-d');
+        $arrivalDate = Carbon::parse($this->arrival_date)->format('Y-m-d');
+        
+        $departureTime = $this->departure_time ?: '00:00';
+        $arrivalTime = $this->arrival_time ?: '00:00';
+        
+        // Ensure time format is HH:MM
+        if (strlen($departureTime) > 5) {
+            $departureTime = substr($departureTime, 0, 5);
+        }
+        if (strlen($arrivalTime) > 5) {
+            $arrivalTime = substr($arrivalTime, 0, 5);
+        }
+        
+        $start = Carbon::parse($departureDate . ' ' . $departureTime);
+        $end = Carbon::parse($arrivalDate . ' ' . $arrivalTime);
         
         $diffInMinutes = $start->diffInMinutes($end);
         $days = floor($diffInMinutes / (24 * 60));
