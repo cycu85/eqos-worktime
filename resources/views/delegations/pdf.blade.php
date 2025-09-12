@@ -320,14 +320,14 @@
         <tr>
             <td>DATA I PODPIS OSOBY DELEGOWANEJ
                 @if($delegation->employee_approval_date)
-                <br><div style="font-size: 7px; margin-top: 10px;">
+                <br><div style="font-size: 8px; font-style: normal; margin-top: 10px;">
                     Zaakceptowano elektronicznie dnia: {{ \Carbon\Carbon::parse($delegation->employee_approval_date)->format('d.m.Y H:i') }}
                 </div>
                 @endif
             </td>
             <td>DATA I PODPIS KIEROWNIKA PROJEKTU/DYREKTORA/<br>ZLECAJĄCEGO WYJAZD
                 @if($delegation->supervisor_approval_date)
-                <br><div style="font-size: 7px; margin-top: 10px;">
+                <br><div style="font-size: 8px; font-style: normal; margin-top: 10px;">
                     Zaakceptowano elektronicznie dnia: {{ \Carbon\Carbon::parse($delegation->supervisor_approval_date)->format('d.m.Y H:i') }}
                 </div>
                 @endif
