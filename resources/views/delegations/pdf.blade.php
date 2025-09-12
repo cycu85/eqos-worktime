@@ -235,8 +235,8 @@
     <table class="info-table">
         <tr>
             <td class="gray-bg">Suma diet należnych:</td>
-            <td>{{ number_format($delegation->calculateTotalDietEUR(), 2) }} SEK</td>
-            <td>{{ number_format($delegation->calculateTotalDiet(), 2) }} PLN</td>
+            <td>{{ number_format($delegation->getTotalDietEUR(), 2) }} SEK</td>
+            <td>{{ number_format($delegation->getTotalDietPLN(), 2) }} PLN</td>
         </tr>
     </table>
     
@@ -279,7 +279,7 @@
             </tr>
             <tr>
                 <td class="gray-bg">Do wypłaty dla pracownika(PLN)</td>
-                <td>{{ number_format($delegation->calculateTotalPayment(), 2) }}</td>
+                <td>{{ number_format($delegation->getTotalPaymentAmount(), 2) }}</td>
             </tr>
             <tr>
                 <td>Suma wydatków nie opłaconych gotówką (PLN)</td>

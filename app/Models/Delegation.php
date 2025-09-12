@@ -223,6 +223,34 @@ class Delegation extends Model
      */
     public function calculateTotalPayment()
     {
-        return $this->calculateTotalDiet() + $this->accommodation_limit - $this->total_expenses;
+        // Method returns total payment amount after calculations
+        $this->calculateTotalDiet();
+        $totalPayment = $this->total_diet_pln + $this->accommodation_limit - $this->total_expenses;
+        $this->amount_to_pay = $totalPayment;
+        return $totalPayment;
+    }
+    
+    /**
+     * Get total diet in PLN (for PDF display)
+     */
+    public function getTotalDietPLN()
+    {
+        return $this->total_diet_pln ?: 0;
+    }
+    
+    /**
+     * Get total diet in EUR (for PDF display) 
+     */
+    public function getTotalDietEUR()
+    {
+        return $this->total_diet_currency ?: 0;
+    }
+    
+    /**
+     * Get total payment amount (for PDF display)
+     */
+    public function getTotalPaymentAmount()
+    {
+        return $this->amount_to_pay ?: 0;
     }
 }
