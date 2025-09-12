@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\NBPService;
 use Illuminate\Http\Request;
+use PDF;
 
 class DelegationController extends Controller
 {
@@ -627,5 +628,32 @@ class DelegationController extends Controller
         $count = count($createdDelegations);
         return redirect()->route('delegations.index')
                         ->with('success', "Utworzono {$count} delegacji grupowych.");
+    }
+
+    /**
+     * Generate PDF document for delegation
+     */
+    public function generatePdf(Delegation $delegation)
+    {
+        // Check if delegation is approved
+        if ($delegation->delegation_status !== 'approved') {
+            return redirect()->back()->with('error', 'PDF można generować tylko dla zaakceptowanych delegacji.');
+        }
+
+        // Calculate all necessary fields
+        $delegation->calculateDuration()
+                  ->calculateTotalDiet()
+                  ->calculateAmountToPay();
+
+        $pdf = \PDF::loadView('delegations.pdf', compact('delegation'));
+        
+        // Set paper size and orientation
+        $pdf->setPaper('A4', 'portrait');
+        
+        // Set filename
+        $filename = 'delegacja_' . $delegation->id . '_' . 
+                   str_replace(' ', '_', $delegation->employee_full_name) . '.pdf';
+        
+        return $pdf->download($filename);
     }
 }

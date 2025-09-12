@@ -48,6 +48,9 @@ Route::middleware('auth')->group(function () {
     Route::post('delegations/{delegation}/supervisor-approval', [DelegationController::class, 'supervisorApproval'])->name('delegations.supervisor-approval');
     Route::post('delegations/{delegation}/revoke-approval', [DelegationController::class, 'revokeApproval'])->name('delegations.revoke-approval');
     
+    // PDF generation route
+    Route::get('delegations/{delegation}/pdf', [DelegationController::class, 'generatePdf'])->name('delegations.pdf');
+    
     // Task image removal
     Route::delete('tasks/{task}/images/{imageIndex}', [TaskController::class, 'removeImage'])->name('tasks.removeImage');
     

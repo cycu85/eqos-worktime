@@ -165,4 +165,49 @@ class Delegation extends Model
         }
         return Carbon::parse($this->departure_date)->diffInDays(Carbon::parse($this->arrival_date)) + 1;
     }
+    
+    /**
+     * Get duration text for PDF display
+     */
+    public function getDurationText()
+    {
+        if (!$this->departure_date || !$this->arrival_date) {
+            return '';
+        }
+        
+        $start = Carbon::parse($this->departure_date . ' ' . ($this->departure_time ?: '00:00'));
+        $end = Carbon::parse($this->arrival_date . ' ' . ($this->arrival_time ?: '00:00'));
+        
+        $diffInMinutes = $start->diffInMinutes($end);
+        $days = floor($diffInMinutes / (24 * 60));
+        $hours = floor(($diffInMinutes % (24 * 60)) / 60);
+        $minutes = $diffInMinutes % 60;
+        
+        $parts = [];
+        if ($days > 0) {
+            $parts[] = $days . ($days == 1 ? ' doba' : ' doby');
+        }
+        if ($hours > 0 || $minutes > 0) {
+            $parts[] = sprintf('%d:%02d', $hours, $minutes);
+        }
+        
+        return implode(' ', $parts);
+    }
+    
+    /**
+     * Calculate total diet in EUR
+     */
+    public function calculateTotalDietEUR()
+    {
+        return $this->delegation_rate_eur * $this->getDays() - 
+               (($this->breakfasts * 0.15) + ($this->lunches * 0.30) + ($this->dinners * 0.30)) * $this->delegation_rate_eur;
+    }
+    
+    /**
+     * Calculate total payment to employee
+     */
+    public function calculateTotalPayment()
+    {
+        return $this->calculateTotalDiet() + $this->accommodation_limit - $this->total_expenses;
+    }
 }
