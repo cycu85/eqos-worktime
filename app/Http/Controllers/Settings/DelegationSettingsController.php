@@ -18,6 +18,7 @@ class DelegationSettingsController extends Controller
             'default_travel_purpose' => DelegationSetting::get('default_travel_purpose', ''),
             'default_country' => DelegationSetting::get('default_country', 'Polska'),
             'default_city' => DelegationSetting::get('default_city', ''),
+            'pdf_email_address' => DelegationSetting::get('pdf_email_address', ''),
         ];
 
         $countries = [
@@ -49,12 +50,14 @@ class DelegationSettingsController extends Controller
             'default_travel_purpose' => 'nullable|string',
             'default_country' => 'nullable|string|max:100',
             'default_city' => 'nullable|string|max:255',
+            'pdf_email_address' => 'nullable|email|max:255',
         ]);
 
         DelegationSetting::set('default_project', $request->default_project ?? '', 'string', 'Domyślny projekt');
         DelegationSetting::set('default_travel_purpose', $request->default_travel_purpose ?? '', 'string', 'Domyślny cel podróży');
         DelegationSetting::set('default_country', $request->default_country ?? '', 'string', 'Domyślny kraj');
         DelegationSetting::set('default_city', $request->default_city ?? '', 'string', 'Domyślna miejscowość');
+        DelegationSetting::set('pdf_email_address', $request->pdf_email_address ?? '', 'email', 'Adres email do automatycznego wysyłania zaakceptowanych delegacji PDF');
 
         return redirect()->route('settings.delegations.index')
             ->with('success', 'Domyślne wartości zostały zaktualizowane.');

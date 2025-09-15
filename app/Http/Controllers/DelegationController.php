@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Delegation;
+use App\Models\DelegationSetting;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\NBPService;
+use App\Mail\DelegationPdfMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use PDF;
 
 class DelegationController extends Controller
@@ -435,6 +438,15 @@ class DelegationController extends Controller
             return redirect()->back()->with('error', 'Wszystkie daty i godziny muszą być uzupełnione przed akceptacją.');
         }
 
+        // Check if required fields for employee approval are filled
+        if (empty($delegation->project)) {
+            return redirect()->back()->with('error', 'Pole "Projekt" musi być uzupełnione przed akceptacją delegacji.');
+        }
+
+        if (empty($delegation->vehicle_registration)) {
+            return redirect()->back()->with('error', 'Pole "Środek lokomocji" musi być uzupełnione przed akceptacją delegacji.');
+        }
+
         // Check if not already approved
         if ($delegation->employee_approval_status === 'approved') {
             return redirect()->back()->with('error', 'Delegacja została już przez Ciebie zaakceptowana.');
@@ -473,6 +485,9 @@ class DelegationController extends Controller
             'supervisor_approval_date' => now(),
             'delegation_status' => 'approved'
         ]);
+
+        // Automatyczne wysyłanie PDF na email (jeśli skonfigurowane)
+        $this->sendDelegationPdfByEmail($delegation);
 
         return redirect()->back()->with('success', 'Delegacja została zaakceptowana przez kierownika.');
     }
@@ -665,5 +680,41 @@ class DelegationController extends Controller
                    str_replace(' ', '_', $delegation->employee_full_name) . '.pdf';
         
         return $pdf->download($filename);
+    }
+
+    /**
+     * Send delegation PDF via email if email is configured
+     */
+    private function sendDelegationPdfByEmail(Delegation $delegation)
+    {
+        try {
+            // Pobierz adres email z ustawień delegacji
+            $emailAddress = DelegationSetting::get('pdf_email_address');
+            
+            // Jeśli email nie jest skonfigurowany, nie wysyłaj
+            if (empty($emailAddress)) {
+                return;
+            }
+
+            // Przelicz wszystkie pola potrzebne do PDF
+            $delegation->calculateDuration()
+                      ->calculateTotalDiet()
+                      ->calculateAmountToPay();
+
+            // Wygeneruj PDF jako string
+            $pdf = \PDF::loadView('delegations.pdf', compact('delegation'));
+            $pdf->setPaper('A4', 'portrait');
+            $pdfContent = $pdf->output();
+
+            // Wyślij email z PDF w załączniku
+            Mail::to($emailAddress)->send(new DelegationPdfMail($delegation, $pdfContent));
+            
+        } catch (\Exception $e) {
+            // Loguj błąd, ale nie przerywaj procesu akceptacji
+            \Log::error('Błąd wysyłania PDF delegacji przez email: ' . $e->getMessage(), [
+                'delegation_id' => $delegation->id,
+                'email' => $emailAddress ?? 'brak'
+            ]);
+        }
     }
 }
