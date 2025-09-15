@@ -133,6 +133,7 @@
                         <!-- Active Status -->
                         <div>
                             <div class="flex items-center">
+                                <input type="hidden" name="active" value="0">
                                 <input type="checkbox" 
                                        name="active" 
                                        id="active" 
