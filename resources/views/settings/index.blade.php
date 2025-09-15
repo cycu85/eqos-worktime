@@ -193,6 +193,197 @@
                     </form>
                 </div>
             </div>
+
+            <!-- SMTP Settings -->
+            <div class="kt-card mt-6">
+                <div class="kt-card-header">
+                    <h3 class="kt-card-title">Ustawienia poczty elektronicznej (SMTP)</h3>
+                </div>
+                <div class="kt-card-body">
+                    <form method="POST" action="{{ route('settings.smtp.update') }}" class="space-y-6">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                                        Konfiguracja SMTP
+                                    </h3>
+                                    <div class="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                                        <p>Skonfiguruj ustawienia serwera SMTP do wysyłania wiadomości email z aplikacji. Te ustawienia są wymagane do funkcji powiadomień email.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- SMTP Host -->
+                            <div>
+                                <label for="mail_host" class="form-kt-label">
+                                    Serwer SMTP <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" 
+                                       name="mail_host" 
+                                       id="mail_host" 
+                                       class="form-kt-control @error('mail_host') border-red-500 @enderror" 
+                                       value="{{ old('mail_host', $smtpSettings['mail_host']) }}"
+                                       placeholder="smtp.gmail.com"
+                                       required>
+                                @error('mail_host')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- SMTP Port -->
+                            <div>
+                                <label for="mail_port" class="form-kt-label">
+                                    Port SMTP <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" 
+                                       name="mail_port" 
+                                       id="mail_port" 
+                                       class="form-kt-control @error('mail_port') border-red-500 @enderror" 
+                                       value="{{ old('mail_port', $smtpSettings['mail_port']) }}"
+                                       placeholder="587"
+                                       min="1" 
+                                       max="65535"
+                                       required>
+                                @error('mail_port')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- SMTP Username -->
+                            <div>
+                                <label for="mail_username" class="form-kt-label">
+                                    Nazwa użytkownika SMTP
+                                </label>
+                                <input type="text" 
+                                       name="mail_username" 
+                                       id="mail_username" 
+                                       class="form-kt-control @error('mail_username') border-red-500 @enderror" 
+                                       value="{{ old('mail_username', $smtpSettings['mail_username']) }}"
+                                       placeholder="twoj-email@gmail.com">
+                                @error('mail_username')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- SMTP Password -->
+                            <div>
+                                <label for="mail_password" class="form-kt-label">
+                                    Hasło SMTP
+                                </label>
+                                <input type="password" 
+                                       name="mail_password" 
+                                       id="mail_password" 
+                                       class="form-kt-control @error('mail_password') border-red-500 @enderror" 
+                                       value="{{ old('mail_password', $smtpSettings['mail_password']) }}"
+                                       placeholder="hasło lub klucz aplikacji">
+                                @error('mail_password')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Encryption -->
+                            <div>
+                                <label for="mail_encryption" class="form-kt-label">
+                                    Szyfrowanie
+                                </label>
+                                <select name="mail_encryption" 
+                                        id="mail_encryption" 
+                                        class="form-kt-select @error('mail_encryption') border-red-500 @enderror">
+                                    <option value="tls" {{ old('mail_encryption', $smtpSettings['mail_encryption']) == 'tls' ? 'selected' : '' }}>TLS</option>
+                                    <option value="ssl" {{ old('mail_encryption', $smtpSettings['mail_encryption']) == 'ssl' ? 'selected' : '' }}>SSL</option>
+                                    <option value="" {{ old('mail_encryption', $smtpSettings['mail_encryption']) == '' ? 'selected' : '' }}>Brak</option>
+                                </select>
+                                @error('mail_encryption')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- From Address -->
+                            <div>
+                                <label for="mail_from_address" class="form-kt-label">
+                                    Adres nadawcy <span class="text-red-500">*</span>
+                                </label>
+                                <input type="email" 
+                                       name="mail_from_address" 
+                                       id="mail_from_address" 
+                                       class="form-kt-control @error('mail_from_address') border-red-500 @enderror" 
+                                       value="{{ old('mail_from_address', $smtpSettings['mail_from_address']) }}"
+                                       placeholder="noreply@twoja-domena.com"
+                                       required>
+                                @error('mail_from_address')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- From Name -->
+                            <div>
+                                <label for="mail_from_name" class="form-kt-label">
+                                    Nazwa nadawcy <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" 
+                                       name="mail_from_name" 
+                                       id="mail_from_name" 
+                                       class="form-kt-control @error('mail_from_name') border-red-500 @enderror" 
+                                       value="{{ old('mail_from_name', $smtpSettings['mail_from_name']) }}"
+                                       placeholder="EQOS WorkTime"
+                                       required>
+                                @error('mail_from_name')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Test Email -->
+                        <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Test połączenia</h4>
+                            <div class="flex items-end space-x-4">
+                                <div class="flex-1">
+                                    <label for="test_email" class="form-kt-label">
+                                        Adres testowy
+                                    </label>
+                                    <input type="email" 
+                                           name="test_email" 
+                                           id="test_email" 
+                                           class="form-kt-control" 
+                                           placeholder="test@example.com">
+                                </div>
+                                <button type="button" 
+                                        onclick="sendTestEmail()" 
+                                        class="btn-kt-secondary">
+                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                                    </svg>
+                                    Wyślij test
+                                </button>
+                            </div>
+                            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                Wyślij testową wiadomość aby sprawdzić konfigurację SMTP.
+                            </p>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <button type="submit" class="btn-kt-primary">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Zapisz ustawienia SMTP
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -228,5 +419,55 @@
                 logoInput.disabled = false;
             }
         });
+
+        // Test email functionality
+        function sendTestEmail() {
+            const testEmail = document.getElementById('test_email').value;
+            const button = event.target;
+            
+            if (!testEmail) {
+                alert('Podaj adres email do testu');
+                return;
+            }
+
+            // Disable button
+            button.disabled = true;
+            button.innerHTML = '<svg class="w-4 h-4 mr-2 animate-spin" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"></path></svg>Wysyłanie...';
+
+            fetch('{{ route("settings.smtp.test") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    test_email: testEmail,
+                    // Include current form values for testing
+                    mail_host: document.getElementById('mail_host').value,
+                    mail_port: document.getElementById('mail_port').value,
+                    mail_username: document.getElementById('mail_username').value,
+                    mail_password: document.getElementById('mail_password').value,
+                    mail_encryption: document.getElementById('mail_encryption').value,
+                    mail_from_address: document.getElementById('mail_from_address').value,
+                    mail_from_name: document.getElementById('mail_from_name').value,
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Email testowy został wysłany pomyślnie!');
+                } else {
+                    alert('Błąd wysyłania emaila: ' + (data.message || 'Nieznany błąd'));
+                }
+            })
+            .catch(error => {
+                alert('Błąd połączenia: ' + error.message);
+            })
+            .finally(() => {
+                // Re-enable button
+                button.disabled = false;
+                button.innerHTML = '<svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>Wyślij test';
+            });
+        }
     </script>
 </x-app-layout>
