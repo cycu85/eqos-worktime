@@ -25,7 +25,7 @@ class TestMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Test konfiguracji SMTP - EQOS WorkTime',
+            subject: 'Test konfiguracji SMTP - ' . \App\Models\Setting::getAppName(),
         );
     }
 
@@ -35,7 +35,7 @@ class TestMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            text: 'emails.test',
+            view: 'emails.test',
         );
     }
 
