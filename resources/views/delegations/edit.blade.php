@@ -65,18 +65,28 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <label for="order_date" class="form-kt-label">Data polecenia wyjazdu <span class="text-red-500">*</span></label>
-                                <input type="date" class="form-kt-control" id="order_date" name="order_date" 
-                                       value="{{ old('order_date', $delegation->order_date->format('Y-m-d')) }}" required>
+                                @if(auth()->user()->isAdmin() || auth()->user()->isKierownik())
+                                    <input type="date" class="form-kt-control" id="order_date" name="order_date" 
+                                           value="{{ old('order_date', $delegation->order_date->format('Y-m-d')) }}" required>
+                                @else
+                                    <input type="date" class="form-kt-control bg-gray-100 cursor-not-allowed" id="order_date" name="order_date" 
+                                           value="{{ old('order_date', $delegation->order_date->format('Y-m-d')) }}" readonly required>
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                        Tylko administrator i kierownik mogą edytować datę polecenia wyjazdu
+                                    </p>
+                                @endif
                             </div>
                             <div>
                                 <label for="departure_date" class="form-kt-label">Data wyjazdu</label>
                                 <input type="date" class="form-kt-control" id="departure_date" name="departure_date" 
-                                       value="{{ old('departure_date', $delegation->departure_date?->format('Y-m-d')) }}">
+                                       value="{{ old('departure_date', $delegation->departure_date?->format('Y-m-d')) }}"
+                                       max="{{ now()->format('Y-m-d') }}">
                             </div>
                             <div>
                                 <label for="arrival_date" class="form-kt-label">Data przyjazdu</label>
                                 <input type="date" class="form-kt-control" id="arrival_date" name="arrival_date" 
-                                       value="{{ old('arrival_date', $delegation->arrival_date?->format('Y-m-d')) }}">
+                                       value="{{ old('arrival_date', $delegation->arrival_date?->format('Y-m-d')) }}"
+                                       max="{{ now()->format('Y-m-d') }}">
                             </div>
                         </div>
 
@@ -86,11 +96,17 @@
                                 <label for="departure_time" class="form-kt-label">Godzina wyjazdu</label>
                                 <input type="time" class="form-kt-control" id="departure_time" name="departure_time" 
                                        value="{{ old('departure_time', $delegation->departure_time) }}">
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    Nie można wprowadzić daty i godziny w przyszłości
+                                </p>
                             </div>
                             <div>
                                 <label for="arrival_time" class="form-kt-label">Godzina przyjazdu</label>
                                 <input type="time" class="form-kt-control" id="arrival_time" name="arrival_time" 
                                        value="{{ old('arrival_time', $delegation->arrival_time) }}">
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    Nie można wprowadzić daty i godziny w przyszłości
+                                </p>
                             </div>
                         </div>
 
@@ -207,6 +223,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             const departureDate = document.getElementById('departure_date');
             const arrivalDate = document.getElementById('arrival_date');
+            const departureTime = document.getElementById('departure_time');
+            const arrivalTime = document.getElementById('arrival_time');
             const nightsCount = document.getElementById('nights_count');
 
             function calculateNights() {
@@ -222,8 +240,33 @@
                 }
             }
 
+            function validateDateTime() {
+                const now = new Date();
+                const today = now.toISOString().split('T')[0];
+                
+                // Sprawdź datę i godzinę wyjazdu
+                if (departureDate.value && departureTime.value) {
+                    const departureDateTime = new Date(departureDate.value + 'T' + departureTime.value);
+                    if (departureDateTime > now) {
+                        alert('Data i godzina wyjazdu nie może być w przyszłości!');
+                        departureTime.value = '';
+                    }
+                }
+                
+                // Sprawdź datę i godzinę przyjazdu
+                if (arrivalDate.value && arrivalTime.value) {
+                    const arrivalDateTime = new Date(arrivalDate.value + 'T' + arrivalTime.value);
+                    if (arrivalDateTime > now) {
+                        alert('Data i godzina przyjazdu nie może być w przyszłości!');
+                        arrivalTime.value = '';
+                    }
+                }
+            }
+
             departureDate.addEventListener('change', calculateNights);
             arrivalDate.addEventListener('change', calculateNights);
+            departureTime.addEventListener('change', validateDateTime);
+            arrivalTime.addEventListener('change', validateDateTime);
         });
     </script>
 </x-app-layout>

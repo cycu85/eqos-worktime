@@ -302,14 +302,21 @@ class DelegationController extends Controller
         }
         $request->merge($input);
 
+        // Walidacja uprawnień do edycji daty polecenia wyjazdu
+        $orderDateRules = 'required|date';
+        if (!$user->isAdmin() && !$user->isKierownik()) {
+            // Dla innych ról data polecenia wyjazdu musi pozostać bez zmian
+            $orderDateRules .= '|in:' . $delegation->order_date->format('Y-m-d');
+        }
+
         $validated = $request->validate([
             'employee_full_name' => 'required|string|max:255',
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
-            'order_date' => 'required|date',
-            'departure_date' => 'nullable|date|after_or_equal:order_date',
+            'order_date' => $orderDateRules,
+            'departure_date' => 'nullable|date|after_or_equal:order_date|before_or_equal:today',
             'departure_time' => 'nullable|date_format:H:i',
-            'arrival_date' => 'nullable|date|after_or_equal:departure_date',
+            'arrival_date' => 'nullable|date|after_or_equal:departure_date|before_or_equal:today',
             'arrival_time' => 'nullable|date_format:H:i',
             'travel_purpose' => 'required|string',
             'project' => 'nullable|string|max:255',
@@ -324,8 +331,11 @@ class DelegationController extends Controller
             'total_expenses' => 'nullable|numeric|min:0',
             'delegation_status' => 'nullable|in:draft,approved,completed,cancelled',
         ], [
+            'order_date.in' => 'Brak uprawnień do zmiany daty polecenia wyjazdu. Tylko administrator i kierownik mogą edytować to pole.',
             'departure_date.after_or_equal' => 'Data wyjazdu nie może być wcześniejsza niż data polecenia wyjazdu.',
+            'departure_date.before_or_equal' => 'Data wyjazdu nie może być w przyszłości.',
             'arrival_date.after_or_equal' => 'Data przyjazdu nie może być wcześniejsza niż data wyjazdu.',
+            'arrival_date.before_or_equal' => 'Data przyjazdu nie może być w przyszłości.',
         ]);
 
         if ($validated['country'] !== 'Polska' && !empty($validated['arrival_date'])) {

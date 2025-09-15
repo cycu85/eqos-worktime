@@ -15,16 +15,24 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($this->user()->id),
-            ],
-        ];
+        $user = $this->user();
+        
+        // Tylko administrator może edytować pełny profil
+        if ($user->isAdmin()) {
+            return [
+                'name' => ['required', 'string', 'max:255'],
+                'email' => [
+                    'required',
+                    'string',
+                    'lowercase',
+                    'email',
+                    'max:255',
+                    Rule::unique(User::class)->ignore($this->user()->id),
+                ],
+            ];
+        }
+        
+        // Inne role mogą edytować tylko hasło (brak reguł dla name/email)
+        return [];
     }
 }
