@@ -121,19 +121,17 @@
                             </div>
                         </a>
 
-                        @can('create', \App\Models\Task::class)
-                            <a href="{{ route('tasks.create') }}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-200 group">
-                                <div class="p-3 bg-green-100 dark:bg-green-900 rounded-lg mr-4 group-hover:bg-green-200 dark:group-hover:bg-green-800 transition duration-200">
-                                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h4 class="font-semibold text-gray-900 dark:text-gray-100">Nowe zadanie</h4>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">Utwórz zadanie</p>
-                                </div>
-                            </a>
-                        @endcan
+                        <a href="{{ route('delegations.index') }}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-200 group">
+                            <div class="p-3 bg-amber-100 dark:bg-amber-900 rounded-lg mr-4 group-hover:bg-amber-200 dark:group-hover:bg-amber-800 transition duration-200">
+                                <svg class="w-6 h-6 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-gray-100">Delegacje</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Zarządzaj delegacjami</p>
+                            </div>
+                        </a>
 
                         @if(auth()->user()->isAdmin())
                             <a href="{{ route('vehicles.index') }}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-200 group">
