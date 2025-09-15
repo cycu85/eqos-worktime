@@ -204,8 +204,14 @@
                                             @endif
                                         </td>
                                         <td class="max-w-xs">
-                                            <div class="text-gray-900 dark:text-gray-100 break-words">
-                                                {{ $team->members_names ?: 'Brak członków' }}
+                                            <div class="text-gray-900 dark:text-gray-100 break-words overflow-hidden">
+                                                @if($team->members_names)
+                                                    <span title="{{ $team->members_names }}">
+                                                        {{ Str::limit($team->members_names, 50) }}
+                                                    </span>
+                                                @else
+                                                    Brak członków
+                                                @endif
                                             </div>
                                             <div class="text-sm text-gray-500 dark:text-gray-400">
                                                 {{ count($team->members ?? []) }} członków
