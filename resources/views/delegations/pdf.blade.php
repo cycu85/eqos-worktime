@@ -148,13 +148,17 @@
         <tr>
             <td class="gray-bg">Polecenie wyjazdu z dnia</td>
             <td class="red-text">{{ $delegation->order_date ? \Carbon\Carbon::parse($delegation->order_date)->format('d.m.Y') : '{Data polecenia wyjazdu}' }}</td>
-            <td colspan="2"></td>
-            <td class="gray-bg">Nr delegacji</td>
-            <td class="red-text">{{ $delegation->id }}</td>
+            <td colspan="4"></td>
         </tr>
         <tr>
             <td>Data wyjazdu - przekroczenia granicy</td>
             <td class="red-text">{{ $delegation->departure_date ? \Carbon\Carbon::parse($delegation->departure_date)->format('d.m.Y') : '{Data wyjazdu}' }}</td>
+            <td class="gray-bg">Nr delegacji</td>
+            <td style="border-bottom: 1px solid #000; border-top: 1px solid #000; border-left: none; border-right: none; min-height: 20px;"></td>
+            <td colspan="2"></td>
+        </tr>
+        <tr>
+            <td colspan="2"></td>
             <td>Data przyjazdu - przekroczenia granicy</td>
             <td class="red-text">{{ $delegation->arrival_date ? \Carbon\Carbon::parse($delegation->arrival_date)->format('d.m.Y') : '{Data przyjazdu}' }}</td>
             <td colspan="2"></td>
