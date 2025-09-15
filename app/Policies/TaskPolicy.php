@@ -113,4 +113,13 @@ class TaskPolicy
     {
         return $user->isAdmin();
     }
+
+    /**
+     * Determine whether the user can export tasks.
+     */
+    public function export(User $user): bool
+    {
+        // Tylko admin i kierownik mogą eksportować zadania
+        return $user->isAdmin() || $user->isKierownik();
+    }
 }

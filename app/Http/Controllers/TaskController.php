@@ -18,6 +18,8 @@ class TaskController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Task::class);
+        
         $user = Auth::user();
         
         // Build base query
@@ -429,10 +431,7 @@ class TaskController extends Controller
 
     public function export(Request $request)
     {
-        // Only admin and kierownik can export
-        if (!auth()->user()->isAdmin() && !auth()->user()->isKierownik()) {
-            abort(403);
-        }
+        $this->authorize('export', Task::class);
 
         $fileName = 'zadania_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
         
@@ -441,10 +440,7 @@ class TaskController extends Controller
 
     public function exportDaily(Request $request)
     {
-        // Only admin and kierownik can export
-        if (!auth()->user()->isAdmin() && !auth()->user()->isKierownik()) {
-            abort(403);
-        }
+        $this->authorize('export', Task::class);
         
         $fileName = 'raport_dzienny_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
         
