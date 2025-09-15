@@ -177,6 +177,23 @@
                                     </th>
                                     <th>Zadania</th>
                                     <th>
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'last_login_at', 'direction' => request('sort') == 'last_login_at' && request('direction', 'asc') == 'asc' ? 'desc' : 'asc']) }}" 
+                                           class="flex items-center space-x-1 hover:text-blue-600 dark:hover:text-blue-400">
+                                            <span>Ostatnie logowanie</span>
+                                            @if(request('sort') == 'last_login_at')
+                                                @if(request('direction', 'asc') == 'asc')
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @else
+                                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @endif
+                                            @endif
+                                        </a>
+                                    </th>
+                                    <th>
                                         <a href="{{ request()->fullUrlWithQuery(['sort' => 'created_at', 'direction' => request('sort') == 'created_at' && request('direction', 'asc') == 'asc' ? 'desc' : 'asc']) }}" 
                                            class="flex items-center space-x-1 hover:text-blue-600 dark:hover:text-blue-400">
                                             <span>Utworzono</span>
@@ -247,6 +264,15 @@
                                                 </span>
                                             @else
                                                 <span class="text-gray-400 dark:text-gray-500">Brak zadań</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($user->last_login_at)
+                                                <span class="text-gray-900 dark:text-gray-100">
+                                                    {{ $user->last_login_at->format('d.m.Y H:i') }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400 dark:text-gray-500">Nigdy</span>
                                             @endif
                                         </td>
                                         <td>

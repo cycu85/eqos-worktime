@@ -34,7 +34,7 @@ class UserController extends Controller
         $sortBy = $request->get('sort', 'name');
         $sortOrder = $request->get('direction', 'asc');
         
-        $allowedSorts = ['name', 'email', 'role', 'created_at', 'tasks_count'];
+        $allowedSorts = ['name', 'email', 'role', 'created_at', 'last_login_at', 'tasks_count'];
         if (in_array($sortBy, $allowedSorts)) {
             if ($sortBy === 'tasks_count') {
                 $query->orderBy('tasks_count', $sortOrder);
