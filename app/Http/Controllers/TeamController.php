@@ -34,10 +34,8 @@ class TeamController extends Controller
                 $query->where('active', false);
             }
             // If status is empty string (all teams), don't apply any filter
-        } else {
-            // By default show only active teams when no status is specified
-            $query->active();
         }
+        // By default show all teams when no status is specified
         
         // Apply sorting
         $sortBy = $request->get('sort', 'name');
