@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
+use App\Mail\TestMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
@@ -126,11 +127,7 @@ class SettingController extends Controller
             ]);
 
             // Send test email
-            Mail::raw('To jest testowa wiadomość email z aplikacji EQOS WorkTime. Jeśli otrzymałeś tę wiadomość, konfiguracja SMTP działa poprawnie.', function (Message $message) use ($validated) {
-                $message->to($validated['test_email'])
-                    ->subject('Test konfiguracji SMTP - EQOS WorkTime')
-                    ->from($validated['mail_from_address'], $validated['mail_from_name']);
-            });
+            Mail::to($validated['test_email'])->send(new TestMail());
 
             return response()->json([
                 'success' => true,
