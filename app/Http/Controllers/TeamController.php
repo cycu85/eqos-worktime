@@ -59,17 +59,28 @@ class TeamController extends Controller
     {
         $this->authorize('create', Team::class);
         
-        // Get leaders who are not already assigned to other teams
-        $assignedLeaderIds = Team::whereNotNull('leader_id')->pluck('leader_id');
+        // Get leaders who are not already assigned to other active teams
+        $assignedLeaderIds = Team::active()->whereNotNull('leader_id')->pluck('leader_id');
         $leaders = User::where('role', 'lider')
             ->whereNotIn('id', $assignedLeaderIds)
             ->orderBy('name')
             ->get();
             
-        $workers = User::where('role', 'pracownik')->orderBy('name')->get();
+        // Get workers who are not members of other active teams
+        $activeTeamMemberIds = Team::active()
+            ->get()
+            ->pluck('members')
+            ->flatten()
+            ->unique()
+            ->toArray();
+            
+        $workers = User::where('role', 'pracownik')
+            ->whereNotIn('id', $activeTeamMemberIds)
+            ->orderBy('name')
+            ->get();
         
-        // Get vehicles that are not already assigned to other teams
-        $assignedVehicleIds = Team::whereNotNull('vehicle_id')->pluck('vehicle_id');
+        // Get vehicles that are not already assigned to other active teams
+        $assignedVehicleIds = Team::active()->whereNotNull('vehicle_id')->pluck('vehicle_id');
         $vehicles = Vehicle::active()
             ->whereNotIn('id', $assignedVehicleIds)
             ->orderBy('name')
@@ -111,8 +122,9 @@ class TeamController extends Controller
     {
         $this->authorize('update', $team);
         
-        // Get leaders who are not already assigned to other teams (exclude current team)
-        $assignedLeaderIds = Team::whereNotNull('leader_id')
+        // Get leaders who are not already assigned to other active teams (exclude current team)
+        $assignedLeaderIds = Team::active()
+            ->whereNotNull('leader_id')
             ->where('id', '!=', $team->id)
             ->pluck('leader_id');
         $leaders = User::where('role', 'lider')
@@ -120,10 +132,23 @@ class TeamController extends Controller
             ->orderBy('name')
             ->get();
             
-        $workers = User::where('role', 'pracownik')->orderBy('name')->get();
+        // Get workers who are not members of other active teams (exclude current team)
+        $activeTeamMemberIds = Team::active()
+            ->where('id', '!=', $team->id)
+            ->get()
+            ->pluck('members')
+            ->flatten()
+            ->unique()
+            ->toArray();
+            
+        $workers = User::where('role', 'pracownik')
+            ->whereNotIn('id', $activeTeamMemberIds)
+            ->orderBy('name')
+            ->get();
         
-        // Get vehicles that are not already assigned to other teams (exclude current team)
-        $assignedVehicleIds = Team::whereNotNull('vehicle_id')
+        // Get vehicles that are not already assigned to other active teams (exclude current team)
+        $assignedVehicleIds = Team::active()
+            ->whereNotNull('vehicle_id')
             ->where('id', '!=', $team->id)
             ->pluck('vehicle_id');
         $vehicles = Vehicle::active()
