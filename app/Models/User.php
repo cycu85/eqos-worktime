@@ -77,7 +77,14 @@ class User extends Authenticatable
      */
     public function teamTasks()
     {
-        return Task::whereRaw("FIND_IN_SET(?, REPLACE(team, ', ', ','))", [$this->name])->orderBy('start_date', 'desc');
+        // Bezpieczniejsze podejście - używamy LIKE z escapowanymi wartościami
+        $escapedName = str_replace(['%', '_'], ['\\%', '\\_'], $this->name);
+        return Task::where(function($query) use ($escapedName) {
+            $query->where('team', 'LIKE', $escapedName . ',%')      // Na początku
+                  ->orWhere('team', 'LIKE', '%, ' . $escapedName . ',%')  // W środku
+                  ->orWhere('team', 'LIKE', '%, ' . $escapedName)     // Na końcu
+                  ->orWhere('team', '=', $escapedName);               // Jedyny
+        })->orderBy('start_date', 'desc');
     }
 
     /**
@@ -89,9 +96,15 @@ class User extends Authenticatable
     {
         if ($this->isLider()) {
             // Lider sees tasks where they are leader OR part of the team
-            return Task::where(function ($q) {
+            $escapedName = str_replace(['%', '_'], ['\\%', '\\_'], $this->name);
+            return Task::where(function ($q) use ($escapedName) {
                 $q->where('leader_id', $this->id)
-                  ->orWhereRaw("FIND_IN_SET(?, REPLACE(team, ', ', ','))", [$this->name]);
+                  ->orWhere(function($subQuery) use ($escapedName) {
+                      $subQuery->where('team', 'LIKE', $escapedName . ',%')      // Na początku
+                               ->orWhere('team', 'LIKE', '%, ' . $escapedName . ',%')  // W środku
+                               ->orWhere('team', 'LIKE', '%, ' . $escapedName)     // Na końcu
+                               ->orWhere('team', '=', $escapedName);               // Jedyny
+                  });
             })->orderBy('start_date', 'desc');
         } else {
             // Pracownik sees only tasks where they are part of the team

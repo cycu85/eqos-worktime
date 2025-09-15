@@ -26,10 +26,16 @@ class TaskController extends Controller
             $query = Task::with(['vehicles', 'leader', 'team', 'taskType']);
         } elseif ($user->isLider()) {
             // Lider sees tasks where they are leader OR part of the team
+            $escapedName = str_replace(['%', '_'], ['\\%', '\\_'], $user->name);
             $query = Task::with(['vehicles', 'leader', 'team', 'taskType'])
-                ->where(function ($q) use ($user) {
+                ->where(function ($q) use ($user, $escapedName) {
                     $q->where('leader_id', $user->id)
-                      ->orWhereRaw("FIND_IN_SET(?, REPLACE(team, ', ', ','))", [$user->name]);
+                      ->orWhere(function($subQuery) use ($escapedName) {
+                          $subQuery->where('team', 'LIKE', $escapedName . ',%')      // Na początku
+                                   ->orWhere('team', 'LIKE', '%, ' . $escapedName . ',%')  // W środku
+                                   ->orWhere('team', 'LIKE', '%, ' . $escapedName)     // Na końcu
+                                   ->orWhere('team', '=', $escapedName);               // Jedyny
+                      });
                 });
         } else {
             // Pracownik sees only tasks where they are part of the team
