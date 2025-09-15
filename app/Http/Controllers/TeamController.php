@@ -26,15 +26,16 @@ class TeamController extends Controller
         }
         
         // Apply active filter
-        if ($request->filled('status')) {
+        if ($request->has('status')) {
             $status = $request->get('status');
             if ($status === 'active') {
                 $query->where('active', true);
             } elseif ($status === 'inactive') {
                 $query->where('active', false);
             }
+            // If status is empty string (all teams), don't apply any filter
         } else {
-            // By default show only active teams
+            // By default show only active teams when no status is specified
             $query->active();
         }
         
