@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'EQOS WorkTime') }} - Logowanie</title>
+    <title>{{ \App\Models\Setting::getAppName() }} - Logowanie</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,7 @@
                         Zaloguj się
                     </h1>
                     <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        Dostęp do systemu EQOS WorkTime
+                        Dostęp do systemu {{ \App\Models\Setting::getAppName() }}
                     </p>
                 </div>
 
