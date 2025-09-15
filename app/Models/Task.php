@@ -20,14 +20,12 @@ class Task extends Model
         'team_id',
         'team',
         'notes',
-        'images',
         'status',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
-        'images' => 'array',
     ];
 
     public function vehicles()
@@ -53,6 +51,11 @@ class Task extends Model
     public function workLogs()
     {
         return $this->hasMany(TaskWorkLog::class)->orderBy('work_date');
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(TaskAttachment::class)->orderBy('created_at');
     }
 
     public function getDurationHoursAttribute()

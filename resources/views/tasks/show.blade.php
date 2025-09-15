@@ -187,36 +187,52 @@
                 </div>
             @endif
 
-            <!-- Images Gallery -->
-            @if($task->images && count($task->images) > 0)
+            <!-- Attachments Gallery -->
+            @if($task->attachments && count($task->attachments) > 0)
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
-                            Załączone zdjęcia
-                            <span class="text-sm text-gray-500 dark:text-gray-400 font-normal">({{ count($task->images) }})</span>
+                            Załączniki
+                            <span class="text-sm text-gray-500 dark:text-gray-400 font-normal">({{ count($task->attachments) }})</span>
                         </h4>
                         
                         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                            @foreach($task->images as $index => $image)
+                            @foreach($task->attachments as $index => $attachment)
                                 <div class="relative group">
-                                    <div class="aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
-                                        <img src="{{ asset('storage/' . $image['path']) }}" 
-                                             alt="{{ $image['original_name'] }}" 
-                                             class="w-full h-full object-cover cursor-pointer hover:opacity-75 hover:scale-105 transition-all duration-200 gallery-image"
-                                             style="cursor: pointer !important;"
-                                             data-image-src="{{ asset('storage/' . $image['path']) }}"
-                                             data-filename="{{ $image['original_name'] }}"
-                                             data-index="{{ $index + 1 }}"
-                                             data-total="{{ count($task->images) }}">
-                                    </div>
+                                    @if($attachment->isImage())
+                                        <div class="aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
+                                            <img src="{{ $attachment->url }}" 
+                                                 alt="{{ $attachment->original_name }}" 
+                                                 class="w-full h-full object-cover cursor-pointer hover:opacity-75 hover:scale-105 transition-all duration-200 gallery-image"
+                                                 style="cursor: pointer !important;"
+                                                 data-image-src="{{ $attachment->url }}"
+                                                 data-filename="{{ $attachment->original_name }}"
+                                                 data-index="{{ $index + 1 }}"
+                                                 data-total="{{ count($task->attachments->where('mime_type', 'like', 'image/%')) }}">
+                                        </div>
+                                    @else
+                                        <div class="aspect-square flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 border-2 border-dashed border-gray-300 dark:border-gray-600">
+                                            <div class="text-center">
+                                                <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                <p class="mt-1 text-xs text-gray-500 truncate px-2">{{ Str::limit($attachment->original_name, 15) }}</p>
+                                            </div>
+                                        </div>
+                                    @endif
                                     
-                                    <!-- Image overlay with filename -->
-                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2 rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                        <p class="text-white text-xs truncate">{{ $image['original_name'] }}</p>
-                                        @if(isset($image['uploaded_at']))
-                                            <p class="text-gray-300 text-xs">{{ \Carbon\Carbon::parse($image['uploaded_at'])->format('d.m.Y H:i') }}</p>
-                                        @endif
-                                    </div>
+                                    <!-- Attachment overlay with info -->
+                                    @if($attachment->isImage())
+                                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2 rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                            <p class="text-white text-xs truncate">{{ $attachment->original_name }}</p>
+                                            <p class="text-gray-300 text-xs">{{ $attachment->formatted_size }} • {{ $attachment->created_at->format('d.m.Y H:i') }}</p>
+                                        </div>
+                                    @else
+                                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2 rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                            <p class="text-white text-xs">{{ $attachment->formatted_size }}</p>
+                                            <p class="text-gray-300 text-xs">{{ $attachment->created_at->format('d.m.Y H:i') }}</p>
+                                        </div>
+                                    @endif
                                     
                                     <!-- Click to view hint -->
                                     <div class="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg">

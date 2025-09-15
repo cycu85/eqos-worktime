@@ -52,7 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::get('delegations/{delegation}/pdf', [DelegationController::class, 'generatePdf'])->name('delegations.pdf');
     
     // Task image removal
-    Route::delete('tasks/{task}/images/{imageIndex}', [TaskController::class, 'removeImage'])->name('tasks.removeImage');
+    Route::delete('tasks/{task}/attachments/{attachment}', [TaskController::class, 'removeAttachment'])->name('tasks.removeAttachment');
     
     // Task export - only for admin and kierownik
     Route::get('tasks/export/excel', [TaskController::class, 'export'])->name('tasks.export')->middleware('role:admin,kierownik');

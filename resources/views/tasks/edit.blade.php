@@ -324,30 +324,42 @@
                             @enderror
                         </div>
 
-                        <!-- Images -->
+                        <!-- Attachments -->
                         <div class="mb-6">
                             <label class="form-kt-label">
-                                Zdjęcia <span class="text-gray-500">(opcjonalnie)</span>
+                                Załączniki <span class="text-gray-500">(opcjonalnie)</span>
                             </label>
                             
-                            <!-- Current Images -->
-                            @if($task->images && count($task->images) > 0)
+                            <!-- Current Attachments -->
+                            @if($task->attachments && count($task->attachments) > 0)
                                 <div class="mb-4">
-                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Aktualnie załączone zdjęcia:</p>
-                                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" id="current-images">
-                                        @foreach($task->images as $index => $image)
-                                            <div class="relative group current-image" data-index="{{ $index }}">
-                                                <img src="{{ asset('storage/' . $image['path']) }}" 
-                                                     alt="{{ $image['original_name'] }}" 
-                                                     class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-75 transition-opacity"
-                                                     onclick="showImagePreview('{{ asset('storage/' . $image['path']) }}', '{{ $image['original_name'] }}')">
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Aktualnie załączone pliki:</p>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" id="current-attachments">
+                                        @foreach($task->attachments as $attachment)
+                                            <div class="relative group current-attachment" data-id="{{ $attachment->id }}">
+                                                @if($attachment->isImage())
+                                                    <img src="{{ $attachment->url }}" 
+                                                         alt="{{ $attachment->original_name }}" 
+                                                         class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-75 transition-opacity"
+                                                         onclick="showImagePreview('{{ $attachment->url }}', '{{ $attachment->original_name }}')">
+                                                @else
+                                                    <div class="w-full h-24 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                         onclick="window.open('{{ $attachment->url }}', '_blank')">
+                                                        <div class="text-center">
+                                                            <svg class="w-8 h-8 text-gray-400 mx-auto mb-1" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                                            </svg>
+                                                            <div class="text-xs text-gray-600 dark:text-gray-400">Plik</div>
+                                                        </div>
+                                                    </div>
+                                                @endif
                                                 <button type="button" 
-                                                        onclick="removeCurrentImage({{ $index }})"
+                                                        onclick="removeCurrentAttachment({{ $attachment->id }})"
                                                         class="absolute top-1 right-1 bg-red-500 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">
                                                     ×
                                                 </button>
                                                 <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 rounded-b-lg truncate">
-                                                    {{ $image['original_name'] }}
+                                                    {{ $attachment->original_name }}
                                                 </div>
                                             </div>
                                         @endforeach
@@ -355,33 +367,33 @@
                                 </div>
                             @endif
                             
-                            <!-- Upload New Images -->
+                            <!-- Upload New Attachments -->
                             <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
                                 <input type="file" 
-                                       id="images" 
-                                       name="images[]" 
+                                       id="attachments" 
+                                       name="attachments[]" 
                                        multiple 
-                                       accept="image/*"
+                                       accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
                                        class="hidden"
-                                       onchange="previewNewImages(this)">
-                                <label for="images" class="flex flex-col items-center justify-center cursor-pointer">
+                                       onchange="previewNewFiles(this)">
+                                <label for="attachments" class="flex flex-col items-center justify-center cursor-pointer">
                                     <svg class="w-10 h-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                     </svg>
-                                    <span class="text-sm text-gray-600 dark:text-gray-400">Kliknij aby wybrać zdjęcia</span>
-                                    <span class="text-xs text-gray-500 dark:text-gray-500 mt-1">JPEG, PNG, GIF, WEBP (max 10MB każde)</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Kliknij aby wybrać pliki</span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-500 mt-1">Zdjęcia, PDF, DOC, XLS, TXT (max 10MB każdy)</span>
                                 </label>
                             </div>
                             
-                            <!-- Preview New Images -->
-                            <div id="new-images-preview" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-3 hidden">
-                                <!-- New images will be previewed here -->
+                            <!-- Preview New Files -->
+                            <div id="new-files-preview" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-3 hidden">
+                                <!-- New files will be previewed here -->
                             </div>
                             
-                            @error('images')
+                            @error('attachments')
                                 <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
-                            @error('images.*')
+                            @error('attachments.*')
                                 <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
                         </div>
@@ -821,19 +833,20 @@
             document.body.style.overflow = 'auto';
         }
 
-        function previewNewImages(input) {
-            const previewContainer = document.getElementById('new-images-preview');
+        function previewNewFiles(input) {
+            const previewContainer = document.getElementById('new-files-preview');
             previewContainer.innerHTML = '';
             
             if (input.files && input.files.length > 0) {
                 previewContainer.classList.remove('hidden');
                 
                 Array.from(input.files).forEach((file, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'relative group';
+                    
                     if (file.type.startsWith('image/')) {
                         const reader = new FileReader();
                         reader.onload = function(e) {
-                            const div = document.createElement('div');
-                            div.className = 'relative group';
                             div.innerHTML = `
                                 <img src="${e.target.result}" 
                                      alt="${file.name}" 
@@ -843,19 +856,30 @@
                                     ${file.name}
                                 </div>
                             `;
-                            previewContainer.appendChild(div);
                         };
                         reader.readAsDataURL(file);
+                    } else {
+                        div.innerHTML = `
+                            <div class="w-full h-24 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                                <div class="text-center">
+                                    <svg class="w-8 h-8 text-gray-400 mx-auto mb-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <div class="text-xs text-gray-600 dark:text-gray-400 truncate">${file.name}</div>
+                                </div>
+                            </div>
+                        `;
                     }
+                    previewContainer.appendChild(div);
                 });
             } else {
                 previewContainer.classList.add('hidden');
             }
         }
 
-        function removeCurrentImage(index) {
-            if (confirm('Czy na pewno chcesz usunąć to zdjęcie?')) {
-                fetch(`/tasks/{{ $task->id }}/images/${index}`, {
+        function removeCurrentAttachment(attachmentId) {
+            if (confirm('Czy na pewno chcesz usunąć ten załącznik?')) {
+                fetch(`/tasks/{{ $task->id }}/attachments/${attachmentId}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -865,36 +889,27 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Remove the image element from DOM
-                        const imageElement = document.querySelector(`.current-image[data-index="${index}"]`);
-                        if (imageElement) {
-                            imageElement.remove();
+                        // Remove the attachment element from DOM
+                        const attachmentElement = document.querySelector(`.current-attachment[data-id="${attachmentId}"]`);
+                        if (attachmentElement) {
+                            attachmentElement.remove();
                         }
                         
-                        // Update indices for remaining images
-                        const remainingImages = document.querySelectorAll('.current-image');
-                        remainingImages.forEach((img, newIndex) => {
-                            if (parseInt(img.dataset.index) > index) {
-                                img.dataset.index = parseInt(img.dataset.index) - 1;
-                                const removeButton = img.querySelector('button');
-                                removeButton.setAttribute('onclick', `removeCurrentImage(${parseInt(img.dataset.index)})`);
-                            }
-                        });
-                        
-                        // Hide current images section if no images left
-                        if (remainingImages.length === 0) {
-                            const currentImagesSection = document.getElementById('current-images').closest('.mb-4');
-                            if (currentImagesSection) {
-                                currentImagesSection.style.display = 'none';
+                        // Hide current attachments section if no attachments left
+                        const remainingAttachments = document.querySelectorAll('.current-attachment');
+                        if (remainingAttachments.length === 0) {
+                            const currentAttachmentsSection = document.getElementById('current-attachments').closest('.mb-4');
+                            if (currentAttachmentsSection) {
+                                currentAttachmentsSection.style.display = 'none';
                             }
                         }
                     } else {
-                        alert('Błąd podczas usuwania zdjęcia.');
+                        alert('Błąd podczas usuwania załącznika.');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Błąd podczas usuwania zdjęcia.');
+                    alert('Błąd podczas usuwania załącznika.');
                 });
             }
         }

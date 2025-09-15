@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\TaskExport;
 use App\Exports\DailyTaskExport;
 use App\Models\Task;
+use App\Models\TaskAttachment;
 use App\Models\TaskType;
 use App\Models\Team;
 use App\Models\User;
@@ -25,11 +26,11 @@ class TaskController extends Controller
         // Build base query
         if ($user->isAdmin() || $user->isKierownik()) {
             // Admin and Kierownik see all tasks
-            $query = Task::with(['vehicles', 'leader', 'team', 'taskType']);
+            $query = Task::with(['vehicles', 'leader', 'team', 'taskType', 'attachments']);
         } elseif ($user->isLider()) {
             // Lider sees tasks where they are leader OR part of the team
             $escapedName = str_replace(['%', '_'], ['\\%', '\\_'], $user->name);
-            $query = Task::with(['vehicles', 'leader', 'team', 'taskType'])
+            $query = Task::with(['vehicles', 'leader', 'team', 'taskType', 'attachments'])
                 ->where(function ($q) use ($user, $escapedName) {
                     $q->where('leader_id', $user->id)
                       ->orWhere(function($subQuery) use ($escapedName) {
@@ -41,7 +42,7 @@ class TaskController extends Controller
                 });
         } else {
             // Pracownik sees only tasks where they are part of the team
-            $query = $user->teamTasks()->with(['vehicles', 'leader', 'team', 'taskType']);
+            $query = $user->teamTasks()->with(['vehicles', 'leader', 'team', 'taskType', 'attachments']);
         }
         
         // Apply search
@@ -285,8 +286,8 @@ class TaskController extends Controller
             'team_id' => 'nullable|exists:teams,id',
             'team' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
-            'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,jpg,png,gif,webp|max:10240',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|mimes:jpeg,jpg,png,gif,webp,pdf,doc,docx,xls,xlsx,txt|max:10240',
             'status' => 'in:planned,in_progress,completed,cancelled,accepted',
         ];
 
@@ -316,19 +317,20 @@ class TaskController extends Controller
         $vehicleIds = $validated['vehicles'];
         unset($validated['vehicles']);
         
-        // Handle image uploads
-        $currentImages = $task->images ?? [];
-        if ($request->hasFile('images')) {
-            $uploadedImages = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('tasks', 'public');
-                $uploadedImages[] = [
-                    'path' => $path,
-                    'original_name' => $image->getClientOriginalName(),
-                    'uploaded_at' => now()->toDateTimeString()
-                ];
+        // Handle attachment uploads - używamy nowej tabeli task_attachments
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('tasks', 'public');
+                
+                // Utwórz nowy załącznik w tabeli task_attachments
+                $task->attachments()->create([
+                    'file_path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                    'uploaded_by' => auth()->id(),
+                ]);
             }
-            $validated['images'] = array_merge($currentImages, $uploadedImages);
         }
         
         // Check if dates have changed (only for admin/kierownik)
@@ -447,24 +449,20 @@ class TaskController extends Controller
         return Excel::download(new DailyTaskExport($request), $fileName);
     }
 
-    public function removeImage(Task $task, $imageIndex)
+    public function removeAttachment(Task $task, TaskAttachment $attachment)
     {
         $this->authorize('update', $task);
         
-        $images = $task->images ?? [];
+        // $attachment jest już dostępny jako parameter dzięki route model binding
         
-        if (isset($images[$imageIndex])) {
+        if ($attachment) {
             // Delete file from storage
-            $imagePath = $images[$imageIndex]['path'] ?? null;
-            if ($imagePath && Storage::disk('public')->exists($imagePath)) {
-                Storage::disk('public')->delete($imagePath);
+            if (Storage::disk('public')->exists($attachment->file_path)) {
+                Storage::disk('public')->delete($attachment->file_path);
             }
             
-            // Remove from array
-            array_splice($images, $imageIndex, 1);
-            
-            // Update task
-            $task->update(['images' => $images]);
+            // Delete attachment record
+            $attachment->delete();
             
             return response()->json(['success' => true]);
         }
