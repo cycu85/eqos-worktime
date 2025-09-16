@@ -102,10 +102,13 @@ class TaskController extends Controller
         // Apply user filter
         if ($request->filled('user_id')) {
             $userId = $request->get('user_id');
-            $query->where(function ($q) use ($userId) {
-                $q->where('leader_id', $userId)
-                  ->orWhere('team', 'like', '%' . User::find($userId)->name . '%');
-            });
+            $user = User::active()->find($userId);
+            if ($user) {
+                $query->where(function ($q) use ($userId, $user) {
+                    $q->where('leader_id', $userId)
+                      ->orWhere('team', 'like', '%' . $user->name . '%');
+                });
+            }
         }
         
         // Apply sorting
@@ -128,7 +131,7 @@ class TaskController extends Controller
         
         // Get filter options
         $vehicles = Vehicle::active()->orderBy('name')->get();
-        $users = User::orderBy('name')->get();
+        $users = User::active()->orderBy('name')->get();
         $statuses = [
             'planned' => 'Planowane',
             'in_progress' => 'W trakcie', 
@@ -177,7 +180,7 @@ class TaskController extends Controller
         $this->authorize('create', Task::class);
         
         $vehicles = Vehicle::active()->orderBy('name')->get();
-        $users = User::whereIn('role', ['lider', 'pracownik'])->orderBy('name')->get();
+        $users = User::active()->whereIn('role', ['lider', 'pracownik'])->orderBy('name')->get();
         $teams = Team::with('vehicle')->active()->orderBy('name')->get();
         $taskTypes = TaskType::active()->orderBy('name')->get();
         
@@ -188,7 +191,7 @@ class TaskController extends Controller
         if ($currentUser->isLider()) {
             $leaderTeam = Team::with('vehicle')->where('leader_id', $currentUser->id)->first();
             if ($leaderTeam && $leaderTeam->members) {
-                $leaderTeamMembers = User::whereIn('id', $leaderTeam->members)->pluck('name')->toArray();
+                $leaderTeamMembers = User::active()->whereIn('id', $leaderTeam->members)->pluck('name')->toArray();
             }
         }
         
@@ -290,7 +293,7 @@ class TaskController extends Controller
         }
         
         $vehicles = Vehicle::active()->orderBy('name')->get();
-        $users = User::whereIn('role', ['lider', 'pracownik'])->orderBy('name')->get();
+        $users = User::active()->whereIn('role', ['lider', 'pracownik'])->orderBy('name')->get();
         $teams = Team::with('vehicle')->active()->orderBy('name')->get();
         $taskTypes = TaskType::active()->orderBy('name')->get();
         
@@ -301,7 +304,7 @@ class TaskController extends Controller
         if ($currentUser->isLider()) {
             $leaderTeam = Team::with('vehicle')->where('leader_id', $currentUser->id)->first();
             if ($leaderTeam && $leaderTeam->members) {
-                $leaderTeamMembers = User::whereIn('id', $leaderTeam->members)->pluck('name')->toArray();
+                $leaderTeamMembers = User::active()->whereIn('id', $leaderTeam->members)->pluck('name')->toArray();
             }
         }
         

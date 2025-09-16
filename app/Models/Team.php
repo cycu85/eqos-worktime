@@ -96,7 +96,7 @@ class Team extends Model
             return '';
         }
 
-        $users = User::whereIn('id', $this->members)->pluck('name')->toArray();
+        $users = User::active()->whereIn('id', $this->members)->pluck('name')->toArray();
         return implode(', ', $users);
     }
 

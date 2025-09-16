@@ -41,6 +41,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'is_active',
         'last_login_at',
     ];
 
@@ -65,6 +66,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -106,6 +108,38 @@ class User extends Authenticatable
     public function isPracownik(): bool
     {
         return $this->role === 'pracownik';
+    }
+
+    /**
+     * Sprawdź czy użytkownik jest aktywny
+     *
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return $this->is_active;
+    }
+
+    /**
+     * Scope dla aktywnych użytkowników
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope dla nieaktywnych użytkowników
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeInactive($query)
+    {
+        return $query->where('is_active', false);
     }
 
     /**

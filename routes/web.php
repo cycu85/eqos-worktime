@@ -62,6 +62,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin')->group(function () {
         Route::resource('vehicles', VehicleController::class);
         Route::resource('users', UserController::class);
+        Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
         Route::resource('teams', TeamController::class);
         
         // Settings routes

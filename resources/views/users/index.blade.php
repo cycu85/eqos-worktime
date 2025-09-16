@@ -48,10 +48,10 @@
                             <!-- Search -->
                             <div>
                                 <label class="form-kt-label">Wyszukaj</label>
-                                <input type="text" 
-                                       name="search" 
+                                <input type="text"
+                                       name="search"
                                        value="{{ request('search') }}"
-                                       class="form-kt-control" 
+                                       class="form-kt-control"
                                        placeholder="Imię, nazwisko, email...">
                             </div>
 
@@ -65,6 +65,16 @@
                                             {{ $label }}
                                         </option>
                                     @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <div>
+                                <label class="form-kt-label">Status</label>
+                                <select name="status" class="form-kt-select">
+                                    <option value="">Wszyscy użytkownicy</option>
+                                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktywni</option>
+                                    <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Nieaktywni</option>
                                 </select>
                             </div>
 
@@ -93,7 +103,7 @@
             </div>
 
             <!-- Results Info -->
-            @if(request()->hasAny(['search', 'role', 'sort']))
+            @if(request()->hasAny(['search', 'role', 'status', 'sort']))
                 <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-4 text-sm">
@@ -108,6 +118,11 @@
                             @if(request('role'))
                                 <span class="text-blue-600 dark:text-blue-400">
                                     Rola: {{ request('role') == 'admin' ? 'Administrator' : (request('role') == 'kierownik' ? 'Kierownik' : (request('role') == 'lider' ? 'Lider' : 'Pracownik')) }}
+                                </span>
+                            @endif
+                            @if(request('status'))
+                                <span class="text-blue-600 dark:text-blue-400">
+                                    Status: {{ request('status') == 'active' ? 'Aktywni' : 'Nieaktywni' }}
                                 </span>
                             @endif
                         </div>
@@ -175,6 +190,7 @@
                                             @endif
                                         </a>
                                     </th>
+                                    <th>Status</th>
                                     <th>Zadania</th>
                                     <th>
                                         <a href="{{ request()->fullUrlWithQuery(['sort' => 'last_login_at', 'direction' => request('sort') == 'last_login_at' && request('direction', 'asc') == 'asc' ? 'desc' : 'asc']) }}" 
@@ -256,6 +272,13 @@
                                             <span class="{{ $roleClass }}">
                                                 {{ $roleLabels[$user->role] ?? $user->role }}
                                             </span>
+                                        </td>
+                                        <td>
+                                            @if($user->is_active)
+                                                <span class="badge-kt-success">Aktywny</span>
+                                            @else
+                                                <span class="badge-kt-danger">Nieaktywny</span>
+                                            @endif
                                         </td>
                                         <td>
                                             @if($user->tasks_count > 0)

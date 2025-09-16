@@ -93,7 +93,7 @@ class DelegationController extends Controller
     public function create()
     {
         $vehicles = Vehicle::active()->get();
-        $users = User::orderBy('name')->get();
+        $users = User::active()->orderBy('name')->get();
         $countries = [
             'Polska', 'Niemcy', 'Francja', 'Włochy', 'Hiszpania', 
             'Czechy', 'Słowacja', 'Austria', 'Holandia', 'Belgia'
@@ -253,7 +253,7 @@ class DelegationController extends Controller
         }
         
         $vehicles = Vehicle::active()->get();
-        $users = User::orderBy('name')->get();
+        $users = User::active()->orderBy('name')->get();
         $countries = [
             'Polska', 'Niemcy', 'Francja', 'Włochy', 'Hiszpania', 
             'Czechy', 'Słowacja', 'Austria', 'Holandia', 'Belgia'
@@ -519,7 +519,7 @@ class DelegationController extends Controller
         }
 
         $vehicles = Vehicle::active()->get();
-        $users = User::orderBy('name')->get();
+        $users = User::active()->orderBy('name')->get();
         $teams = \App\Models\Team::all();
         $countries = [
             'Polska', 'Niemcy', 'Francja', 'Włochy', 'Hiszpania', 
@@ -586,7 +586,7 @@ class DelegationController extends Controller
         ]);
 
         $createdDelegations = [];
-        $selectedUsers = User::whereIn('id', $validated['selected_employees'])->get();
+        $selectedUsers = User::active()->whereIn('id', $validated['selected_employees'])->get();
 
         foreach ($selectedUsers as $selectedUser) {
             $delegationData = $validated;

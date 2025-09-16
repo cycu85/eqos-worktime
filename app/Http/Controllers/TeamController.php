@@ -76,7 +76,8 @@ class TeamController extends Controller
         
         // Get leaders who are not already assigned to other active teams
         $assignedLeaderIds = Team::active()->whereNotNull('leader_id')->pluck('leader_id');
-        $leaders = User::where('role', 'lider')
+        $leaders = User::active()
+            ->where('role', 'lider')
             ->whereNotIn('id', $assignedLeaderIds)
             ->orderBy('name')
             ->get();
@@ -89,7 +90,8 @@ class TeamController extends Controller
             ->unique()
             ->toArray();
             
-        $workers = User::where('role', 'pracownik')
+        $workers = User::active()
+            ->where('role', 'pracownik')
             ->whereNotIn('id', $activeTeamMemberIds)
             ->orderBy('name')
             ->get();
@@ -160,7 +162,8 @@ class TeamController extends Controller
             ->whereNotNull('leader_id')
             ->where('id', '!=', $team->id)
             ->pluck('leader_id');
-        $leaders = User::where('role', 'lider')
+        $leaders = User::active()
+            ->where('role', 'lider')
             ->whereNotIn('id', $assignedLeaderIds)
             ->orderBy('name')
             ->get();
@@ -174,7 +177,8 @@ class TeamController extends Controller
             ->unique()
             ->toArray();
             
-        $workers = User::where('role', 'pracownik')
+        $workers = User::active()
+            ->where('role', 'pracownik')
             ->whereNotIn('id', $activeTeamMemberIds)
             ->orderBy('name')
             ->get();
@@ -192,7 +196,7 @@ class TeamController extends Controller
         // Get current members with their details for JavaScript
         $currentMembers = [];
         if ($team->members) {
-            $currentMembers = User::whereIn('id', $team->members)
+            $currentMembers = User::active()->whereIn('id', $team->members)
                 ->get()
                 ->map(function($user) {
                     return [

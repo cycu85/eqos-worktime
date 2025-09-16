@@ -16,6 +16,9 @@
                         ];
                     @endphp
                     • {{ $roleLabels[$user->role] ?? $user->role }}
+                    @if(!$user->is_active)
+                        <span class="badge-kt-danger ml-2">Nieaktywny</span>
+                    @endif
                 </p>
             </div>
             <div class="mt-3 sm:mt-0 flex space-x-3">
@@ -26,6 +29,27 @@
                         </svg>
                         Edytuj
                     </a>
+                @endcan
+                @can('update', $user)
+                    <form method="POST" action="{{ route('users.toggle-active', $user) }}" class="inline" onsubmit="return confirm('{{ $user->is_active ? 'Czy na pewno chcesz dezaktywować tego użytkownika?' : 'Czy na pewno chcesz aktywować tego użytkownika?' }}')">
+                        @csrf
+                        @method('PATCH')
+                        @if($user->is_active)
+                            <button type="submit" class="btn-kt-warning">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Dezaktywuj
+                            </button>
+                        @else
+                            <button type="submit" class="btn-kt-success">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                Aktywuj
+                            </button>
+                        @endif
+                    </form>
                 @endcan
                 @can('delete', $user)
                     <form method="POST" action="{{ route('users.destroy', $user) }}" class="inline" onsubmit="return confirm('Czy na pewno chcesz usunąć tego użytkownika? Ta operacja jest nieodwracalna.')">
@@ -142,6 +166,16 @@
                                             };
                                         @endphp
                                         <span class="{{ $roleClass }}">{{ $roleLabels[$user->role] ?? $user->role }}</span>
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
+                                    <dd>
+                                        @if($user->is_active)
+                                            <span class="badge-kt-success">Aktywny</span>
+                                        @else
+                                            <span class="badge-kt-danger">Nieaktywny</span>
+                                        @endif
                                     </dd>
                                 </div>
                             </div>

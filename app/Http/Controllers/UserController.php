@@ -41,6 +41,16 @@ class UserController extends Controller
         if ($request->filled('role')) {
             $query->where('role', $request->get('role'));
         }
+
+        // Apply status filter
+        if ($request->filled('status')) {
+            $status = $request->get('status');
+            if ($status === 'active') {
+                $query->where('is_active', true);
+            } elseif ($status === 'inactive') {
+                $query->where('is_active', false);
+            }
+        }
         
         // Apply sorting
         $sortBy = $request->get('sort', 'name');
@@ -181,19 +191,62 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $this->authorize('delete', $user);
-        
+
         // Nie można usunąć siebie
         if ($user->id === auth()->id()) {
             return redirect()->route('users.index')->with('error', 'Nie możesz usunąć swojego własnego konta.');
         }
-        
+
         // Sprawdź czy użytkownik ma przypisane zadania
         if ($user->tasks()->count() > 0) {
-            return redirect()->route('users.index')->with('error', 'Nie można usunąć użytkownika, który ma przypisane zadania.');
+            return redirect()->route('users.index')->with('error', 'Nie można usunąć użytkownika, który ma przypisane zadania. Użyj opcji dezaktywacji.');
+        }
+
+        // Sprawdź zespoły gdzie jest liderem
+        $leaderTeams = Team::where('leader_id', $user->id)->count();
+        if ($leaderTeams > 0) {
+            return redirect()->route('users.index')->with('error', 'Nie można usunąć użytkownika, który jest liderem zespołu. Użyj opcji dezaktywacji.');
+        }
+
+        // Sprawdź zespoły gdzie jest twórcą
+        $createdTeams = Team::where('created_by', $user->id)->count();
+        if ($createdTeams > 0) {
+            return redirect()->route('users.index')->with('error', 'Nie można usunąć użytkownika, który utworzył zespoły. Użyj opcji dezaktywacji.');
+        }
+
+        // Usuń użytkownika z pól JSON members w zespołach
+        $teamsWithUser = Team::whereJsonContains('members', $user->id)->get();
+        foreach ($teamsWithUser as $team) {
+            $members = collect($team->members)->reject(fn($id) => $id == $user->id)->values()->toArray();
+            $team->update(['members' => $members]);
         }
 
         $user->delete();
 
         return redirect()->route('users.index')->with('success', 'Użytkownik został usunięty pomyślnie.');
+    }
+
+    /**
+     * Przełącz status aktywności użytkownika
+     *
+     * @param User $user Użytkownik
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function toggleActive(User $user)
+    {
+        $this->authorize('update', $user);
+
+        // Nie można dezaktywować siebie
+        if ($user->id === auth()->id()) {
+            return redirect()->back()->with('error', 'Nie możesz dezaktywować swojego własnego konta.');
+        }
+
+        $user->update([
+            'is_active' => !$user->is_active
+        ]);
+
+        $status = $user->is_active ? 'aktywowany' : 'dezaktywowany';
+
+        return redirect()->back()->with('success', "Użytkownik został $status pomyślnie.");
     }
 }
