@@ -8,8 +8,20 @@ use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Kontroler do zarządzania zespołami
+ *
+ * Obsługuje CRUD operacje dla zespołów pracowniczych,
+ * przypisywanie liderów, członków i pojazdów.
+ */
 class TeamController extends Controller
 {
+    /**
+     * Wyświetl listę zespołów z filtrowaniem i sortowaniem
+     *
+     * @param Request $request Żądanie HTTP zawierające parametry filtrów
+     * @return \Illuminate\View\View
+     */
     public function index(Request $request)
     {
         $this->authorize('viewAny', Team::class);
@@ -53,6 +65,11 @@ class TeamController extends Controller
         return view('teams.index', compact('teams'));
     }
 
+    /**
+     * Wyświetl formularz tworzenia nowego zespołu
+     *
+     * @return \Illuminate\View\View
+     */
     public function create()
     {
         $this->authorize('create', Team::class);
@@ -87,6 +104,12 @@ class TeamController extends Controller
         return view('teams.create', compact('leaders', 'workers', 'vehicles'));
     }
 
+    /**
+     * Zapisz nowy zespół w bazie danych
+     *
+     * @param Request $request Dane zespołu z formularza
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
         $this->authorize('create', Team::class);
@@ -107,6 +130,12 @@ class TeamController extends Controller
         return redirect()->route('teams.index')->with('success', 'Zespół został utworzony pomyślnie.');
     }
 
+    /**
+     * Wyświetl szczegóły zespołu
+     *
+     * @param Team $team Zespół
+     * @return \Illuminate\View\View
+     */
     public function show(Team $team)
     {
         $this->authorize('view', $team);
@@ -116,6 +145,12 @@ class TeamController extends Controller
         return view('teams.show', compact('team'));
     }
 
+    /**
+     * Wyświetl formularz edycji zespołu
+     *
+     * @param Team $team Zespół
+     * @return \Illuminate\View\View
+     */
     public function edit(Team $team)
     {
         $this->authorize('update', $team);
@@ -171,6 +206,13 @@ class TeamController extends Controller
         return view('teams.edit', compact('team', 'leaders', 'workers', 'vehicles', 'currentMembers'));
     }
 
+    /**
+     * Zaktualizuj zespół w bazie danych
+     *
+     * @param Request $request Dane zespołu z formularza
+     * @param Team $team Zespół do aktualizacji
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Request $request, Team $team)
     {
         $this->authorize('update', $team);
@@ -190,6 +232,12 @@ class TeamController extends Controller
         return redirect()->route('teams.index')->with('success', 'Zespół został zaktualizowany pomyślnie.');
     }
 
+    /**
+     * Usuń zespół z bazy danych
+     *
+     * @param Team $team Zespół do usunięcia
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy(Team $team)
     {
         $this->authorize('delete', $team);

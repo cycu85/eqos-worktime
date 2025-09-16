@@ -6,12 +6,23 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Middleware do kontroli dostępu na podstawie ról użytkowników
+ *
+ * Sprawdza czy zalogowany użytkownik ma jedną z wymaganych ról
+ * przed udzieleniem dostępu do zasobu.
+ */
 class RoleMiddleware
 {
     /**
-     * Handle an incoming request.
+     * Obsłuż przychodzące żądanie HTTP
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * Sprawdza czy użytkownik jest zalogowany i ma jedną z wymaganych ról.
+     *
+     * @param Request $request Żądanie HTTP
+     * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
+     * @param string ...$roles Lista wymaganych ról (admin, kierownik, lider, pracownik)
+     * @return Response
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {

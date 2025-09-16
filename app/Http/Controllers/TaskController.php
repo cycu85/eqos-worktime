@@ -15,8 +15,20 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
+/**
+ * Kontroler do zarządzania zadaniami
+ *
+ * Obsługuje CRUD operacje dla zadań, filtrowanie, sortowanie,
+ * eksport do Excel, zarządzanie załącznikami oraz work logs.
+ */
 class TaskController extends Controller
 {
+    /**
+     * Wyświetl listę zadań z filtrowaniem i sortowaniem
+     *
+     * @param Request $request Żądanie HTTP zawierające parametry filtrów
+     * @return \Illuminate\View\View
+     */
     public function index(Request $request)
     {
         $this->authorize('viewAny', Task::class);
@@ -155,6 +167,11 @@ class TaskController extends Controller
         return view('tasks.index', compact('tasks', 'allTasks', 'calendarTasks', 'vehicles', 'users', 'statuses'));
     }
 
+    /**
+     * Wyświetl formularz tworzenia nowego zadania
+     *
+     * @return \Illuminate\View\View
+     */
     public function create()
     {
         $this->authorize('create', Task::class);
@@ -178,6 +195,12 @@ class TaskController extends Controller
         return view('tasks.create', compact('vehicles', 'users', 'teams', 'taskTypes', 'leaderTeamMembers', 'leaderTeam'));
     }
 
+    /**
+     * Zapisz nowe zadanie w bazie danych
+     *
+     * @param Request $request Dane zadania z formularza
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
         $this->authorize('create', Task::class);
@@ -220,6 +243,12 @@ class TaskController extends Controller
             ->with('success', 'Zadanie wielodniowe zostało utworzone pomyślnie.');
     }
 
+    /**
+     * Wyświetl dzienniki pracy dla zadania
+     *
+     * @param Task $task Zadanie
+     * @return \Illuminate\View\View
+     */
     public function workLogs(Task $task)
     {
         $this->authorize('update', $task);
@@ -229,6 +258,12 @@ class TaskController extends Controller
         return view('tasks.work-logs', compact('task'));
     }
 
+    /**
+     * Wyświetl szczegóły zadania
+     *
+     * @param Task $task Zadanie
+     * @return \Illuminate\View\View
+     */
     public function show(Task $task)
     {
         $this->authorize('view', $task);
@@ -238,6 +273,12 @@ class TaskController extends Controller
         return view('tasks.show', compact('task'));
     }
 
+    /**
+     * Wyświetl formularz edycji zadania
+     *
+     * @param Task $task Zadanie
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     */
     public function edit(Task $task)
     {
         $this->authorize('update', $task);
@@ -267,6 +308,13 @@ class TaskController extends Controller
         return view('tasks.edit', compact('task', 'vehicles', 'users', 'teams', 'taskTypes', 'leaderTeamMembers', 'leaderTeam'));
     }
 
+    /**
+     * Zaktualizuj zadanie w bazie danych
+     *
+     * @param Request $request Dane zadania z formularza
+     * @param Task $task Zadanie do aktualizacji
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Request $request, Task $task)
     {
         $this->authorize('update', $task);
@@ -370,7 +418,12 @@ class TaskController extends Controller
     }
 
     /**
-     * Update work_logs status when task status changes
+     * Aktualizuj status work_logs gdy zmieni się status zadania
+     *
+     * @param Task $task Zadanie
+     * @param string $oldStatus Poprzedni status
+     * @param string $newStatus Nowy status
+     * @return void
      */
     private function updateWorkLogsStatus(Task $task, string $oldStatus, string $newStatus)
     {
@@ -421,6 +474,12 @@ class TaskController extends Controller
         }
     }
 
+    /**
+     * Usuń zadanie z bazy danych
+     *
+     * @param Task $task Zadanie do usunięcia
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy(Task $task)
     {
         $this->authorize('delete', $task);
@@ -431,6 +490,12 @@ class TaskController extends Controller
             ->with('success', 'Zadanie zostało usunięte pomyślnie.');
     }
 
+    /**
+     * Eksportuj zadania do pliku Excel
+     *
+     * @param Request $request Parametry eksportu
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
     public function export(Request $request)
     {
         $this->authorize('export', Task::class);
@@ -440,6 +505,12 @@ class TaskController extends Controller
         return Excel::download(new TaskExport($request), $fileName);
     }
 
+    /**
+     * Eksportuj raport dzienny do pliku Excel
+     *
+     * @param Request $request Parametry eksportu
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
     public function exportDaily(Request $request)
     {
         $this->authorize('export', Task::class);
@@ -449,6 +520,13 @@ class TaskController extends Controller
         return Excel::download(new DailyTaskExport($request), $fileName);
     }
 
+    /**
+     * Usuń załącznik z zadania
+     *
+     * @param Task $task Zadanie
+     * @param TaskAttachment $attachment Załącznik do usunięcia
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function removeAttachment(Task $task, TaskAttachment $attachment)
     {
         $this->authorize('update', $task);

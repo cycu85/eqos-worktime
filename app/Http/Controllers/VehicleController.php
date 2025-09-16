@@ -6,8 +6,20 @@ use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Kontroler do zarządzania pojazdami
+ *
+ * Obsługuje CRUD operacje dla pojazdów/sprzętu,
+ * filtrowanie, sortowanie i walidację.
+ */
 class VehicleController extends Controller
 {
+    /**
+     * Wyświetl listę pojazdów z filtrowaniem i sortowaniem
+     *
+     * @param Request $request Żądanie HTTP zawierające parametry filtrów
+     * @return \Illuminate\View\View
+     */
     public function index(Request $request)
     {
         $query = Vehicle::withCount(['tasks' => function ($query) {
@@ -59,6 +71,11 @@ class VehicleController extends Controller
         return view('vehicles.index', compact('vehicles'));
     }
 
+    /**
+     * Wyświetl formularz tworzenia nowego pojazdu
+     *
+     * @return \Illuminate\View\View
+     */
     public function create()
     {
         $this->authorize('create', Vehicle::class);
@@ -66,6 +83,12 @@ class VehicleController extends Controller
         return view('vehicles.create');
     }
 
+    /**
+     * Zapisz nowy pojazd w bazie danych
+     *
+     * @param Request $request Dane pojazdu z formularza
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
         $this->authorize('create', Vehicle::class);
@@ -85,6 +108,12 @@ class VehicleController extends Controller
             ->with('success', 'Pojazd został utworzony pomyślnie.');
     }
 
+    /**
+     * Wyświetl szczegóły pojazdu
+     *
+     * @param Vehicle $vehicle Pojazd
+     * @return \Illuminate\View\View
+     */
     public function show(Vehicle $vehicle)
     {
         $this->authorize('view', $vehicle);
@@ -96,6 +125,12 @@ class VehicleController extends Controller
         return view('vehicles.show', compact('vehicle'));
     }
 
+    /**
+     * Wyświetl formularz edycji pojazdu
+     *
+     * @param Vehicle $vehicle Pojazd
+     * @return \Illuminate\View\View
+     */
     public function edit(Vehicle $vehicle)
     {
         $this->authorize('update', $vehicle);
@@ -103,6 +138,13 @@ class VehicleController extends Controller
         return view('vehicles.edit', compact('vehicle'));
     }
 
+    /**
+     * Zaktualizuj pojazd w bazie danych
+     *
+     * @param Request $request Dane pojazdu z formularza
+     * @param Vehicle $vehicle Pojazd do aktualizacji
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Request $request, Vehicle $vehicle)
     {
         $this->authorize('update', $vehicle);
@@ -122,6 +164,12 @@ class VehicleController extends Controller
             ->with('success', 'Pojazd został zaktualizowany pomyślnie.');
     }
 
+    /**
+     * Usuń pojazd z bazy danych
+     *
+     * @param Vehicle $vehicle Pojazd do usunięcia
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy(Vehicle $vehicle)
     {
         $this->authorize('delete', $vehicle);

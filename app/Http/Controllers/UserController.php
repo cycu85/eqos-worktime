@@ -7,8 +7,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
+/**
+ * Kontroler do zarządzania użytkownikami
+ *
+ * Obsługuje CRUD operacje dla użytkowników systemu,
+ * włączając role-based permissions i walidację.
+ */
 class UserController extends Controller
 {
+    /**
+     * Wyświetl listę użytkowników z filtrowaniem i sortowaniem
+     *
+     * @param Request $request Żądanie HTTP zawierające parametry filtrów
+     * @return \Illuminate\View\View
+     */
     public function index(Request $request)
     {
         $this->authorize('viewAny', User::class);
@@ -58,6 +70,11 @@ class UserController extends Controller
         return view('users.index', compact('users', 'roles'));
     }
 
+    /**
+     * Wyświetl formularz tworzenia nowego użytkownika
+     *
+     * @return \Illuminate\View\View
+     */
     public function create()
     {
         $this->authorize('create', User::class);
@@ -65,6 +82,12 @@ class UserController extends Controller
         return view('users.create');
     }
 
+    /**
+     * Zapisz nowego użytkownika w bazie danych
+     *
+     * @param Request $request Dane użytkownika z formularza
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
         $this->authorize('create', User::class);
@@ -86,6 +109,12 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Użytkownik został utworzony pomyślnie.');
     }
 
+    /**
+     * Wyświetl szczegóły użytkownika
+     *
+     * @param User $user Użytkownik
+     * @return \Illuminate\View\View
+     */
     public function show(User $user)
     {
         $this->authorize('view', $user);
@@ -97,6 +126,12 @@ class UserController extends Controller
         return view('users.show', compact('user'));
     }
 
+    /**
+     * Wyświetl formularz edycji użytkownika
+     *
+     * @param User $user Użytkownik
+     * @return \Illuminate\View\View
+     */
     public function edit(User $user)
     {
         $this->authorize('update', $user);
@@ -104,6 +139,13 @@ class UserController extends Controller
         return view('users.edit', compact('user'));
     }
 
+    /**
+     * Zaktualizuj użytkownika w bazie danych
+     *
+     * @param Request $request Dane użytkownika z formularza
+     * @param User $user Użytkownik do aktualizacji
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Request $request, User $user)
     {
         $this->authorize('update', $user);
@@ -130,6 +172,12 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Użytkownik został zaktualizowany pomyślnie.');
     }
 
+    /**
+     * Usuń użytkownika z bazy danych
+     *
+     * @param User $user Użytkownik do usunięcia
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy(User $user)
     {
         $this->authorize('delete', $user);

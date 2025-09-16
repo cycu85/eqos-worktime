@@ -7,6 +7,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * Model użytkownika
+ *
+ * Rozszerza podstawowy model uwierzytelniania o role-based access control
+ * i powiązania z zadaniami.
+ *
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property \Carbon\Carbon|null $email_verified_at
+ * @property string $password
+ * @property string $role Rola: admin, kierownik, lider, pracownik
+ * @property \Carbon\Carbon|null $last_login_at
+ * @property string|null $remember_token
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ *
+ * @property-read \Illuminate\Database\Eloquent\Collection<Task> $tasks
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -49,33 +68,63 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Sprawdź czy użytkownik jest administratorem
+     *
+     * @return bool
+     */
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
+    /**
+     * Sprawdź czy użytkownik jest kierownikiem
+     *
+     * @return bool
+     */
     public function isKierownik(): bool
     {
         return $this->role === 'kierownik';
     }
 
+    /**
+     * Sprawdź czy użytkownik jest liderem
+     *
+     * @return bool
+     */
     public function isLider(): bool
     {
         return $this->role === 'lider';
     }
 
+    /**
+     * Sprawdź czy użytkownik jest pracownikiem
+     *
+     * @return bool
+     */
     public function isPracownik(): bool
     {
         return $this->role === 'pracownik';
     }
 
+    /**
+     * Powiązanie z zadaniami gdzie użytkownik jest liderem
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Task>
+     */
     public function tasks()
     {
         return $this->hasMany(Task::class, 'leader_id');
     }
 
     /**
-     * Get tasks where this user is part of the team
+     * Pobierz zadania gdzie użytkownik jest członkiem zespołu
+     *
+     * Używa bezpiecznego wyszukiwania LIKE z escapowanymi wartościami
+     * aby znaleźć zadania gdzie nazwa użytkownika występuje w polu 'team'.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder<Task>
      */
     public function teamTasks()
     {
@@ -90,9 +139,12 @@ class User extends Authenticatable
     }
 
     /**
-     * Get all tasks accessible to this user (as leader OR team member)
-     * For liders: shows both led tasks and team tasks
-     * For pracowniks: shows only team tasks
+     * Pobierz wszystkie zadania dostępne dla użytkownika
+     *
+     * Dla liderów: zadania gdzie są liderami LUB członkami zespołu
+     * Dla pracowników: tylko zadania gdzie są członkami zespołu
+     *
+     * @return \Illuminate\Database\Eloquent\Builder<Task>
      */
     public function allAccessibleTasks()
     {

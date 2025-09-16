@@ -27,6 +27,20 @@
                         Edytuj
                     </a>
                 @endcan
+                @can('delete', $user)
+                    <form method="POST" action="{{ route('users.destroy', $user) }}" class="inline" onsubmit="return confirm('Czy na pewno chcesz usunąć tego użytkownika? Ta operacja jest nieodwracalna.')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn-kt-danger">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+                                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3l1.5 1.5a1 1 0 01-1.414 1.414L10 10.414l-1.086 1.086a1 1 0 01-1.414-1.414L9 8.586V6a1 1 0 011-1z" clip-rule="evenodd"></path>
+                                <path fill-rule="evenodd" d="M3 6a1 1 0 011-1h12a1 1 0 110 2h-1v9a2 2 0 01-2 2H7a2 2 0 01-2-2V7H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            Usuń
+                        </button>
+                    </form>
+                @endcan
                 <a href="{{ route('users.index') }}" class="btn-kt-secondary">
                     <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
