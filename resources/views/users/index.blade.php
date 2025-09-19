@@ -191,7 +191,6 @@
                                         </a>
                                     </th>
                                     <th>Status</th>
-                                    <th>Zadania</th>
                                     <th>
                                         <a href="{{ request()->fullUrlWithQuery(['sort' => 'last_login_at', 'direction' => request('sort') == 'last_login_at' && request('direction', 'asc') == 'asc' ? 'desc' : 'asc']) }}" 
                                            class="flex items-center space-x-1 hover:text-blue-600 dark:hover:text-blue-400">
@@ -278,15 +277,6 @@
                                                 <span class="badge-kt-success">Aktywny</span>
                                             @else
                                                 <span class="badge-kt-danger">Nieaktywny</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($user->tasks_count > 0)
-                                                <span class="badge-kt-info">
-                                                    {{ $user->tasks_count }} {{ Str::plural('zadanie', $user->tasks_count) }}
-                                                </span>
-                                            @else
-                                                <span class="text-gray-400 dark:text-gray-500">Brak zadań</span>
                                             @endif
                                         </td>
                                         <td>
