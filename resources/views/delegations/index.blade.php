@@ -71,6 +71,7 @@
                                 <select name="status" class="form-kt-select">
                                     <option value="">Wszystkie statusy</option>
                                     <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Szkic</option>
+                                    <option value="employee_approved" {{ request('status') === 'employee_approved' ? 'selected' : '' }}>Zaakceptowana przez pracownika</option>
                                     <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Zatwierdzona</option>
                                     <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Zakończona</option>
                                     <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Anulowana</option>
