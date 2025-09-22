@@ -201,8 +201,6 @@
                             <label for="delegation_status" class="form-kt-label">Status delegacji</label>
                             <select class="form-kt-select" id="delegation_status" name="delegation_status">
                                 <option value="draft" {{ old('delegation_status', $delegation->delegation_status) == 'draft' ? 'selected' : '' }}>Szkic</option>
-                                <option value="approved" {{ old('delegation_status', $delegation->delegation_status) == 'approved' ? 'selected' : '' }}>Zatwierdzona</option>
-                                <option value="completed" {{ old('delegation_status', $delegation->delegation_status) == 'completed' ? 'selected' : '' }}>Zakończona</option>
                                 <option value="cancelled" {{ old('delegation_status', $delegation->delegation_status) == 'cancelled' ? 'selected' : '' }}>Anulowana</option>
                             </select>
                         </div>
