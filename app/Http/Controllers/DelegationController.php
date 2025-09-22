@@ -312,6 +312,13 @@ class DelegationController extends Controller
             $orderDateRules .= '|in:' . $delegation->order_date->format('Y-m-d');
         }
 
+        // Walidacja uprawnień do zmiany statusu delegacji
+        $statusRules = 'nullable|in:draft,cancelled';
+        if ($user->isAdmin() || $user->isKierownik()) {
+            // Administratorzy i kierownicy mogą ustawić wszystkie statusy
+            $statusRules = 'nullable|in:draft,approved,completed,cancelled';
+        }
+
         $validated = $request->validate([
             'employee_full_name' => 'required|string|max:255',
             'first_name' => 'required|string|max:100',
@@ -332,7 +339,7 @@ class DelegationController extends Controller
             'lunches' => 'integer|min:0',
             'dinners' => 'integer|min:0',
             'total_expenses' => 'nullable|numeric|min:0',
-            'delegation_status' => 'nullable|in:draft,approved,completed,cancelled',
+            'delegation_status' => $statusRules,
         ], [
             'order_date.in' => 'Brak uprawnień do zmiany daty polecenia wyjazdu. Tylko administrator i kierownik mogą edytować to pole.',
             'departure_date.after_or_equal' => 'Data wyjazdu nie może być wcześniejsza niż data polecenia wyjazdu.',

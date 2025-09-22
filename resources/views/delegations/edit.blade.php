@@ -196,14 +196,50 @@
                                    value="{{ old('total_expenses', $delegation->total_expenses) }}" min="0" step="0.01">
                         </div>
 
-                        <!-- Status (jeśli potrzebny) -->
+                        <!-- Status (tylko dla administratorów i kierowników) -->
+                        @if(auth()->user()->isAdmin() || auth()->user()->isKierownik())
                         <div>
                             <label for="delegation_status" class="form-kt-label">Status delegacji</label>
                             <select class="form-kt-select" id="delegation_status" name="delegation_status">
                                 <option value="draft" {{ old('delegation_status', $delegation->delegation_status) == 'draft' ? 'selected' : '' }}>Szkic</option>
+                                <option value="approved" {{ old('delegation_status', $delegation->delegation_status) == 'approved' ? 'selected' : '' }}>Zatwierdzona</option>
+                                <option value="completed" {{ old('delegation_status', $delegation->delegation_status) == 'completed' ? 'selected' : '' }}>Zakończona</option>
                                 <option value="cancelled" {{ old('delegation_status', $delegation->delegation_status) == 'cancelled' ? 'selected' : '' }}>Anulowana</option>
                             </select>
                         </div>
+                        @else
+                        <div>
+                            <label class="form-kt-label">Status delegacji</label>
+                            <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                                @if($delegation->delegation_status === 'draft')
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+                                        Szkic
+                                    </span>
+                                @elseif($delegation->delegation_status === 'employee_approved')
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                        Zaakceptowana przez pracownika
+                                    </span>
+                                @elseif($delegation->delegation_status === 'approved')
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                        Zatwierdzona
+                                    </span>
+                                @elseif($delegation->delegation_status === 'completed')
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                        Zakończona
+                                    </span>
+                                @elseif($delegation->delegation_status === 'cancelled')
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                        Anulowana
+                                    </span>
+                                @endif
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                                    Tylko administratorzy i kierownicy mogą zmieniać status delegacji.
+                                </p>
+                            </div>
+                            <!-- Hidden field to preserve current status -->
+                            <input type="hidden" name="delegation_status" value="{{ $delegation->delegation_status }}">
+                        </div>
+                        @endif
 
                         <!-- Przyciski -->
                         <div class="flex justify-end space-x-3 pt-6">
