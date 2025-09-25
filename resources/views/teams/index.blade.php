@@ -142,7 +142,7 @@
                                         </a>
                                     </th>
                                     <th>Lider</th>
-                                    <th>Pojazd</th>
+                                    <th>Pojazdy</th>
                                     <th>Członkowie</th>
                                     <th>
                                         <a href="{{ request()->fullUrlWithQuery(['sort' => 'created_at', 'direction' => request('sort') == 'created_at' && request('direction', 'asc') == 'asc' ? 'desc' : 'asc']) }}" 
@@ -192,15 +192,17 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @if($team->vehicle)
-                                                <div class="text-gray-900 dark:text-gray-100">
-                                                    {{ $team->vehicle->name }}
-                                                </div>
-                                                <div class="text-sm text-gray-500 dark:text-gray-400">
-                                                    {{ $team->vehicle->registration }}
+                                            @if($team->vehicles->count() > 0)
+                                                <div class="flex flex-wrap gap-1">
+                                                    @foreach($team->vehicles as $vehicle)
+                                                        <div class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                                            <span>{{ $vehicle->name }}</span>
+                                                            <span class="ml-1 opacity-75">({{ $vehicle->registration }})</span>
+                                                        </div>
+                                                    @endforeach
                                                 </div>
                                             @else
-                                                <span class="text-gray-400 dark:text-gray-500">Brak pojazdu</span>
+                                                <span class="text-gray-400 dark:text-gray-500">Brak pojazdów</span>
                                             @endif
                                         </td>
                                         <td class="max-w-xs">

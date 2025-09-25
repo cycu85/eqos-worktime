@@ -54,7 +54,7 @@
                                         <option value="{{ $team->id }}"
                                                 data-members="{{ implode(',', $team->members ?? []) }}"
                                                 data-members-names="{{ $team->members_names ?? '' }}"
-                                                data-vehicle="{{ $team->vehicle?->registration ?? '' }}"
+                                                data-vehicles="{{ $team->vehicles->pluck('registration')->implode(',') }}"
                                                 {{ old('team_id') == $team->id ? 'selected' : '' }}>
                                             {{ $team->name }} 
                                             @if($team->leader)
@@ -163,15 +163,25 @@
 
                         <!-- Transport -->
                         <div>
-                            <label for="vehicle_registration" class="form-kt-label">Pojazd</label>
-                            <select class="form-kt-select" id="vehicle_registration" name="vehicle_registration">
-                                <option value="">Wybierz pojazd (opcjonalnie)</option>
-                                @foreach($vehicles as $vehicle)
-                                    <option value="{{ $vehicle->registration }}" {{ old('vehicle_registration') == $vehicle->registration ? 'selected' : '' }}>
-                                        {{ $vehicle->name }} ({{ $vehicle->registration }})
-                                    </option>
-                                @endforeach
-                            </select>
+                            <label class="form-kt-label">Pojazdy</label>
+                            <div class="flex items-center gap-4">
+                                <div class="flex-grow">
+                                    <div id="selected-vehicles" class="min-h-[42px] p-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 rounded-md">
+                                        <div id="selected-vehicles-display" class="text-gray-500 dark:text-gray-400">
+                                            Kliknij przycisk, aby wybrać pojazdy
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="openVehiclesModal()" class="btn-kt-secondary">
+                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"></path>
+                                    </svg>
+                                    Wybierz pojazdy
+                                </button>
+                            </div>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Wybierz pojazdy które będą używane w delegacji.
+                            </p>
                         </div>
 
                         <!-- Noclegi i posiłki -->
@@ -222,6 +232,15 @@
                             @endif
                         </div>
 
+                        <!-- Hidden inputs container for selected vehicles -->
+                        <div id="selected-vehicles-inputs">
+                            @if(old('vehicles'))
+                                @foreach(old('vehicles') as $vehicleRegistration)
+                                    <input type="hidden" name="vehicles[]" value="{{ $vehicleRegistration }}" class="vehicle-hidden-input">
+                                @endforeach
+                            @endif
+                        </div>
+
                         <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                             <a href="{{ route('delegations.index') }}" class="btn-kt-secondary">Anuluj</a>
                             <button type="submit" class="btn-kt-primary">
@@ -232,6 +251,38 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vehicle Selection Modal -->
+    <div id="vehicles-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Wybierz pojazdy</h3>
+                </div>
+                <div class="px-6 py-4 max-h-96 overflow-y-auto">
+                    <div class="space-y-2">
+                        @foreach($vehicles as $vehicle)
+                            <label class="flex items-center p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                <input type="checkbox"
+                                       value="{{ $vehicle->registration }}"
+                                       data-name="{{ $vehicle->name }}"
+                                       data-registration="{{ $vehicle->registration }}"
+                                       class="vehicle-checkbox rounded border-gray-300 text-green-600 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-green-600 mr-3">
+                                <div>
+                                    <div class="font-medium text-gray-900 dark:text-gray-100">{{ $vehicle->name }}</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $vehicle->registration }}</div>
+                                </div>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
+                    <button type="button" onclick="closeVehiclesModal()" class="btn-kt-secondary">Anuluj</button>
+                    <button type="button" onclick="confirmVehiclesSelection()" class="btn-kt-primary">Zatwierdź wybór</button>
                 </div>
             </div>
         </div>
@@ -270,6 +321,7 @@
 
     <script>
         let selectedEmployees = [];
+        let selectedVehicles = [];
 
         function selectTeam() {
             const teamSelect = document.getElementById('team_id');
@@ -282,29 +334,28 @@
             // Get team members
             const membersString = selectedOption.getAttribute('data-members');
             const membersNamesString = selectedOption.getAttribute('data-members-names');
-            const vehicleRegistration = selectedOption.getAttribute('data-vehicle');
-            
+            const vehiclesString = selectedOption.getAttribute('data-vehicles');
+
             if (membersString && membersNamesString) {
                 const memberIds = membersString.split(',').filter(id => id.trim());
                 const memberNames = membersNamesString.split(',').filter(name => name.trim());
-                
+
                 // Update selected employees
                 selectedEmployees = memberIds.map((id, index) => ({
                     id: parseInt(id),
                     name: memberNames[index] || 'Unknown'
                 }));
-                
+
                 updateEmployeesDisplay();
             }
-            
-            // Set vehicle if available
-            if (vehicleRegistration) {
-                const vehicleSelect = document.getElementById('vehicle_registration');
-                Array.from(vehicleSelect.options).forEach(option => {
-                    if (option.text.includes(vehicleRegistration)) {
-                        option.selected = true;
-                    }
-                });
+
+            // Set vehicles if available
+            if (vehiclesString) {
+                const vehicleRegistrations = vehiclesString.split(',').filter(reg => reg.trim());
+                const allVehicles = {!! $vehicles->map(function($vehicle) { return ['registration' => $vehicle->registration, 'name' => $vehicle->name]; })->toJson() !!};
+
+                selectedVehicles = allVehicles.filter(vehicle => vehicleRegistrations.includes(vehicle.registration));
+                updateVehiclesDisplay();
             }
         }
 
@@ -391,6 +442,77 @@
             updateEmployeesDisplay();
         }
 
+        // Vehicle selection functions
+        function openVehiclesModal() {
+            const checkboxes = document.querySelectorAll('.vehicle-checkbox');
+            checkboxes.forEach(checkbox => {
+                const registration = checkbox.value;
+                checkbox.checked = selectedVehicles.some(vehicle => vehicle.registration === registration);
+            });
+
+            document.getElementById('vehicles-modal').classList.remove('hidden');
+        }
+
+        function closeVehiclesModal() {
+            document.getElementById('vehicles-modal').classList.add('hidden');
+        }
+
+        function confirmVehiclesSelection() {
+            const checkboxes = document.querySelectorAll('.vehicle-checkbox:checked');
+
+            selectedVehicles = Array.from(checkboxes).map(cb => ({
+                registration: cb.value,
+                name: cb.dataset.name
+            }));
+
+            updateVehiclesDisplay();
+            closeVehiclesModal();
+        }
+
+        function updateVehiclesDisplay() {
+            const displayDiv = document.getElementById('selected-vehicles-display');
+
+            if (selectedVehicles.length === 0) {
+                displayDiv.innerHTML = '<span class="text-gray-500 dark:text-gray-400">Kliknij przycisk, aby wybrać pojazdy</span>';
+                return;
+            }
+
+            const vehicleTags = selectedVehicles.map(vehicle =>
+                `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 mr-2 mb-2">
+                    ${vehicle.name} (${vehicle.registration})
+                    <button type="button" onclick="removeVehicle('${vehicle.registration}')" class="ml-2 inline-flex items-center justify-center w-4 h-4 rounded-full text-green-600 hover:bg-green-200 hover:text-green-800 dark:text-green-400 dark:hover:bg-green-800 dark:hover:text-green-200">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </span>`
+            ).join('');
+
+            displayDiv.innerHTML = vehicleTags;
+
+            updateVehiclesInputs();
+        }
+
+        function updateVehiclesInputs() {
+            const inputsContainer = document.getElementById('selected-vehicles-inputs');
+
+            inputsContainer.innerHTML = '';
+
+            selectedVehicles.forEach(vehicle => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'vehicles[]';
+                input.value = vehicle.registration;
+                input.className = 'vehicle-hidden-input';
+                inputsContainer.appendChild(input);
+            });
+        }
+
+        function removeVehicle(registration) {
+            selectedVehicles = selectedVehicles.filter(vehicle => vehicle.registration !== registration);
+            updateVehiclesDisplay();
+        }
+
         function debugFormSubmit(event) {
             // Ensure we have the selected employees if any were chosen
             if (selectedEmployees.length > 0) {
@@ -442,9 +564,17 @@
             @if(old('selected_employees'))
                 const oldEmployeeIds = {!! json_encode(old('selected_employees')) !!};
                 const allEmployees = {!! $users->map(function($user) { return ['id' => $user->id, 'name' => $user->name]; })->toJson() !!};
-                
+
                 selectedEmployees = allEmployees.filter(emp => oldEmployeeIds.includes(emp.id.toString()));
                 updateEmployeesDisplay();
+            @endif
+
+            @if(old('vehicles'))
+                const oldVehicleRegistrations = {!! json_encode(old('vehicles')) !!};
+                const allVehicles = {!! $vehicles->map(function($vehicle) { return ['registration' => $vehicle->registration, 'name' => $vehicle->name]; })->toJson() !!};
+
+                selectedVehicles = allVehicles.filter(vehicle => oldVehicleRegistrations.includes(vehicle.registration));
+                updateVehiclesDisplay();
             @endif
         });
     </script>

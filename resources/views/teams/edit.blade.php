@@ -80,21 +80,31 @@
 
                         <!-- Vehicle Assignment -->
                         <div>
-                            <label for="vehicle_id" class="form-kt-label">Przypisany pojazd</label>
-                            <select id="vehicle_id" 
-                                    name="vehicle_id" 
-                                    class="form-kt-select @error('vehicle_id') border-red-500 @enderror">
-                                <option value="">Brak przypisania</option>
-                                @foreach($vehicles as $vehicle)
-                                    <option value="{{ $vehicle->id }}" {{ old('vehicle_id', $team->vehicle_id) == $vehicle->id ? 'selected' : '' }}>
-                                        {{ $vehicle->name }} ({{ $vehicle->registration }})
-                                    </option>
-                                @endforeach
-                            </select>
+                            <label class="form-kt-label">Przypisane pojazdy</label>
+                            <div class="flex items-center space-x-3 mt-1">
+                                <div id="vehicles-inputs">
+                                    <!-- Hidden inputs for vehicles will be generated here -->
+                                </div>
+
+                                <div class="flex-1">
+                                    <div id="selected-vehicles" class="min-h-[42px] p-3 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 rounded-md">
+                                        <div id="selected-vehicles-display" class="text-gray-500 dark:text-gray-400">
+                                            Nie wybrano żadnych pojazdów
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="openVehiclesModal()" class="btn-kt-secondary">
+                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
+                                        <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"></path>
+                                    </svg>
+                                    Wybierz pojazdy
+                                </button>
+                            </div>
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Opcjonalne przypisanie pojazdu do zespołu
+                                Wybierz pojazdy przypisane do zespołu (opcjonalnie).
                             </p>
-                            @error('vehicle_id')
+                            @error('vehicles')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -214,9 +224,65 @@
         </div>
     </div>
 
+    <!-- Vehicles Selection Modal -->
+    <div id="vehicles-modal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="closeVehiclesModal()"></div>
+
+            <div class="inline-block overflow-hidden text-left align-bottom bg-white dark:bg-gray-800 rounded-lg shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="px-4 pt-5 pb-4 bg-white dark:bg-gray-800 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="w-full mt-3 text-center sm:mt-0 sm:text-left">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
+                                Wybierz pojazdy zespołu
+                            </h3>
+                            <div class="mt-4 max-h-64 overflow-y-auto">
+                                @foreach($vehicles as $vehicle)
+                                    <div class="flex items-center p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded">
+                                        <input type="checkbox"
+                                               id="vehicle-{{ $vehicle->id }}"
+                                               class="vehicle-checkbox h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                               value="{{ $vehicle->id }}"
+                                               data-name="{{ $vehicle->name }}"
+                                               data-registration="{{ $vehicle->registration }}">
+                                        <label for="vehicle-{{ $vehicle->id }}" class="ml-3 flex-1 cursor-pointer">
+                                            <div class="font-medium text-gray-900 dark:text-gray-100">{{ $vehicle->name }}</div>
+                                            <div class="text-sm text-gray-500 dark:text-gray-400">
+                                                {{ $vehicle->registration }}
+                                                @if($vehicle->description)
+                                                    • {{ $vehicle->description }}
+                                                @endif
+                                            </div>
+                                        </label>
+                                    </div>
+                                @endforeach
+                                @if($vehicles->isEmpty())
+                                    <p class="mt-2">Brak dostępnych pojazdów w systemie</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button"
+                            onclick="confirmVehicles()"
+                            class="btn-kt-primary w-full sm:w-auto sm:ml-3">
+                        Zapisz wybór
+                    </button>
+                    <button type="button"
+                            onclick="closeVehiclesModal()"
+                            class="btn-kt-light w-full sm:w-auto mt-3 sm:mt-0">
+                        Anuluj
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let selectedMembers = @json(old('members', $team->members ?? []));
         let currentMembersData = @json($currentMembers ?? []);
+        let selectedVehicles = @json(old('vehicles', $team->vehicles->pluck('id') ?? []));
 
         function openMembersModal() {
             document.getElementById('members-modal').classList.remove('hidden');
@@ -310,13 +376,91 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Convert selectedMembers to numbers to ensure consistent data types
             selectedMembers = selectedMembers.map(id => parseInt(id));
-            
+
             // If no old form data, use current team members
             if (!selectedMembers || selectedMembers.length === 0) {
                 selectedMembers = currentMembersData.map(member => member.id);
             }
             updateMembersInputs();
             updateMembersDisplay();
+
+            // Initialize vehicles
+            selectedVehicles = selectedVehicles.map(id => parseInt(id));
+            updateVehiclesInputs();
+            updateVehiclesDisplay();
         });
+
+        // Vehicles modal functionality
+        function openVehiclesModal() {
+            document.getElementById('vehicles-modal').classList.remove('hidden');
+
+            // Restore previous selections
+            document.querySelectorAll('.vehicle-checkbox').forEach(checkbox => {
+                checkbox.checked = selectedVehicles.includes(parseInt(checkbox.value));
+            });
+        }
+
+        function closeVehiclesModal() {
+            document.getElementById('vehicles-modal').classList.add('hidden');
+        }
+
+        function confirmVehicles() {
+            const checkboxes = document.querySelectorAll('.vehicle-checkbox:checked');
+            selectedVehicles = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            updateVehiclesInputs();
+            updateVehiclesDisplay();
+            closeVehiclesModal();
+        }
+
+        function updateVehiclesInputs() {
+            const inputsContainer = document.getElementById('vehicles-inputs');
+            inputsContainer.innerHTML = '';
+
+            selectedVehicles.forEach(vehicleId => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'vehicles[]';
+                input.value = vehicleId;
+                inputsContainer.appendChild(input);
+            });
+        }
+
+        function updateVehiclesDisplay() {
+            const displayContainer = document.getElementById('selected-vehicles-display');
+
+            if (selectedVehicles.length === 0) {
+                displayContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm">Nie wybrano żadnych pojazdów</p>';
+                return;
+            }
+
+            let html = '<div class="flex flex-wrap gap-2">';
+            selectedVehicles.forEach(vehicleId => {
+                const checkbox = document.querySelector(`#vehicles-modal input[value="${vehicleId}"]`);
+                if (checkbox) {
+                    const name = checkbox.dataset.name;
+                    const registration = checkbox.dataset.registration;
+                    html += `
+                        <div class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                            <span>${name}</span>
+                            <span class="ml-1 text-xs opacity-75">(${registration})</span>
+                            <button type="button" onclick="removeVehicle(${vehicleId})" class="ml-2 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                }
+            });
+            html += '</div>';
+
+            displayContainer.innerHTML = html;
+        }
+
+        function removeVehicle(vehicleId) {
+            selectedVehicles = selectedVehicles.filter(id => id !== vehicleId);
+            updateVehiclesInputs();
+            updateVehiclesDisplay();
+        }
     </script>
 </x-app-layout>

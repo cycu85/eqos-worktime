@@ -47,13 +47,13 @@ class Vehicle extends Model
     }
 
     /**
-     * Powiązanie z zespołami
+     * Powiązanie z zespołami (wiele do wielu)
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Team>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Team>
      */
     public function teams()
     {
-        return $this->hasMany(Team::class);
+        return $this->belongsToMany(Team::class, 'team_vehicles');
     }
 
     /**

@@ -212,11 +212,22 @@
                                     <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-3">Transport</h4>
                                     @if($delegation->vehicle_registration)
                                     <div>
-                                        <span class="text-sm text-gray-600 dark:text-gray-400">Pojazd:</span>
-                                        <span class="ml-2 font-medium text-gray-900 dark:text-gray-100">{{ $delegation->vehicle_registration }}</span>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Pojazdy:</span>
+                                        <div class="mt-2 flex flex-wrap gap-2">
+                                            @php
+                                                $vehicles = explode(',', $delegation->vehicle_registration);
+                                            @endphp
+                                            @foreach($vehicles as $vehicle)
+                                                @if(trim($vehicle))
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                        {{ trim($vehicle) }}
+                                                    </span>
+                                                @endif
+                                            @endforeach
+                                        </div>
                                     </div>
                                     @else
-                                    <span class="text-gray-500 italic">Nie określono pojazdu</span>
+                                    <span class="text-gray-500 italic">Nie określono pojazdów</span>
                                     @endif
                                 </div>
                             </div>

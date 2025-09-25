@@ -138,6 +138,15 @@ class DelegationController extends Controller
                 $input['arrival_time'] = substr($input['arrival_time'], 0, 5);
             }
         }
+        // Convert vehicles array to comma-separated string
+        if (isset($input['vehicles']) && is_array($input['vehicles'])) {
+            $input['vehicle_registration'] = implode(',', array_filter($input['vehicles']));
+            unset($input['vehicles']);
+        } elseif (isset($input['vehicles']) && empty($input['vehicles'])) {
+            $input['vehicle_registration'] = null;
+            unset($input['vehicles']);
+        }
+
         $request->merge($input);
 
         $validated = $request->validate([
@@ -153,7 +162,7 @@ class DelegationController extends Controller
             'project' => 'nullable|string|max:255',
             'destination_city' => 'required|string|max:255',
             'country' => 'required|string|max:100',
-            'vehicle_registration' => 'nullable|string|max:20',
+            'vehicle_registration' => 'nullable|string|max:500',
             'accommodation_limit' => 'nullable|numeric|min:0',
             'nights_count' => 'integer|min:0',
             'breakfasts' => 'integer|min:0',
@@ -303,6 +312,16 @@ class DelegationController extends Controller
                 $input['arrival_time'] = substr($input['arrival_time'], 0, 5);
             }
         }
+
+        // Convert vehicles array to comma-separated string
+        if (isset($input['vehicles']) && is_array($input['vehicles'])) {
+            $input['vehicle_registration'] = implode(',', array_filter($input['vehicles']));
+            unset($input['vehicles']);
+        } elseif (isset($input['vehicles']) && empty($input['vehicles'])) {
+            $input['vehicle_registration'] = null;
+            unset($input['vehicles']);
+        }
+
         $request->merge($input);
 
         // Walidacja uprawnień do edycji daty polecenia wyjazdu
@@ -332,7 +351,7 @@ class DelegationController extends Controller
             'project' => 'nullable|string|max:255',
             'destination_city' => 'required|string|max:255',
             'country' => 'required|string|max:100',
-            'vehicle_registration' => 'nullable|string|max:20',
+            'vehicle_registration' => 'nullable|string|max:500',
             'accommodation_limit' => 'nullable|numeric|min:0',
             'nights_count' => 'integer|min:0',
             'breakfasts' => 'integer|min:0',
@@ -451,7 +470,7 @@ class DelegationController extends Controller
         }
 
         if (empty($delegation->vehicle_registration)) {
-            return redirect()->back()->with('error', 'Pole "Środek lokomocji" musi być uzupełnione przed akceptacją delegacji.');
+            return redirect()->back()->with('error', 'Pole "Pojazdy" musi być uzupełnione przed akceptacją delegacji.');
         }
 
         // Check if not already approved
@@ -567,6 +586,18 @@ class DelegationController extends Controller
             }
         }
 
+        // Convert vehicles array to comma-separated string
+        $input = $request->all();
+        if (isset($input['vehicles']) && is_array($input['vehicles'])) {
+            $input['vehicle_registration'] = implode(',', array_filter($input['vehicles']));
+            unset($input['vehicles']);
+            $request->merge($input);
+        } elseif (isset($input['vehicles']) && empty($input['vehicles'])) {
+            $input['vehicle_registration'] = null;
+            unset($input['vehicles']);
+            $request->merge($input);
+        }
+
         $validated = $request->validate([
             'selected_employees' => 'required|array|min:1',
             'selected_employees.*' => 'exists:users,id',
@@ -579,7 +610,7 @@ class DelegationController extends Controller
             'project' => 'nullable|string|max:255',
             'destination_city' => 'required|string|max:255',
             'country' => 'required|string|max:100',
-            'vehicle_registration' => 'nullable|string|max:20',
+            'vehicle_registration' => 'nullable|string|max:500',
             'accommodation_limit' => 'nullable|numeric|min:0',
             'nights_count' => 'integer|min:0',
             'breakfasts' => 'integer|min:0',

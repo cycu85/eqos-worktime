@@ -146,7 +146,7 @@
                                         <option value="{{ $team->id }}" 
                                                 data-leader="{{ $team->leader->name ?? '' }}"
                                                 data-leader-id="{{ $team->leader_id ?? '' }}"
-                                                data-vehicle="{{ $team->vehicle_id ?? '' }}"
+                                                data-vehicles="{{ $team->vehicles->pluck('id')->toJson() }}"
                                                 data-members="{{ implode(',', $team->members ?? []) }}"
                                                 data-members-names="{{ $team->members_names ?? '' }}"
                                                 {{ old('team_id') == $team->id ? 'selected' : '' }}>
@@ -472,9 +472,9 @@
             
             // Initialize vehicle selection
             const leaderTeam = @json($leaderTeam ?? null);
-            if (leaderTeam && leaderTeam.vehicle) {
-                // Auto-select leader's team vehicle
-                selectedVehicles = [leaderTeam.vehicle.id];
+            if (leaderTeam && leaderTeam.vehicles && leaderTeam.vehicles.length > 0) {
+                // Auto-select leader's team vehicles
+                selectedVehicles = leaderTeam.vehicles.map(v => v.id);
                 updateVehiclesInputs();
                 updateVehiclesDisplay();
             } else {
@@ -557,11 +557,17 @@
             const membersNames = selectedOption.dataset.membersNames;
             const leaderName = selectedOption.dataset.leader;
             
-            // Auto-select vehicle if team has one
-            if (vehicleId) {
-                selectedVehicles = [parseInt(vehicleId)];
-                updateVehiclesInputs();
-                updateVehiclesDisplay();
+            // Auto-select vehicles if team has any
+            const vehicleIds = selectedOption.dataset.vehicles;
+            if (vehicleIds) {
+                try {
+                    const parsedVehicleIds = JSON.parse(vehicleIds);
+                    selectedVehicles = parsedVehicleIds;
+                    updateVehiclesInputs();
+                    updateVehiclesDisplay();
+                } catch (e) {
+                    console.error('Error parsing vehicle IDs:', e);
+                }
             }
             
             // Auto-populate team members

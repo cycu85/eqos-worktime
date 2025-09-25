@@ -181,7 +181,7 @@ class TaskController extends Controller
         
         $vehicles = Vehicle::active()->orderBy('name')->get();
         $users = User::active()->whereIn('role', ['lider', 'pracownik'])->orderBy('name')->get();
-        $teams = Team::with('vehicle')->active()->orderBy('name')->get();
+        $teams = Team::with('vehicles')->active()->orderBy('name')->get();
         $taskTypes = TaskType::active()->orderBy('name')->get();
         
         // Get user's team members if user is a leader
@@ -189,7 +189,7 @@ class TaskController extends Controller
         $leaderTeam = null;
         $currentUser = Auth::user();
         if ($currentUser->isLider()) {
-            $leaderTeam = Team::with('vehicle')->where('leader_id', $currentUser->id)->first();
+            $leaderTeam = Team::with('vehicles')->where('leader_id', $currentUser->id)->first();
             if ($leaderTeam && $leaderTeam->members) {
                 $leaderTeamMembers = User::active()->whereIn('id', $leaderTeam->members)->pluck('name')->toArray();
             }
@@ -294,7 +294,7 @@ class TaskController extends Controller
         
         $vehicles = Vehicle::active()->orderBy('name')->get();
         $users = User::active()->whereIn('role', ['lider', 'pracownik'])->orderBy('name')->get();
-        $teams = Team::with('vehicle')->active()->orderBy('name')->get();
+        $teams = Team::with('vehicles')->active()->orderBy('name')->get();
         $taskTypes = TaskType::active()->orderBy('name')->get();
         
         // Get user's team members if user is a leader
@@ -302,7 +302,7 @@ class TaskController extends Controller
         $leaderTeam = null;
         $currentUser = Auth::user();
         if ($currentUser->isLider()) {
-            $leaderTeam = Team::with('vehicle')->where('leader_id', $currentUser->id)->first();
+            $leaderTeam = Team::with('vehicles')->where('leader_id', $currentUser->id)->first();
             if ($leaderTeam && $leaderTeam->members) {
                 $leaderTeamMembers = User::active()->whereIn('id', $leaderTeam->members)->pluck('name')->toArray();
             }

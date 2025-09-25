@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name Nazwa zespołu
  * @property string|null $description Opis zespołu
  * @property int $leader_id ID lidera zespołu
- * @property int|null $vehicle_id ID przypisanego pojazdu
+ * @property-read \Illuminate\Database\Eloquent\Collection<Vehicle> $vehicles Przypisane pojazdy
  * @property array|null $members Lista ID członków zespołu
  * @property int $created_by ID twórcy zespołu
  * @property bool $active Status aktywności
@@ -25,7 +25,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read User $creator
  * @property-read User $leader
  * @property-read \Illuminate\Database\Eloquent\Collection<Task> $tasks
- * @property-read Vehicle|null $vehicle
  * @property-read string $members_names
  */
 class Team extends Model
@@ -34,7 +33,6 @@ class Team extends Model
         'name',
         'description',
         'leader_id',
-        'vehicle_id',
         'members',
         'created_by',
         'active'
@@ -76,13 +74,13 @@ class Team extends Model
     }
 
     /**
-     * Powiązanie z przypisanym pojazdem
+     * Powiązanie z przypisanymi pojazdami (wiele do wielu)
      *
-     * @return BelongsTo<Vehicle>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Vehicle>
      */
-    public function vehicle(): BelongsTo
+    public function vehicles()
     {
-        return $this->belongsTo(Vehicle::class);
+        return $this->belongsToMany(Vehicle::class, 'team_vehicles');
     }
 
     /**

@@ -26,7 +26,7 @@ class TeamController extends Controller
     {
         $this->authorize('viewAny', Team::class);
         
-        $query = Team::with(['creator', 'leader', 'vehicle']);
+        $query = Team::with(['creator', 'leader', 'vehicles']);
         
         // Apply search
         if ($request->filled('search')) {
@@ -96,10 +96,8 @@ class TeamController extends Controller
             ->orderBy('name')
             ->get();
         
-        // Get vehicles that are not already assigned to other active teams
-        $assignedVehicleIds = Team::active()->whereNotNull('vehicle_id')->pluck('vehicle_id');
+        // Get all active vehicles (now teams can share vehicles)
         $vehicles = Vehicle::active()
-            ->whereNotIn('id', $assignedVehicleIds)
             ->orderBy('name')
             ->get();
         
@@ -120,14 +118,22 @@ class TeamController extends Controller
             'name' => 'required|string|max:255|unique:teams,name',
             'description' => 'nullable|string',
             'leader_id' => 'required|exists:users,id',
-            'vehicle_id' => 'nullable|exists:vehicles,id',
+            'vehicles' => 'nullable|array',
+            'vehicles.*' => 'exists:vehicles,id',
             'members' => 'nullable|array',
             'members.*' => 'exists:users,id'
         ]);
 
         $validated['created_by'] = Auth::id();
+        $vehicleIds = $validated['vehicles'] ?? [];
+        unset($validated['vehicles']);
 
         $team = Team::create($validated);
+
+        // Attach vehicles to the team
+        if (!empty($vehicleIds)) {
+            $team->vehicles()->attach($vehicleIds);
+        }
 
         return redirect()->route('teams.index')->with('success', 'Zespół został utworzony pomyślnie.');
     }
@@ -142,7 +148,7 @@ class TeamController extends Controller
     {
         $this->authorize('view', $team);
         
-        $team->load(['creator', 'leader', 'vehicle', 'tasks']);
+        $team->load(['creator', 'leader', 'vehicles', 'tasks']);
         
         return view('teams.show', compact('team'));
     }
@@ -183,13 +189,8 @@ class TeamController extends Controller
             ->orderBy('name')
             ->get();
         
-        // Get vehicles that are not already assigned to other active teams (exclude current team)
-        $assignedVehicleIds = Team::active()
-            ->whereNotNull('vehicle_id')
-            ->where('id', '!=', $team->id)
-            ->pluck('vehicle_id');
+        // Get all active vehicles (now teams can share vehicles)
         $vehicles = Vehicle::active()
-            ->whereNotIn('id', $assignedVehicleIds)
             ->orderBy('name')
             ->get();
 
@@ -225,13 +226,20 @@ class TeamController extends Controller
             'name' => 'required|string|max:255|unique:teams,name,' . $team->id,
             'description' => 'nullable|string',
             'leader_id' => 'required|exists:users,id',
-            'vehicle_id' => 'nullable|exists:vehicles,id',
+            'vehicles' => 'nullable|array',
+            'vehicles.*' => 'exists:vehicles,id',
             'members' => 'nullable|array',
             'members.*' => 'exists:users,id',
             'active' => 'boolean'
         ]);
 
+        $vehicleIds = $validated['vehicles'] ?? [];
+        unset($validated['vehicles']);
+
         $team->update($validated);
+
+        // Sync vehicles with the team
+        $team->vehicles()->sync($vehicleIds);
 
         return redirect()->route('teams.index')->with('success', 'Zespół został zaktualizowany pomyślnie.');
     }

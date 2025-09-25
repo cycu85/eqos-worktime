@@ -58,12 +58,20 @@
                         </div>
 
                         <div>
-                            <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Przypisany pojazd</h4>
-                            @if($team->vehicle)
-                                <p class="text-gray-600 dark:text-gray-400">{{ $team->vehicle->name }}</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $team->vehicle->registration }}</p>
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Przypisane pojazdy</h4>
+                            @if($team->vehicles->count() > 0)
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach($team->vehicles as $vehicle)
+                                        <div class="inline-flex items-center px-3 py-2 rounded-lg bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                            <div>
+                                                <div class="font-medium">{{ $vehicle->name }}</div>
+                                                <div class="text-xs opacity-75">{{ $vehicle->registration }}</div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
                             @else
-                                <p class="text-gray-500 dark:text-gray-400">Brak przypisanego pojazdu</p>
+                                <p class="text-gray-500 dark:text-gray-400">Brak przypisanych pojazdów</p>
                             @endif
                         </div>
 
@@ -149,7 +157,7 @@
                                 <thead>
                                     <tr>
                                         <th>Zadanie</th>
-                                        <th>Pojazd</th>
+                                        <th>Pojazdy</th>
                                         <th>Status</th>
                                         <th>Start</th>
                                         <th class="text-right">Akcje</th>
