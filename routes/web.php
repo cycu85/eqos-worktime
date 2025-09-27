@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AbsenceController;
 use App\Http\Controllers\DelegationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
@@ -29,12 +30,19 @@ Route::middleware('auth')->group(function () {
     
     // Tasks routes - available for all authenticated users
     Route::resource('tasks', TaskController::class);
-    
+
     // Task work logs
     Route::get('tasks/{task}/work-logs', [TaskController::class, 'workLogs'])->name('tasks.work-logs');
     Route::post('tasks/{task}/work-logs/bulk-update', [TaskWorkLogController::class, 'bulkUpdate'])->name('tasks.work-logs.bulk-update');
     Route::post('tasks/{task}/work-logs/add', [TaskWorkLogController::class, 'addWorkDay'])->name('tasks.work-logs.add');
     Route::delete('tasks/{task}/work-logs/{workLog}', [TaskWorkLogController::class, 'destroy'])->name('tasks.work-logs.destroy');
+
+    // Absences routes - available for all authenticated users
+    Route::resource('absences', AbsenceController::class);
+
+    // Absence approval routes - only for admin and kierownik
+    Route::post('absences/{absence}/approve', [AbsenceController::class, 'approve'])->name('absences.approve')->middleware('role:admin,kierownik');
+    Route::post('absences/{absence}/reject', [AbsenceController::class, 'reject'])->name('absences.reject')->middleware('role:admin,kierownik');
     
     // Group delegation routes (admin/kierownik only) - MUST be before resource routes
     Route::get('delegations/create-group', [DelegationController::class, 'createGroup'])->name('delegations.create-group')->middleware('role:admin,kierownik');

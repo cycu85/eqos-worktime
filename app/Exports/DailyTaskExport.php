@@ -111,7 +111,8 @@ class DailyTaskExport implements FromCollection, WithHeadings, WithMapping, With
             'Ilość wykonanych zadań',
             'Status dnia',
             'Lider zespołu',
-            'Skład zespołu',
+            'Skład zespołu (obecni)',
+            'Nieobecni w zespole',
             'Pojazdy - nazwa',
             'Pojazdy - rejestracja',
             'Notatki dnia',
@@ -135,7 +136,8 @@ class DailyTaskExport implements FromCollection, WithHeadings, WithMapping, With
             $workLog->completed_tasks_count ?? 0,
             $this->getWorkLogStatusLabel($workLog->status),
             $task->leader ? $task->leader->name : '',
-            $task->team ?: '',
+            $this->getEffectiveTeamForDate($task, $workLog->work_date),
+            $this->getAbsentTeamMembersForDate($task, $workLog->work_date),
             $task->vehicles->count() > 0 ? $task->vehicles->pluck('name')->join(', ') : '',
             $task->vehicles->count() > 0 ? $task->vehicles->pluck('registration')->join(', ') : '',
             $workLog->notes ?: '',
@@ -159,5 +161,71 @@ class DailyTaskExport implements FromCollection, WithHeadings, WithMapping, With
             'cancelled' => 'Anulowane',
             default => $status
         };
+    }
+
+    /**
+     * Pobierz efektywny skład zespołu dla danej daty (bez nieobecnych)
+     *
+     * @param Task $task
+     * @param Carbon $date
+     * @return string
+     */
+    private function getEffectiveTeamForDate($task, $date)
+    {
+        $presentMembers = [];
+
+        // Sprawdź lidera
+        if ($task->leader && !$task->leader->isAbsentOn($date)) {
+            $presentMembers[] = $task->leader->name;
+        }
+
+        // Sprawdź członków zespołu
+        if ($task->team) {
+            $teamMemberNames = array_map('trim', explode(',', $task->team));
+            foreach ($teamMemberNames as $memberName) {
+                $user = User::where('name', $memberName)->first();
+                if ($user && !$user->isAbsentOn($date)) {
+                    // Sprawdź czy lider nie jest już dodany
+                    if (!$task->leader || $task->leader->name !== $memberName) {
+                        $presentMembers[] = $memberName;
+                    }
+                }
+            }
+        }
+
+        return implode(', ', $presentMembers);
+    }
+
+    /**
+     * Pobierz listę nieobecnych członków zespołu dla danej daty
+     *
+     * @param Task $task
+     * @param Carbon $date
+     * @return string
+     */
+    private function getAbsentTeamMembersForDate($task, $date)
+    {
+        $absentMembers = [];
+
+        // Sprawdź lidera
+        if ($task->leader && $task->leader->isAbsentOn($date)) {
+            $absentMembers[] = $task->leader->name . ' (lider)';
+        }
+
+        // Sprawdź członków zespołu
+        if ($task->team) {
+            $teamMemberNames = array_map('trim', explode(',', $task->team));
+            foreach ($teamMemberNames as $memberName) {
+                $user = User::where('name', $memberName)->first();
+                if ($user && $user->isAbsentOn($date)) {
+                    // Sprawdź czy lider nie jest już dodany
+                    if (!$task->leader || $task->leader->name !== $memberName) {
+                        $absentMembers[] = $memberName;
+                    }
+                }
+            }
+        }
+
+        return implode(', ', $absentMembers);
     }
 }

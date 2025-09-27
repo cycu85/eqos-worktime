@@ -199,4 +199,87 @@ class User extends Authenticatable
             return $this->teamTasks();
         }
     }
+
+    /**
+     * Powiązanie z nieobecnościami użytkownika
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<UserAbsence>
+     */
+    public function absences()
+    {
+        return $this->hasMany(UserAbsence::class);
+    }
+
+    /**
+     * Sprawdź czy użytkownik jest nieobecny w podanej dacie
+     *
+     * @param string|\Carbon\Carbon $date
+     * @return bool
+     */
+    public function isAbsentOn($date)
+    {
+        if (is_string($date)) {
+            $date = \Carbon\Carbon::parse($date);
+        }
+
+        return $this->absences()
+            ->approved()
+            ->where('start_date', '<=', $date->format('Y-m-d'))
+            ->where('end_date', '>=', $date->format('Y-m-d'))
+            ->exists();
+    }
+
+    /**
+     * Pobierz nieobecności w danym okresie
+     *
+     * @param string|\Carbon\Carbon $startDate
+     * @param string|\Carbon\Carbon $endDate
+     * @return \Illuminate\Database\Eloquent\Collection<UserAbsence>
+     */
+    public function getAbsencesInPeriod($startDate, $endDate)
+    {
+        if (is_string($startDate)) {
+            $startDate = \Carbon\Carbon::parse($startDate);
+        }
+        if (is_string($endDate)) {
+            $endDate = \Carbon\Carbon::parse($endDate);
+        }
+
+        return $this->absences()
+            ->approved()
+            ->inPeriod($startDate->format('Y-m-d'), $endDate->format('Y-m-d'))
+            ->orderBy('start_date')
+            ->get();
+    }
+
+    /**
+     * Sprawdź czy użytkownik ma oczekujące nieobecności
+     *
+     * @return bool
+     */
+    public function hasPendingAbsences()
+    {
+        return $this->absences()->pending()->exists();
+    }
+
+    /**
+     * Pobierz liczbę dni nieobecności w danym roku
+     *
+     * @param int|null $year
+     * @return int
+     */
+    public function getAbsenceDaysInYear($year = null)
+    {
+        $year = $year ?: now()->year;
+        $startOfYear = \Carbon\Carbon::create($year, 1, 1)->startOfYear();
+        $endOfYear = \Carbon\Carbon::create($year, 12, 31)->endOfYear();
+
+        return $this->absences()
+            ->approved()
+            ->inPeriod($startOfYear->format('Y-m-d'), $endOfYear->format('Y-m-d'))
+            ->get()
+            ->sum(function($absence) {
+                return $absence->getDaysCount();
+            });
+    }
 }

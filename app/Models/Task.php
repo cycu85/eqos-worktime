@@ -232,14 +232,183 @@ class Task extends Model
 
     /**
      * Oblicz łączne roboczogodziny (godziny * liczba pracowników)
+     * z uwzględnieniem nieobecności zespołu
      *
      * @return float
      */
     public function getTotalRoboczogodziny()
     {
+        $totalRoboczogodziny = 0;
+
+        // Iterujemy po każdym work log (dzień pracy)
+        foreach ($this->workLogs as $workLog) {
+            $workHours = $workLog->getDurationHours() ?? 0;
+            $effectiveTeamSize = $this->getEffectiveTeamSizeForDate($workLog->work_date);
+            $totalRoboczogodziny += ($workHours * $effectiveTeamSize);
+        }
+
+        return $totalRoboczogodziny;
+    }
+
+    /**
+     * Oblicz łączne roboczogodziny (stara metoda - bez uwzględnienia nieobecności)
+     * Pozostawiona dla kompatybilności wstecznej
+     *
+     * @return float
+     */
+    public function getTotalRoboczogodzinoOld()
+    {
         $totalHours = $this->getTotalWorkHours();
         $teamSize = $this->getTeamSize();
         return $totalHours * $teamSize;
+    }
+
+    /**
+     * Pobierz efektywną liczbę pracowników w zespole dla danej daty
+     * (uwzględniając nieobecności)
+     *
+     * @param string|\Carbon\Carbon $date
+     * @return int
+     */
+    public function getEffectiveTeamSizeForDate($date)
+    {
+        $baseTeamSize = $this->getTeamSize(); // lider + członkowie
+        $absentCount = $this->getAbsentTeamMembersCount($date);
+
+        return max(0, $baseTeamSize - $absentCount);
+    }
+
+    /**
+     * Pobierz liczbę nieobecnych członków zespołu w danej dacie
+     *
+     * @param string|\Carbon\Carbon $date
+     * @return int
+     */
+    public function getAbsentTeamMembersCount($date)
+    {
+        $absentCount = 0;
+
+        // Sprawdź lidera
+        if ($this->leader && $this->leader->isAbsentOn($date)) {
+            $absentCount++;
+        }
+
+        // Sprawdź członków zespołu
+        if ($this->team) {
+            $teamMemberNames = array_map('trim', explode(',', $this->team));
+            foreach ($teamMemberNames as $memberName) {
+                $user = User::where('name', $memberName)->first();
+                if ($user && $user->isAbsentOn($date)) {
+                    $absentCount++;
+                }
+            }
+        }
+
+        return $absentCount;
+    }
+
+    /**
+     * Pobierz listę nieobecnych członków zespołu w danej dacie
+     *
+     * @param string|\Carbon\Carbon $date
+     * @return array
+     */
+    public function getAbsentTeamMembersForDate($date)
+    {
+        $absentMembers = [];
+
+        // Sprawdź lidera
+        if ($this->leader && $this->leader->isAbsentOn($date)) {
+            $absentMembers[] = [
+                'user' => $this->leader,
+                'name' => $this->leader->name,
+                'role' => 'lider'
+            ];
+        }
+
+        // Sprawdź członków zespołu
+        if ($this->team) {
+            $teamMemberNames = array_map('trim', explode(',', $this->team));
+            foreach ($teamMemberNames as $memberName) {
+                $user = User::where('name', $memberName)->first();
+                if ($user && $user->isAbsentOn($date)) {
+                    $absentMembers[] = [
+                        'user' => $user,
+                        'name' => $memberName,
+                        'role' => 'członek'
+                    ];
+                }
+            }
+        }
+
+        return $absentMembers;
+    }
+
+    /**
+     * Sprawdź czy zadanie jest dotknięte nieobecnościami w danym okresie
+     *
+     * @param string|\Carbon\Carbon|null $startDate
+     * @param string|\Carbon\Carbon|null $endDate
+     * @return bool
+     */
+    public function isAffectedByAbsences($startDate = null, $endDate = null)
+    {
+        $startDate = $startDate ?: $this->start_date;
+        $endDate = $endDate ?: $this->end_date;
+
+        // Sprawdź każdy dzień zadania
+        $period = new \DatePeriod(
+            \Carbon\Carbon::parse($startDate)->startOfDay(),
+            new \DateInterval('P1D'),
+            \Carbon\Carbon::parse($endDate)->addDay()->startOfDay()
+        );
+
+        foreach ($period as $date) {
+            if ($this->getAbsentTeamMembersCount($date->format('Y-m-d')) > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Pobierz statystyki nieobecności dla zadania
+     *
+     * @return array
+     */
+    public function getAbsenceStats()
+    {
+        $totalDays = $this->start_date->diffInDays($this->end_date) + 1;
+        $daysWithAbsences = 0;
+        $totalAbsenceDays = 0;
+        $baseTeamSize = $this->getTeamSize();
+
+        $period = new \DatePeriod(
+            $this->start_date->startOfDay(),
+            new \DateInterval('P1D'),
+            $this->end_date->addDay()->startOfDay()
+        );
+
+        foreach ($period as $date) {
+            $absentCount = $this->getAbsentTeamMembersCount($date->format('Y-m-d'));
+            if ($absentCount > 0) {
+                $daysWithAbsences++;
+                $totalAbsenceDays += $absentCount;
+            }
+        }
+
+        $absenceImpactPercentage = $baseTeamSize > 0 && $totalDays > 0
+            ? round(($totalAbsenceDays / ($baseTeamSize * $totalDays)) * 100, 1)
+            : 0;
+
+        return [
+            'total_days' => $totalDays,
+            'days_with_absences' => $daysWithAbsences,
+            'total_absence_days' => $totalAbsenceDays,
+            'base_team_size' => $baseTeamSize,
+            'absence_impact_percentage' => $absenceImpactPercentage,
+        ];
     }
 
     /**
@@ -250,12 +419,12 @@ class Task extends Model
     public function getTeamSize()
     {
         $teamMembers = 0;
-        
+
         if ($this->team) {
             // Jeśli team to string z nazwami oddzielone przecinkami
             $teamMembers = count(explode(',', trim($this->team)));
         }
-        
+
         // Zawsze dodaj lidera (lider + członkowie zespołu)
         return $teamMembers + 1;
     }
