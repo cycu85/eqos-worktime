@@ -153,10 +153,10 @@
                         <table class="table-kt">
                             <thead>
                                 <tr>
-                                    <th>
-                                        <a href="{{ route('delegations.index', array_merge(request()->query(), ['sort' => 'id', 'direction' => request('sort') === 'id' && request('direction') === 'asc' ? 'desc' : 'asc'])) }}" 
+                                    <th class="w-16">
+                                        <a href="{{ route('delegations.index', array_merge(request()->query(), ['sort' => 'id', 'direction' => request('sort') === 'id' && request('direction') === 'asc' ? 'desc' : 'asc'])) }}"
                                            class="flex items-center hover:text-blue-600 dark:hover:text-blue-400">
-                                            Nr delegacji
+                                            NR
                                             @if(request('sort') === 'id')
                                                 @if(request('direction') === 'asc')
                                                     <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -174,8 +174,8 @@
                                             @endif
                                         </a>
                                     </th>
-                                    <th>
-                                        <a href="{{ route('delegations.index', array_merge(request()->query(), ['sort' => 'first_name', 'direction' => request('sort') === 'first_name' && request('direction') === 'asc' ? 'desc' : 'asc'])) }}" 
+                                    <th class="w-40">
+                                        <a href="{{ route('delegations.index', array_merge(request()->query(), ['sort' => 'first_name', 'direction' => request('sort') === 'first_name' && request('direction') === 'asc' ? 'desc' : 'asc'])) }}"
                                            class="flex items-center hover:text-blue-600 dark:hover:text-blue-400">
                                             Pracownik
                                             @if(request('sort') === 'first_name')
@@ -195,12 +195,12 @@
                                             @endif
                                         </a>
                                     </th>
-                                    <th class="w-32">Cel podróży</th>
-                                    <th>Miejsce docelowe</th>
-                                    <th>
-                                        <a href="{{ route('delegations.index', array_merge(request()->query(), ['sort' => 'departure_date', 'direction' => request('sort') === 'departure_date' && request('direction') === 'asc' ? 'desc' : 'asc'])) }}" 
+                                    <th class="w-24">Cel podróży</th>
+                                    <th class="w-32">Miejsce</th>
+                                    <th class="w-28">
+                                        <a href="{{ route('delegations.index', array_merge(request()->query(), ['sort' => 'departure_date', 'direction' => request('sort') === 'departure_date' && request('direction') === 'asc' ? 'desc' : 'asc'])) }}"
                                            class="flex items-center hover:text-blue-600 dark:hover:text-blue-400">
-                                            Data wyjazdu
+                                            Wyjazd
                                             @if(request('sort') === 'departure_date')
                                                 @if(request('direction') === 'asc')
                                                     <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -218,10 +218,10 @@
                                             @endif
                                         </a>
                                     </th>
-                                    <th>
-                                        <a href="{{ route('delegations.index', array_merge(request()->query(), ['sort' => 'arrival_date', 'direction' => request('sort') === 'arrival_date' && request('direction') === 'asc' ? 'desc' : 'asc'])) }}" 
+                                    <th class="w-28">
+                                        <a href="{{ route('delegations.index', array_merge(request()->query(), ['sort' => 'arrival_date', 'direction' => request('sort') === 'arrival_date' && request('direction') === 'asc' ? 'desc' : 'asc'])) }}"
                                            class="flex items-center hover:text-blue-600 dark:hover:text-blue-400">
-                                            Data przyjazdu
+                                            Przyjazd
                                             @if(request('sort') === 'arrival_date')
                                                 @if(request('direction') === 'asc')
                                                     <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
@@ -239,8 +239,8 @@
                                             @endif
                                         </a>
                                     </th>
-                                    <th>Pojazdy</th>
-                                    <th>
+                                    <th class="w-32">Pojazdy</th>
+                                    <th class="w-24">
                                         <a href="{{ route('delegations.index', array_merge(request()->query(), ['sort' => 'delegation_status', 'direction' => request('sort') === 'delegation_status' && request('direction') === 'asc' ? 'desc' : 'asc'])) }}"
                                            class="flex items-center hover:text-blue-600 dark:hover:text-blue-400">
                                             Status
@@ -272,73 +272,75 @@
                                             #{{ $delegation->id }}
                                         </a>
                                     </td>
-                                    <td>
-                                        <a href="{{ route('delegations.show', $delegation) }}" 
-                                           class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+                                    <td class="w-40">
+                                        <a href="{{ route('delegations.show', $delegation) }}"
+                                           class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-sm">
                                             {{ $delegation->full_name }}
                                         </a>
                                     </td>
-                                    <td class="w-32">
-                                        <span class="text-muted">{{ Str::limit($delegation->travel_purpose, 30) }}</span>
+                                    <td class="w-24" style="white-space: normal;">
+                                        <div class="text-muted break-words">{{ Str::limit($delegation->travel_purpose, 40) }}</div>
                                     </td>
-                                    <td>
-                                        {{ $delegation->destination_city }}, {{ $delegation->country }}
+                                    <td class="w-32 text-sm">
+                                        <div class="break-words whitespace-normal">{{ $delegation->destination_city }}, {{ $delegation->country }}</div>
                                     </td>
-                                    <td>
+                                    <td class="w-28 text-sm">
                                         @if($delegation->departure_date)
                                             {{ $delegation->departure_date->format('d.m.Y') }}
                                             @if($delegation->departure_time)
                                                 <br><small class="text-muted">{{ $delegation->departure_time }}</small>
                                             @endif
                                         @else
-                                            <span class="text-gray-400 italic">Nie określono</span>
+                                            <span class="text-gray-400 italic text-xs">Brak</span>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td class="w-28 text-sm">
                                         @if($delegation->arrival_date)
                                             {{ $delegation->arrival_date->format('d.m.Y') }}
                                             @if($delegation->arrival_time)
                                                 <br><small class="text-muted">{{ $delegation->arrival_time }}</small>
                                             @endif
                                         @else
-                                            <span class="text-gray-400 italic">Nie określono</span>
+                                            <span class="text-gray-400 italic text-xs">Brak</span>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td class="w-32">
                                         @if($delegation->vehicle_registration)
                                             @php
                                                 $vehicles = array_filter(array_map('trim', explode(',', $delegation->vehicle_registration)));
                                             @endphp
-                                            @foreach($vehicles as $index => $vehicle)
-                                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 mr-1 mb-1">
-                                                    {{ $vehicle }}
-                                                </span>@if($index < count($vehicles) - 1)<br>@endif
-                                            @endforeach
+                                            <div class="flex flex-wrap gap-1">
+                                                @foreach($vehicles as $vehicle)
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                        {{ $vehicle }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
                                         @else
-                                            <span class="text-gray-400 italic">Brak</span>
+                                            <span class="text-gray-400 italic text-xs">Brak</span>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td class="w-24" style="white-space: normal;">
                                         @if($delegation->delegation_status === 'draft')
-                                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+                                            <div class="text-xs font-medium px-2 py-1 rounded bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 break-words">
                                                 Szkic
-                                            </span>
+                                            </div>
                                         @elseif($delegation->delegation_status === 'employee_approved')
-                                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                            <div class="text-xs font-medium px-2 py-1 rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 break-words">
                                                 Zaakceptowana przez pracownika
-                                            </span>
+                                            </div>
                                         @elseif($delegation->delegation_status === 'approved')
-                                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                Zaakceptowana
-                                            </span>
+                                            <div class="text-xs font-medium px-2 py-1 rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 break-words">
+                                                Zatwierdzona
+                                            </div>
                                         @elseif($delegation->delegation_status === 'completed')
-                                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                            <div class="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 break-words">
                                                 Zakończona
-                                            </span>
+                                            </div>
                                         @elseif($delegation->delegation_status === 'cancelled')
-                                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                            <div class="text-xs font-medium px-2 py-1 rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 break-words">
                                                 Anulowana
-                                            </span>
+                                            </div>
                                         @endif
                                     </td>
                                 </tr>
