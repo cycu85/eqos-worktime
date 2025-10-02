@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\NBPService;
 use App\Mail\DelegationPdfMail;
+use App\Rules\NotInFuture;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use PDF;
@@ -153,10 +154,10 @@ class DelegationController extends Controller
             'employee_full_name' => 'required|string|max:255',
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
-            'order_date' => 'required|date',
-            'departure_date' => 'nullable|date|after_or_equal:order_date',
+            'order_date' => ['required', 'date', new NotInFuture()],
+            'departure_date' => ['nullable', 'date', 'after_or_equal:order_date', new NotInFuture('departure_date', 'departure_time')],
             'departure_time' => 'nullable|date_format:H:i',
-            'arrival_date' => 'nullable|date|after_or_equal:departure_date',
+            'arrival_date' => ['nullable', 'date', 'after_or_equal:departure_date', new NotInFuture('arrival_date', 'arrival_time')],
             'arrival_time' => 'nullable|date_format:H:i',
             'travel_purpose' => 'required|string',
             'project' => 'nullable|string|max:255',
@@ -338,14 +339,20 @@ class DelegationController extends Controller
             $statusRules = 'nullable|in:draft,approved,completed,cancelled';
         }
 
+        // Build order_date rules with NotInFuture
+        $orderDateValidation = ['required', 'date', new NotInFuture()];
+        if (!$user->isAdmin() && !$user->isKierownik()) {
+            $orderDateValidation[] = 'in:' . $delegation->order_date->format('Y-m-d');
+        }
+
         $validated = $request->validate([
             'employee_full_name' => 'required|string|max:255',
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
-            'order_date' => $orderDateRules,
-            'departure_date' => 'nullable|date|after_or_equal:order_date|before_or_equal:today',
+            'order_date' => $orderDateValidation,
+            'departure_date' => ['nullable', 'date', 'after_or_equal:order_date', new NotInFuture('departure_date', 'departure_time')],
             'departure_time' => 'nullable|date_format:H:i',
-            'arrival_date' => 'nullable|date|after_or_equal:departure_date|before_or_equal:today',
+            'arrival_date' => ['nullable', 'date', 'after_or_equal:departure_date', new NotInFuture('arrival_date', 'arrival_time')],
             'arrival_time' => 'nullable|date_format:H:i',
             'travel_purpose' => 'required|string',
             'project' => 'nullable|string|max:255',
@@ -362,9 +369,7 @@ class DelegationController extends Controller
         ], [
             'order_date.in' => 'Brak uprawnień do zmiany daty polecenia wyjazdu. Tylko administrator i kierownik mogą edytować to pole.',
             'departure_date.after_or_equal' => 'Data wyjazdu nie może być wcześniejsza niż data polecenia wyjazdu.',
-            'departure_date.before_or_equal' => 'Data wyjazdu nie może być w przyszłości.',
             'arrival_date.after_or_equal' => 'Data przyjazdu nie może być wcześniejsza niż data wyjazdu.',
-            'arrival_date.before_or_equal' => 'Data przyjazdu nie może być w przyszłości.',
         ]);
 
         if ($validated['country'] !== 'Polska' && !empty($validated['arrival_date'])) {
@@ -601,10 +606,10 @@ class DelegationController extends Controller
         $validated = $request->validate([
             'selected_employees' => 'required|array|min:1',
             'selected_employees.*' => 'exists:users,id',
-            'order_date' => 'required|date',
-            'departure_date' => 'nullable|date|after_or_equal:order_date',
+            'order_date' => ['required', 'date', new NotInFuture()],
+            'departure_date' => ['nullable', 'date', 'after_or_equal:order_date', new NotInFuture('departure_date', 'departure_time')],
             'departure_time' => 'nullable|date_format:H:i',
-            'arrival_date' => 'nullable|date|after_or_equal:departure_date',
+            'arrival_date' => ['nullable', 'date', 'after_or_equal:departure_date', new NotInFuture('arrival_date', 'arrival_time')],
             'arrival_time' => 'nullable|date_format:H:i',
             'travel_purpose' => 'required|string',
             'project' => 'nullable|string|max:255',

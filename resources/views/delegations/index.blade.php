@@ -239,8 +239,9 @@
                                             @endif
                                         </a>
                                     </th>
+                                    <th>Pojazdy</th>
                                     <th>
-                                        <a href="{{ route('delegations.index', array_merge(request()->query(), ['sort' => 'delegation_status', 'direction' => request('sort') === 'delegation_status' && request('direction') === 'asc' ? 'desc' : 'asc'])) }}" 
+                                        <a href="{{ route('delegations.index', array_merge(request()->query(), ['sort' => 'delegation_status', 'direction' => request('sort') === 'delegation_status' && request('direction') === 'asc' ? 'desc' : 'asc'])) }}"
                                            class="flex items-center hover:text-blue-600 dark:hover:text-blue-400">
                                             Status
                                             @if(request('sort') === 'delegation_status')
@@ -304,6 +305,20 @@
                                         @endif
                                     </td>
                                     <td>
+                                        @if($delegation->vehicle_registration)
+                                            @php
+                                                $vehicles = array_filter(array_map('trim', explode(',', $delegation->vehicle_registration)));
+                                            @endphp
+                                            @foreach($vehicles as $index => $vehicle)
+                                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 mr-1 mb-1">
+                                                    {{ $vehicle }}
+                                                </span>@if($index < count($vehicles) - 1)<br>@endif
+                                            @endforeach
+                                        @else
+                                            <span class="text-gray-400 italic">Brak</span>
+                                        @endif
+                                    </td>
+                                    <td>
                                         @if($delegation->delegation_status === 'draft')
                                             <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
                                                 Szkic
@@ -329,7 +344,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted py-4">
+                                    <td colspan="8" class="text-center text-muted py-4">
                                         Brak delegacji do wyświetlenia
                                     </td>
                                 </tr>

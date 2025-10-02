@@ -243,10 +243,51 @@
 
     <script>
         let selectedVehicles = [];
+
+        // Validate date and time not in future
+        function validateDateTime(dateField, timeField) {
+            const dateValue = dateField.value;
+            const timeValue = timeField ? timeField.value : null;
+
+            if (!dateValue) return true;
+
+            const selectedDate = new Date(dateValue);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Check if date is in future
+            if (selectedDate > today) {
+                const fieldLabel = dateField.labels && dateField.labels[0] ? dateField.labels[0].textContent : 'Data';
+                alert(fieldLabel + ' nie może być w przyszłości.');
+                dateField.value = '';
+                return false;
+            }
+
+            // If date is today and time is provided, check time
+            if (selectedDate.getTime() === today.getTime() && timeValue) {
+                const now = new Date();
+                const [hours, minutes] = timeValue.split(':');
+                const selectedDateTime = new Date();
+                selectedDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+                if (selectedDateTime > now) {
+                    const fieldLabel = timeField.labels && timeField.labels[0] ? timeField.labels[0].textContent : 'Godzina';
+                    alert(fieldLabel + ' nie może być w przyszłości.');
+                    timeField.value = '';
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         // Auto-calculate nights based on dates
         document.addEventListener('DOMContentLoaded', function() {
+            const orderDate = document.getElementById('order_date');
             const departureDate = document.getElementById('departure_date');
+            const departureTime = document.getElementById('departure_time');
             const arrivalDate = document.getElementById('arrival_date');
+            const arrivalTime = document.getElementById('arrival_time');
             const nightsCount = document.getElementById('nights_count');
 
             function calculateNights() {
@@ -255,15 +296,25 @@
                     const arrival = new Date(arrivalDate.value);
                     const diffTime = Math.abs(arrival - departure);
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    
+
                     if (diffDays > 0) {
                         nightsCount.value = diffDays;
                     }
                 }
             }
 
-            departureDate.addEventListener('change', calculateNights);
-            arrivalDate.addEventListener('change', calculateNights);
+            // Add validation on date/time changes
+            orderDate.addEventListener('change', () => validateDateTime(orderDate, null));
+            departureDate.addEventListener('change', () => {
+                validateDateTime(departureDate, departureTime);
+                calculateNights();
+            });
+            departureTime.addEventListener('change', () => validateDateTime(departureDate, departureTime));
+            arrivalDate.addEventListener('change', () => {
+                validateDateTime(arrivalDate, arrivalTime);
+                calculateNights();
+            });
+            arrivalTime.addEventListener('change', () => validateDateTime(arrivalDate, arrivalTime));
         });
 
         // Vehicle selection functions
