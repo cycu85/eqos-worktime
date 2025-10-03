@@ -321,27 +321,46 @@
                                         @endif
                                     </td>
                                     <td class="w-24" style="white-space: normal;">
-                                        @if($delegation->delegation_status === 'draft')
-                                            <div class="text-xs font-medium px-2 py-1 rounded bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 break-words">
-                                                Szkic
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-1">
+                                                @if($delegation->delegation_status === 'draft')
+                                                    <div class="text-xs font-medium px-2 py-1 rounded bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 break-words">
+                                                        Szkic
+                                                    </div>
+                                                @elseif($delegation->delegation_status === 'employee_approved')
+                                                    <div class="text-xs font-medium px-2 py-1 rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 break-words">
+                                                        Zaakceptowana przez pracownika
+                                                    </div>
+                                                @elseif($delegation->delegation_status === 'approved')
+                                                    <div class="text-xs font-medium px-2 py-1 rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 break-words">
+                                                        Zatwierdzona
+                                                    </div>
+                                                @elseif($delegation->delegation_status === 'completed')
+                                                    <div class="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 break-words">
+                                                        Zakończona
+                                                    </div>
+                                                @elseif($delegation->delegation_status === 'cancelled')
+                                                    <div class="text-xs font-medium px-2 py-1 rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 break-words">
+                                                        Anulowana
+                                                    </div>
+                                                @endif
                                             </div>
-                                        @elseif($delegation->delegation_status === 'employee_approved')
-                                            <div class="text-xs font-medium px-2 py-1 rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 break-words">
-                                                Zaakceptowana przez pracownika
-                                            </div>
-                                        @elseif($delegation->delegation_status === 'approved')
-                                            <div class="text-xs font-medium px-2 py-1 rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 break-words">
-                                                Zatwierdzona
-                                            </div>
-                                        @elseif($delegation->delegation_status === 'completed')
-                                            <div class="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 break-words">
-                                                Zakończona
-                                            </div>
-                                        @elseif($delegation->delegation_status === 'cancelled')
-                                            <div class="text-xs font-medium px-2 py-1 rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 break-words">
-                                                Anulowana
-                                            </div>
-                                        @endif
+
+                                            @if((auth()->user()->isAdmin() || auth()->user()->isKierownik()) && $delegation->delegation_status === 'employee_approved')
+                                                <form action="{{ route('delegations.supervisor-approval', $delegation) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('POST')
+                                                    <button type="submit"
+                                                            class="inline-flex items-center justify-center p-1.5 rounded-lg text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20 transition-colors"
+                                                            title="Zatwierdź delegację"
+                                                            onclick="return confirm('Czy na pewno chcesz zatwierdzić tę delegację?')">
+                                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"></path>
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
