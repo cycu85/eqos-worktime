@@ -108,7 +108,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'in:admin,kierownik,lider,pracownik'],
+            'role' => ['required', 'in:admin,kierownik,lider,pracownik,ksiegowy'],
         ]);
 
         $user = User::create([
@@ -166,7 +166,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'in:admin,kierownik,lider,pracownik'],
+            'role' => ['required', 'in:admin,kierownik,lider,pracownik,ksiegowy'],
         ]);
 
         $user->update([
