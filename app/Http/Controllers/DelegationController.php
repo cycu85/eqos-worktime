@@ -8,9 +8,11 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\NBPService;
 use App\Mail\DelegationPdfMail;
+use App\Exports\DelegationExport;
 use App\Rules\NotInFuture;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Maatwebsite\Excel\Facades\Excel;
 use PDF;
 
 class DelegationController extends Controller
@@ -28,12 +30,13 @@ class DelegationController extends Controller
         
         // Role-based filtering
         $user = auth()->user();
-        if (!$user->isAdmin() && !$user->isKierownik()) {
+        if (!$user->isAdmin() && !$user->isKierownik() && !$user->isKsiegowy()) {
             // Pracownik/Lider sees only their own delegations
+            // Admin, Kierownik, Księgowy see all delegations
             $nameParts = explode(' ', trim($user->name), 2);
             $firstName = $nameParts[0] ?? '';
             $lastName = $nameParts[1] ?? '';
-            
+
             $query->where(function($q) use ($firstName, $lastName) {
                 $q->where('first_name', $firstName)
                   ->where('last_name', $lastName);
@@ -233,17 +236,18 @@ class DelegationController extends Controller
     {
         // Role-based access control
         $user = auth()->user();
-        if (!$user->isAdmin() && !$user->isKierownik()) {
-            // Check if user can view this delegation (only their own)
+        if (!$user->isAdmin() && !$user->isKierownik() && !$user->isKsiegowy()) {
+            // Admin, Kierownik, Księgowy can view all delegations
+            // Others can only view their own delegations
             $nameParts = explode(' ', trim($user->name), 2);
             $firstName = $nameParts[0] ?? '';
             $lastName = $nameParts[1] ?? '';
-            
+
             if ($delegation->first_name !== $firstName || $delegation->last_name !== $lastName) {
                 abort(403, 'Brak uprawnień do przeglądania tej delegacji.');
             }
         }
-        
+
         return view('delegations.show', compact('delegation'));
     }
 
@@ -759,5 +763,24 @@ class DelegationController extends Controller
                 'email' => $emailAddress ?? 'brak'
             ]);
         }
+    }
+
+    /**
+     * Eksportuj delegacje do pliku Excel
+     *
+     * @param Request $request Parametry eksportu
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function export(Request $request)
+    {
+        // Sprawdź uprawnienia - tylko admin i księgowy
+        $user = auth()->user();
+        if (!$user->isAdmin() && !$user->isKsiegowy()) {
+            abort(403, 'Brak uprawnień do eksportu delegacji.');
+        }
+
+        $fileName = 'delegacje_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(new DelegationExport($request), $fileName);
     }
 }

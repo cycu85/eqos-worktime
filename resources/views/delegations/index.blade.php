@@ -8,28 +8,32 @@
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                     @if(auth()->user()->isAdmin() || auth()->user()->isKierownik())
                         Zarządzanie delegacjami służbowymi - wszystkie delegacje
+                    @elseif(auth()->user()->isKsiegowy())
+                        Podgląd wszystkich delegacji służbowych
                     @else
                         Moje delegacje służbowe
                     @endif
                 </p>
             </div>
-            <div class="mt-3 sm:mt-0 flex flex-wrap gap-3">
-                <a href="{{ route('delegations.create') }}" class="btn-kt-primary">
-                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
-                    </svg>
-                    Nowa delegacja
-                </a>
-                
-                @if(auth()->user()->isAdmin() || auth()->user()->isKierownik())
-                    <a href="{{ route('delegations.create-group') }}" class="btn-kt-info">
+            @if(!auth()->user()->isKsiegowy())
+                <div class="mt-3 sm:mt-0 flex flex-wrap gap-3">
+                    <a href="{{ route('delegations.create') }}" class="btn-kt-primary">
                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path>
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
                         </svg>
-                        Nowa delegacja grupowa
+                        Nowa delegacja
                     </a>
-                @endif
-            </div>
+
+                    @if(auth()->user()->isAdmin() || auth()->user()->isKierownik())
+                        <a href="{{ route('delegations.create-group') }}" class="btn-kt-info">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path>
+                            </svg>
+                            Nowa delegacja grupowa
+                        </a>
+                    @endif
+                </div>
+            @endif
         </div>
     </x-slot>
 
@@ -118,13 +122,22 @@
                                 </svg>
                                 Szukaj
                             </button>
-                            
+
                             <a href="{{ route('delegations.index') }}" class="btn-kt-light">
                                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path>
                                 </svg>
                                 Wyczyść filtry
                             </a>
+
+                            @if(auth()->user()->isAdmin() || auth()->user()->isKsiegowy())
+                                <a href="{{ route('delegations.export', request()->query()) }}" class="btn-kt-success">
+                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Eksportuj do Excel
+                                </a>
+                            @endif
                         </div>
                     </form>
                 </div>

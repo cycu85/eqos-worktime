@@ -75,7 +75,8 @@ class UserController extends Controller
             'admin' => 'Administrator',
             'kierownik' => 'Kierownik',
             'lider' => 'Lider',
-            'pracownik' => 'Pracownik'
+            'pracownik' => 'Pracownik',
+            'ksiegowy' => 'Księgowy'
         ];
         
         return view('users.index', compact('users', 'roles'));

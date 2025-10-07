@@ -74,13 +74,14 @@
                                     <option value="pracownik" {{ old('role') === 'pracownik' ? 'selected' : '' }}>Pracownik</option>
                                     <option value="lider" {{ old('role') === 'lider' ? 'selected' : '' }}>Lider</option>
                                     <option value="kierownik" {{ old('role') === 'kierownik' ? 'selected' : '' }}>Kierownik</option>
+                                    <option value="ksiegowy" {{ old('role') === 'ksiegowy' ? 'selected' : '' }}>Księgowy</option>
                                     <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Administrator</option>
                                 </select>
                                 @error('role')
                                     <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                                 @enderror
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                    Pracownik - widzi zadania zespołowe • Lider - zarządza zadaniami • Kierownik - przegląda wszystko • Admin - pełne uprawnienia
+                                    Pracownik - widzi zadania zespołowe • Lider - zarządza zadaniami • Kierownik - przegląda wszystko • Księgowy - tylko podgląd delegacji • Admin - pełne uprawnienia
                                 </p>
                             </div>
 

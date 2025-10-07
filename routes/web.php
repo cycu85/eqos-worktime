@@ -27,41 +27,56 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
-    // Tasks routes - available for all authenticated users
-    Route::resource('tasks', TaskController::class);
 
-    // Task work logs
-    Route::get('tasks/{task}/work-logs', [TaskController::class, 'workLogs'])->name('tasks.work-logs');
-    Route::post('tasks/{task}/work-logs/bulk-update', [TaskWorkLogController::class, 'bulkUpdate'])->name('tasks.work-logs.bulk-update');
-    Route::post('tasks/{task}/work-logs/add', [TaskWorkLogController::class, 'addWorkDay'])->name('tasks.work-logs.add');
-    Route::delete('tasks/{task}/work-logs/{workLog}', [TaskWorkLogController::class, 'destroy'])->name('tasks.work-logs.destroy');
+    // Tasks routes - available for all authenticated users except ksiegowy
+    Route::middleware('role:admin,kierownik,lider,pracownik')->group(function () {
+        Route::resource('tasks', TaskController::class);
 
-    // Absences routes - available for all authenticated users
-    Route::resource('absences', AbsenceController::class);
+        // Task work logs
+        Route::get('tasks/{task}/work-logs', [TaskController::class, 'workLogs'])->name('tasks.work-logs');
+        Route::post('tasks/{task}/work-logs/bulk-update', [TaskWorkLogController::class, 'bulkUpdate'])->name('tasks.work-logs.bulk-update');
+        Route::post('tasks/{task}/work-logs/add', [TaskWorkLogController::class, 'addWorkDay'])->name('tasks.work-logs.add');
+        Route::delete('tasks/{task}/work-logs/{workLog}', [TaskWorkLogController::class, 'destroy'])->name('tasks.work-logs.destroy');
 
-    // Absence approval routes - only for admin and kierownik
-    Route::post('absences/{absence}/approve', [AbsenceController::class, 'approve'])->name('absences.approve')->middleware('role:admin,kierownik');
-    Route::post('absences/{absence}/reject', [AbsenceController::class, 'reject'])->name('absences.reject')->middleware('role:admin,kierownik');
-    
+        // Task image removal
+        Route::delete('tasks/{task}/attachments/{attachment}', [TaskController::class, 'removeAttachment'])->name('tasks.removeAttachment');
+
+        // Absences routes - available for all authenticated users except ksiegowy
+        Route::resource('absences', AbsenceController::class);
+
+        // Absence approval routes - only for admin and kierownik
+        Route::post('absences/{absence}/approve', [AbsenceController::class, 'approve'])->name('absences.approve')->middleware('role:admin,kierownik');
+        Route::post('absences/{absence}/reject', [AbsenceController::class, 'reject'])->name('absences.reject')->middleware('role:admin,kierownik');
+    });
+
     // Group delegation routes (admin/kierownik only) - MUST be before resource routes
     Route::get('delegations/create-group', [DelegationController::class, 'createGroup'])->name('delegations.create-group')->middleware('role:admin,kierownik');
     Route::post('delegations/store-group', [DelegationController::class, 'storeGroup'])->name('delegations.store-group')->middleware('role:admin,kierownik');
-    
-    // Delegations routes - available for all authenticated users
-    Route::resource('delegations', DelegationController::class);
-    
-    // Delegation approval routes
-    Route::post('delegations/{delegation}/employee-approval', [DelegationController::class, 'employeeApproval'])->name('delegations.employee-approval');
-    Route::post('delegations/{delegation}/supervisor-approval', [DelegationController::class, 'supervisorApproval'])->name('delegations.supervisor-approval');
-    Route::post('delegations/{delegation}/revoke-approval', [DelegationController::class, 'revokeApproval'])->name('delegations.revoke-approval');
-    
-    // PDF generation route
+
+    // Delegations view routes - available for all authenticated users including ksiegowy
+    Route::get('delegations', [DelegationController::class, 'index'])->name('delegations.index');
+    Route::get('delegations/{delegation}', [DelegationController::class, 'show'])->name('delegations.show');
+
+    // Delegations management routes - NOT available for ksiegowy
+    Route::middleware('role:admin,kierownik,lider,pracownik')->group(function () {
+        Route::get('delegations/create', [DelegationController::class, 'create'])->name('delegations.create');
+        Route::post('delegations', [DelegationController::class, 'store'])->name('delegations.store');
+        Route::get('delegations/{delegation}/edit', [DelegationController::class, 'edit'])->name('delegations.edit');
+        Route::put('delegations/{delegation}', [DelegationController::class, 'update'])->name('delegations.update');
+        Route::delete('delegations/{delegation}', [DelegationController::class, 'destroy'])->name('delegations.destroy');
+
+        // Delegation approval routes
+        Route::post('delegations/{delegation}/employee-approval', [DelegationController::class, 'employeeApproval'])->name('delegations.employee-approval');
+        Route::post('delegations/{delegation}/supervisor-approval', [DelegationController::class, 'supervisorApproval'])->name('delegations.supervisor-approval');
+        Route::post('delegations/{delegation}/revoke-approval', [DelegationController::class, 'revokeApproval'])->name('delegations.revoke-approval');
+    });
+
+    // PDF generation route - available for all including ksiegowy
     Route::get('delegations/{delegation}/pdf', [DelegationController::class, 'generatePdf'])->name('delegations.pdf');
-    
-    // Task image removal
-    Route::delete('tasks/{task}/attachments/{attachment}', [TaskController::class, 'removeAttachment'])->name('tasks.removeAttachment');
-    
+
+    // Delegation export - only for admin and ksiegowy
+    Route::get('delegations/export/excel', [DelegationController::class, 'export'])->name('delegations.export')->middleware('role:admin,ksiegowy');
+
     // Task export - only for admin and kierownik
     Route::get('tasks/export/excel', [TaskController::class, 'export'])->name('tasks.export')->middleware('role:admin,kierownik');
     Route::get('tasks/export/daily', [TaskController::class, 'exportDaily'])->name('tasks.export.daily')->middleware('role:admin,kierownik');

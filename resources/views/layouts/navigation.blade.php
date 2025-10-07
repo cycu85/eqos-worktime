@@ -15,15 +15,19 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('tasks.index')" :active="request()->routeIs('tasks.*')">
-                        Zadania
-                    </x-nav-link>
+                    @if(!auth()->user()->isKsiegowy())
+                        <x-nav-link :href="route('tasks.index')" :active="request()->routeIs('tasks.*')">
+                            Zadania
+                        </x-nav-link>
+                    @endif
                     <x-nav-link :href="route('delegations.index')" :active="request()->routeIs('delegations.*')">
                         Delegacje
                     </x-nav-link>
-                    <x-nav-link :href="route('absences.index')" :active="request()->routeIs('absences.*')">
-                        Nieobecności
-                    </x-nav-link>
+                    @if(!auth()->user()->isKsiegowy())
+                        <x-nav-link :href="route('absences.index')" :active="request()->routeIs('absences.*')">
+                            Nieobecności
+                        </x-nav-link>
+                    @endif
                     @if(auth()->user()->isAdmin())
                         <x-nav-link :href="route('vehicles.index')" :active="request()->routeIs('vehicles.*')">
                             Pojazdy
@@ -106,15 +110,19 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('tasks.index')" :active="request()->routeIs('tasks.*')">
-                Zadania
-            </x-responsive-nav-link>
+            @if(!auth()->user()->isKsiegowy())
+                <x-responsive-nav-link :href="route('tasks.index')" :active="request()->routeIs('tasks.*')">
+                    Zadania
+                </x-responsive-nav-link>
+            @endif
             <x-responsive-nav-link :href="route('delegations.index')" :active="request()->routeIs('delegations.*')">
                 Delegacje
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('absences.index')" :active="request()->routeIs('absences.*')">
-                Nieobecności
-            </x-responsive-nav-link>
+            @if(!auth()->user()->isKsiegowy())
+                <x-responsive-nav-link :href="route('absences.index')" :active="request()->routeIs('absences.*')">
+                    Nieobecności
+                </x-responsive-nav-link>
+            @endif
             @if(auth()->user()->isAdmin())
                 <x-responsive-nav-link :href="route('vehicles.index')" :active="request()->routeIs('vehicles.*')">
                     Pojazdy

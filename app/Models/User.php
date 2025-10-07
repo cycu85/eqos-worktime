@@ -18,7 +18,7 @@ use Illuminate\Notifications\Notifiable;
  * @property string $email
  * @property \Carbon\Carbon|null $email_verified_at
  * @property string $password
- * @property string $role Rola: admin, kierownik, lider, pracownik
+ * @property string $role Rola: admin, kierownik, lider, pracownik, ksiegowy
  * @property \Carbon\Carbon|null $last_login_at
  * @property string|null $remember_token
  * @property \Carbon\Carbon $created_at
@@ -108,6 +108,16 @@ class User extends Authenticatable
     public function isPracownik(): bool
     {
         return $this->role === 'pracownik';
+    }
+
+    /**
+     * Sprawdź czy użytkownik jest księgowym
+     *
+     * @return bool
+     */
+    public function isKsiegowy(): bool
+    {
+        return $this->role === 'ksiegowy';
     }
 
     /**

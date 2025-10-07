@@ -233,6 +233,7 @@ class Task extends Model
     /**
      * Oblicz łączne roboczogodziny (godziny * liczba pracowników)
      * z uwzględnieniem nieobecności zespołu
+     * UWAGA: Lider z rolą Administrator NIE jest wliczany do roboczogodzin
      *
      * @return float
      */
@@ -243,6 +244,7 @@ class Task extends Model
         // Iterujemy po każdym work log (dzień pracy)
         foreach ($this->workLogs as $workLog) {
             $workHours = $workLog->getDurationHours() ?? 0;
+            // getEffectiveTeamSizeForDate już automatycznie pomija lidera-Administratora
             $effectiveTeamSize = $this->getEffectiveTeamSizeForDate($workLog->work_date);
             $totalRoboczogodziny += ($workHours * $effectiveTeamSize);
         }
@@ -253,12 +255,14 @@ class Task extends Model
     /**
      * Oblicz łączne roboczogodziny (stara metoda - bez uwzględnienia nieobecności)
      * Pozostawiona dla kompatybilności wstecznej
+     * UWAGA: Lider z rolą Administrator NIE jest wliczany do roboczogodzin
      *
      * @return float
      */
     public function getTotalRoboczogodzinoOld()
     {
         $totalHours = $this->getTotalWorkHours();
+        // getTeamSize już automatycznie pomija lidera-Administratora
         $teamSize = $this->getTeamSize();
         return $totalHours * $teamSize;
     }
@@ -266,13 +270,14 @@ class Task extends Model
     /**
      * Pobierz efektywną liczbę pracowników w zespole dla danej daty
      * (uwzględniając nieobecności)
+     * Wyklucza lidera z rolą Administrator z liczenia
      *
      * @param string|\Carbon\Carbon $date
      * @return int
      */
     public function getEffectiveTeamSizeForDate($date)
     {
-        $baseTeamSize = $this->getTeamSize(); // lider + członkowie
+        $baseTeamSize = $this->getTeamSize(); // lider (jeśli nie admin) + członkowie
         $absentCount = $this->getAbsentTeamMembersCount($date);
 
         return max(0, $baseTeamSize - $absentCount);
@@ -280,6 +285,7 @@ class Task extends Model
 
     /**
      * Pobierz liczbę nieobecnych członków zespołu w danej dacie
+     * Wyklucza lidera z rolą Administrator (nie jest liczony w roboczogodzinach)
      *
      * @param string|\Carbon\Carbon $date
      * @return int
@@ -288,8 +294,9 @@ class Task extends Model
     {
         $absentCount = 0;
 
-        // Sprawdź lidera
-        if ($this->leader && $this->leader->isAbsentOn($date)) {
+        // Sprawdź lidera - tylko jeśli nie jest Administratorem
+        // Administratorzy nie są wliczani do roboczogodzin, więc ich nieobecność też nie ma znaczenia
+        if ($this->leader && !$this->leader->isAdmin() && $this->leader->isAbsentOn($date)) {
             $absentCount++;
         }
 
@@ -309,6 +316,7 @@ class Task extends Model
 
     /**
      * Pobierz listę nieobecnych członków zespołu w danej dacie
+     * Wyklucza lidera z rolą Administrator (nieistotny dla roboczogodzin)
      *
      * @param string|\Carbon\Carbon $date
      * @return array
@@ -317,8 +325,8 @@ class Task extends Model
     {
         $absentMembers = [];
 
-        // Sprawdź lidera
-        if ($this->leader && $this->leader->isAbsentOn($date)) {
+        // Sprawdź lidera - pomijamy Administratorów (nie są wliczani do roboczogodzin)
+        if ($this->leader && !$this->leader->isAdmin() && $this->leader->isAbsentOn($date)) {
             $absentMembers[] = [
                 'user' => $this->leader,
                 'name' => $this->leader->name,
@@ -413,6 +421,7 @@ class Task extends Model
 
     /**
      * Pobierz liczbę pracowników w zespole (włączając lidera)
+     * Wyklucza lidera z rolą Administrator z liczenia roboczogodzin
      *
      * @return int
      */
@@ -425,7 +434,10 @@ class Task extends Model
             $teamMembers = count(explode(',', trim($this->team)));
         }
 
-        // Zawsze dodaj lidera (lider + członkowie zespołu)
-        return $teamMembers + 1;
+        // Dodaj lidera tylko jeśli nie jest Administratorem
+        // Administratorzy nie są wliczani do roboczogodzin
+        $includeLeader = $this->leader && !$this->leader->isAdmin() ? 1 : 0;
+
+        return $teamMembers + $includeLeader;
     }
 }

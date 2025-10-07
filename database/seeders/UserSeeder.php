@@ -44,5 +44,13 @@ class UserSeeder extends Seeder
             'role' => 'lider',
             'email_verified_at' => now(),
         ]);
+
+        User::create([
+            'name' => 'Maria Księgowa',
+            'email' => 'ksiegowy@eqos.pl',
+            'password' => Hash::make('ksiegowy123'),
+            'role' => 'ksiegowy',
+            'email_verified_at' => now(),
+        ]);
     }
 }

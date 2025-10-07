@@ -165,6 +165,7 @@ class DailyTaskExport implements FromCollection, WithHeadings, WithMapping, With
 
     /**
      * Pobierz efektywny skład zespołu dla danej daty (bez nieobecnych)
+     * UWAGA: Lider z rolą Administrator NIE jest wyświetlany (nie jest liczony w roboczogodzinach)
      *
      * @param Task $task
      * @param Carbon $date
@@ -174,8 +175,8 @@ class DailyTaskExport implements FromCollection, WithHeadings, WithMapping, With
     {
         $presentMembers = [];
 
-        // Sprawdź lidera
-        if ($task->leader && !$task->leader->isAbsentOn($date)) {
+        // Sprawdź lidera - pomijamy Administratorów (nie są wliczani do roboczogodzin)
+        if ($task->leader && !$task->leader->isAdmin() && !$task->leader->isAbsentOn($date)) {
             $presentMembers[] = $task->leader->name;
         }
 
@@ -198,6 +199,7 @@ class DailyTaskExport implements FromCollection, WithHeadings, WithMapping, With
 
     /**
      * Pobierz listę nieobecnych członków zespołu dla danej daty
+     * UWAGA: Lider z rolą Administrator NIE jest wyświetlany (nie jest liczony w roboczogodzinach)
      *
      * @param Task $task
      * @param Carbon $date
@@ -207,8 +209,8 @@ class DailyTaskExport implements FromCollection, WithHeadings, WithMapping, With
     {
         $absentMembers = [];
 
-        // Sprawdź lidera
-        if ($task->leader && $task->leader->isAbsentOn($date)) {
+        // Sprawdź lidera - pomijamy Administratorów (nie są wliczani do roboczogodzin)
+        if ($task->leader && !$task->leader->isAdmin() && $task->leader->isAbsentOn($date)) {
             $absentMembers[] = $task->leader->name . ' (lider)';
         }
 

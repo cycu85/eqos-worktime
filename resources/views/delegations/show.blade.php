@@ -17,58 +17,59 @@
                     Powrót do listy
                 </a>
 
-                {{-- Employee approval button --}}
                 @php
                     $user = auth()->user();
                     $nameParts = explode(' ', trim($user->name), 2);
                     $firstName = $nameParts[0] ?? '';
                     $lastName = $nameParts[1] ?? '';
                     $isOwner = ($delegation->first_name === $firstName && $delegation->last_name === $lastName);
-                    $allDatesFilled = $delegation->departure_date && $delegation->arrival_date && 
+                    $allDatesFilled = $delegation->departure_date && $delegation->arrival_date &&
                                      $delegation->departure_time && $delegation->arrival_time;
                     $isApproved = $delegation->supervisor_approval_status === 'approved';
                 @endphp
 
-                @if($isOwner && $allDatesFilled && $delegation->employee_approval_status !== 'approved')
-                    <form method="POST" action="{{ route('delegations.employee-approval', $delegation) }}" class="inline">
-                        @csrf
-                        <button type="submit" class="btn-kt-success" 
-                                onclick="return confirm('Czy na pewno chcesz zaakceptować tę delegację?')">
-                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Akceptuję
-                        </button>
-                    </form>
-                @endif
+                @if(!auth()->user()->isKsiegowy())
+                    {{-- Employee approval button --}}
+                    @if($isOwner && $allDatesFilled && $delegation->employee_approval_status !== 'approved')
+                        <form method="POST" action="{{ route('delegations.employee-approval', $delegation) }}" class="inline">
+                            @csrf
+                            <button type="submit" class="btn-kt-success"
+                                    onclick="return confirm('Czy na pewno chcesz zaakceptować tę delegację?')">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Akceptuję
+                            </button>
+                        </form>
+                    @endif
 
-                {{-- Supervisor approval button --}}
-                @if(($user->isKierownik() || $user->isAdmin()) && $delegation->employee_approval_status === 'approved' && $delegation->supervisor_approval_status !== 'approved')
-                    <form method="POST" action="{{ route('delegations.supervisor-approval', $delegation) }}" class="inline">
-                        @csrf
-                        <button type="submit" class="btn-kt-primary" 
-                                onclick="return confirm('Czy na pewno chcesz zaakceptować tę delegację?')">
-                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            Zaakceptuj
-                        </button>
-                    </form>
-                @endif
+                    {{-- Supervisor approval button --}}
+                    @if(($user->isKierownik() || $user->isAdmin()) && $delegation->employee_approval_status === 'approved' && $delegation->supervisor_approval_status !== 'approved')
+                        <form method="POST" action="{{ route('delegations.supervisor-approval', $delegation) }}" class="inline">
+                            @csrf
+                            <button type="submit" class="btn-kt-primary"
+                                    onclick="return confirm('Czy na pewno chcesz zaakceptować tę delegację?')">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Zaakceptuj
+                            </button>
+                        </form>
+                    @endif
 
-                {{-- Revoke approval button (admin only) --}}
-                @if($user->isAdmin() && $isApproved)
-                    <form method="POST" action="{{ route('delegations.revoke-approval', $delegation) }}" class="inline">
-                        @csrf
-                        <button type="submit" class="btn-kt-warning" 
-                                onclick="return confirm('Czy na pewno chcesz cofnąć akceptację tej delegacji?')">
-                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                            </svg>
-                            Cofnij akceptację
-                        </button>
-                    </form>
-                @endif
+                    {{-- Revoke approval button (admin only) --}}
+                    @if($user->isAdmin() && $isApproved)
+                        <form method="POST" action="{{ route('delegations.revoke-approval', $delegation) }}" class="inline">
+                            @csrf
+                            <button type="submit" class="btn-kt-warning"
+                                    onclick="return confirm('Czy na pewno chcesz cofnąć akceptację tej delegacji?')">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                                Cofnij akceptację
+                            </button>
+                        </form>
+                    @endif
 
                 {{-- PDF Generate button - only when delegation is fully approved --}}
                 @if($delegation->delegation_status === 'approved')
@@ -80,30 +81,31 @@
                     </a>
                 @endif
 
-                {{-- Edit button - only if not fully approved --}}
-                @if(!$isApproved)
-                    <a href="{{ route('delegations.edit', $delegation) }}" class="btn-kt-warning">
-                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
-                        </svg>
-                        Edytuj
-                    </a>
-                @endif
-
-                {{-- Delete button - only if not fully approved --}}
-                @if(!$isApproved)
-                    <form method="POST" action="{{ route('delegations.destroy', $delegation) }}" 
-                          class="inline" onsubmit="return confirm('Czy na pewno chcesz usunąć tę delegację?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-kt-danger">
+                    {{-- Edit button - only if not fully approved --}}
+                    @if(!$isApproved)
+                        <a href="{{ route('delegations.edit', $delegation) }}" class="btn-kt-warning">
                             <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clip-rule="evenodd"></path>
-                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 112 0v4a1 1 0 11-2 0V9zm4 0a1 1 0 112 0v4a1 1 0 11-2 0V9z" clip-rule="evenodd"></path>
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
                             </svg>
-                            Usuń
-                        </button>
-                    </form>
+                            Edytuj
+                        </a>
+                    @endif
+
+                    {{-- Delete button - only if not fully approved --}}
+                    @if(!$isApproved)
+                        <form method="POST" action="{{ route('delegations.destroy', $delegation) }}"
+                              class="inline" onsubmit="return confirm('Czy na pewno chcesz usunąć tę delegację?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn-kt-danger">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+                                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 112 0v4a1 1 0 11-2 0V9zm4 0a1 1 0 112 0v4a1 1 0 11-2 0V9z" clip-rule="evenodd"></path>
+                                </svg>
+                                Usuń
+                            </button>
+                        </form>
+                    @endif
                 @endif
             </div>
         </div>
