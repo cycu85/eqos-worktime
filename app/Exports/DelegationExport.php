@@ -88,14 +88,17 @@ class DelegationExport implements FromCollection, WithHeadings, WithMapping, Wit
     {
         return [
             'Imię i nazwisko',
-            'Data i godzina wyjazdu',
-            'Data i godzina powrotu',
+            'Data wyjazdu',
+            'Godzina wyjazdu',
+            'Data powrotu',
+            'Godzina powrotu',
             'Pojazd',
             'Projekt',
             'Cel wyjazdu',
             'Miejsce',
             'Suma diet w PLN',
             'Suma diet w walucie',
+            'Waluta',
         ];
     }
 
@@ -104,22 +107,28 @@ class DelegationExport implements FromCollection, WithHeadings, WithMapping, Wit
         // Pełne imię i nazwisko
         $fullName = trim($delegation->first_name . ' ' . $delegation->last_name);
 
-        // Data i godzina wyjazdu
-        $departureDateTime = '';
+        // Data wyjazdu
+        $departureDate = '';
         if ($delegation->departure_date) {
-            $departureDateTime = $delegation->departure_date->format('Y-m-d');
-            if ($delegation->departure_time) {
-                $departureDateTime .= ' ' . substr($delegation->departure_time, 0, 5);
-            }
+            $departureDate = $delegation->departure_date->format('Y-m-d');
         }
 
-        // Data i godzina powrotu
-        $arrivalDateTime = '';
+        // Godzina wyjazdu
+        $departureTime = '';
+        if ($delegation->departure_time) {
+            $departureTime = substr($delegation->departure_time, 0, 5);
+        }
+
+        // Data powrotu
+        $arrivalDate = '';
         if ($delegation->arrival_date) {
-            $arrivalDateTime = $delegation->arrival_date->format('Y-m-d');
-            if ($delegation->arrival_time) {
-                $arrivalDateTime .= ' ' . substr($delegation->arrival_time, 0, 5);
-            }
+            $arrivalDate = $delegation->arrival_date->format('Y-m-d');
+        }
+
+        // Godzina powrotu
+        $arrivalTime = '';
+        if ($delegation->arrival_time) {
+            $arrivalTime = substr($delegation->arrival_time, 0, 5);
         }
 
         // Pojazd - parsowanie z JSON
@@ -147,20 +156,25 @@ class DelegationExport implements FromCollection, WithHeadings, WithMapping, Wit
 
         // Suma diet w walucie
         $totalDietCurrency = '';
+        $currency = '';
         if ($delegation->country !== 'Polska' && $delegation->total_diet_currency) {
-            $totalDietCurrency = number_format($delegation->total_diet_currency, 2, ',', ' ') . ' EUR';
+            $totalDietCurrency = number_format($delegation->total_diet_currency, 2, ',', ' ');
+            $currency = 'EUR';
         }
 
         return [
             $fullName,
-            $departureDateTime,
-            $arrivalDateTime,
+            $departureDate,
+            $departureTime,
+            $arrivalDate,
+            $arrivalTime,
             $vehicles,
             $project,
             $travelPurpose,
             $destination,
             $totalDietPln,
             $totalDietCurrency,
+            $currency,
         ];
     }
 
