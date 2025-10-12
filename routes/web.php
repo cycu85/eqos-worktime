@@ -49,15 +49,14 @@ Route::middleware('auth')->group(function () {
         Route::post('absences/{absence}/reject', [AbsenceController::class, 'reject'])->name('absences.reject')->middleware('role:admin,kierownik');
     });
 
-    // Group delegation routes (admin/kierownik only) - MUST be before resource routes
+    // Delegations list route - available for all authenticated users including ksiegowy
+    Route::get('delegations', [DelegationController::class, 'index'])->name('delegations.index');
+
+    // Group delegation routes (admin/kierownik only) - MUST be before {delegation} parameter routes
     Route::get('delegations/create-group', [DelegationController::class, 'createGroup'])->name('delegations.create-group')->middleware('role:admin,kierownik');
     Route::post('delegations/store-group', [DelegationController::class, 'storeGroup'])->name('delegations.store-group')->middleware('role:admin,kierownik');
 
-    // Delegations view routes - available for all authenticated users including ksiegowy
-    Route::get('delegations', [DelegationController::class, 'index'])->name('delegations.index');
-    Route::get('delegations/{delegation}', [DelegationController::class, 'show'])->name('delegations.show');
-
-    // Delegations management routes - NOT available for ksiegowy
+    // Delegations management routes - NOT available for ksiegowy (MUST be before {delegation} parameter routes)
     Route::middleware('role:admin,kierownik,lider,pracownik')->group(function () {
         Route::get('delegations/create', [DelegationController::class, 'create'])->name('delegations.create');
         Route::post('delegations', [DelegationController::class, 'store'])->name('delegations.store');
@@ -70,6 +69,9 @@ Route::middleware('auth')->group(function () {
         Route::post('delegations/{delegation}/supervisor-approval', [DelegationController::class, 'supervisorApproval'])->name('delegations.supervisor-approval');
         Route::post('delegations/{delegation}/revoke-approval', [DelegationController::class, 'revokeApproval'])->name('delegations.revoke-approval');
     });
+
+    // Delegations view route with parameter - available for all authenticated users including ksiegowy (MUST be AFTER specific routes)
+    Route::get('delegations/{delegation}', [DelegationController::class, 'show'])->name('delegations.show');
 
     // PDF generation route - available for all including ksiegowy
     Route::get('delegations/{delegation}/pdf', [DelegationController::class, 'generatePdf'])->name('delegations.pdf');
