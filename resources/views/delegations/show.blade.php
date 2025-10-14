@@ -44,7 +44,7 @@
                     @endif
 
                     {{-- Supervisor approval button --}}
-                    @if(($user->isKierownik() || $user->isAdmin()) && $delegation->employee_approval_status === 'approved' && $delegation->supervisor_approval_status !== 'approved')
+                    @if(($user->isKierownik() || $user->isAdmin()) && $delegation->employee_approval_status === 'approved' && $delegation->supervisor_approval_status !== 'approved' && !$isOwner)
                         <form method="POST" action="{{ route('delegations.supervisor-approval', $delegation) }}" class="inline">
                             @csrf
                             <button type="submit" class="btn-kt-primary"

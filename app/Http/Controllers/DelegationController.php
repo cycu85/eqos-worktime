@@ -499,10 +499,19 @@ class DelegationController extends Controller
     public function supervisorApproval(Delegation $delegation)
     {
         $user = auth()->user();
-        
+
         // Check if user is kierownik or admin
         if (!$user->isKierownik() && !$user->isAdmin()) {
             abort(403, 'Brak uprawnień do akceptacji delegacji.');
+        }
+
+        // Check if user is trying to approve their own delegation
+        $nameParts = explode(' ', trim($user->name), 2);
+        $firstName = $nameParts[0] ?? '';
+        $lastName = $nameParts[1] ?? '';
+
+        if ($delegation->first_name === $firstName && $delegation->last_name === $lastName) {
+            return redirect()->back()->with('error', 'Nie możesz zaakceptować własnej delegacji jako kierownik.');
         }
 
         // Check if employee has approved first
