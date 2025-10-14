@@ -87,8 +87,14 @@ mount_network_share() {
         sudo umount "$TEMP_MOUNT_DIR" || error_exit "Nie można odmontować istniejącego zasobu"
     fi
 
-    # Opcje montowania CIFS
+    # Pobierz UID i GID aktualnego użytkownika
+    local current_uid=$(id -u)
+    local current_gid=$(id -g)
+
+    # Opcje montowania CIFS z uprawnieniami dla bieżącego użytkownika
     local mount_opts="username=$SMB_USERNAME,password=$SMB_PASSWORD,vers=3.0"
+    mount_opts="$mount_opts,uid=$current_uid,gid=$current_gid"
+    mount_opts="$mount_opts,file_mode=0755,dir_mode=0755"
 
     # Dodaj opcjonalną domenę jeśli jest ustawiona
     if [ -n "$SMB_DOMAIN" ]; then
@@ -96,6 +102,7 @@ mount_network_share() {
     fi
 
     # Montuj zasób sieciowy
+    log "Montowanie z opcjami: uid=$current_uid, gid=$current_gid"
     sudo mount -t cifs "$SMB_SHARE" "$TEMP_MOUNT_DIR" -o "$mount_opts" || \
         error_exit "Nie można zamontować zasobu sieciowego"
 
@@ -103,8 +110,12 @@ mount_network_share() {
 
     # Sprawdź czy można zapisywać
     if [ ! -w "$TEMP_MOUNT_DIR" ]; then
+        log "OSTRZEŻENIE: Sprawdzanie uprawnień katalogu..."
+        ls -la "$TEMP_MOUNT_DIR" >> "$LOG_FILE" 2>&1
         error_exit "Brak uprawnień do zapisu na zasobie sieciowym"
     fi
+
+    log "Uprawnienia zapisu potwierdzone"
 }
 
 backup_database() {

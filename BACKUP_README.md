@@ -93,9 +93,23 @@ Lub bardziej restrykcyjnie:
 your_username ALL=(ALL) NOPASSWD: /bin/mount -t cifs *, /bin/umount /tmp/backup_mount_*
 ```
 
-### 4. Test skryptu
+### 4. Test montowania (WAŻNE!)
 
-Przetestuj skrypt ręcznie przed dodaniem do crona:
+Przed uruchomieniem backupu, przetestuj montowanie zasobu sieciowego:
+
+```bash
+./test_mount.sh
+```
+
+Ten skrypt zdiagnozuje problemy z:
+- Montowaniem zasobu Windows
+- Uprawnieniami zapisu
+- Dostępnością różnych wersji SMB
+- Konfiguracją sieci
+
+### 5. Test skryptu backupu
+
+Po pomyślnym teście montowania, przetestuj pełny backup:
 
 ```bash
 ./backup.sh
@@ -242,6 +256,45 @@ npm run build
 
 ## Rozwiązywanie Problemów
 
+### Błąd: "Brak uprawnień do zapisu na zasobie sieciowym"
+
+**Najczęstszy problem!** Mimo prawidłowego montowania, lokalny użytkownik nie ma uprawnień zapisu.
+
+**Rozwiązanie (już zaimplementowane w skrypcie):**
+Skrypt automatycznie dodaje opcje `uid`, `gid` i `file_mode` podczas montowania, aby lokalny użytkownik miał uprawnienia zapisu:
+
+```bash
+uid=$(id -u),gid=$(id -g),file_mode=0755,dir_mode=0755
+```
+
+**Sprawdź na serwerze Windows:**
+
+1. **Uprawnienia folderu udziału:**
+   - Kliknij prawym na folder → Właściwości → Udostępnianie → Zaawansowane udostępnianie
+   - Upewnij się, że użytkownik Administrator (lub twoje konto) ma uprawnienia "Pełna kontrola"
+
+2. **Uprawnienia NTFS:**
+   - Właściwości → Zabezpieczenia → Edytuj
+   - Użytkownik Administrator powinien mieć "Pełna kontrola"
+
+3. **Sprawdź udostępnienie (jako Administrator na Windows):**
+   ```cmd
+   net share
+   ```
+   Upewnij się, że folder jest widoczny na liście
+
+4. **Uprawnienia w SMB (PowerShell jako Administrator):**
+   ```powershell
+   Get-SmbShare
+   Get-SmbShareAccess -Name "NazwaUdzialu"
+   ```
+
+**Test ręczny:**
+```bash
+# Użyj skryptu testowego
+./test_mount.sh
+```
+
 ### Błąd: "Nie można zamontować zasobu sieciowego"
 
 **Przyczyny:**
@@ -249,18 +302,22 @@ npm run build
 - Błędna ścieżka do zasobu SMB
 - Firewall blokuje port 445
 - Zasób sieciowy niedostępny
+- Nieprawidłowa wersja protokołu SMB
 
 **Rozwiązanie:**
 ```bash
 # Test ręcznego montowania
 sudo mount -t cifs //serwer/udział /mnt/test \
-  -o username=user,password=pass,vers=3.0
+  -o username=user,password=pass,vers=3.0,uid=$(id -u),gid=$(id -g)
 
 # Sprawdź dostępność serwera
 ping serwer
 
 # Sprawdź dostępność portu SMB
 nc -zv serwer 445
+
+# Użyj skryptu testowego (testuje różne wersje SMB)
+./test_mount.sh
 ```
 
 ### Błąd: "mysqldump: command not found"
