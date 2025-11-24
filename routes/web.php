@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AbsenceController;
+use App\Http\Controllers\AsekZestawController;
 use App\Http\Controllers\DelegationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
@@ -107,6 +108,12 @@ Route::middleware('auth')->group(function () {
         Route::get('settings/delegations', [\App\Http\Controllers\Settings\DelegationSettingsController::class, 'index'])->name('settings.delegations.index');
         Route::put('settings/delegations', [\App\Http\Controllers\Settings\DelegationSettingsController::class, 'update'])->name('settings.delegations.update');
         Route::put('settings/delegations/defaults', [\App\Http\Controllers\Settings\DelegationSettingsController::class, 'updateDefaults'])->name('settings.delegations.update-defaults');
+    });
+
+    // ASEK Zestawy routes (read-only from external database)
+    Route::prefix('asek')->name('asek.')->group(function () {
+        Route::get('zestawy', [AsekZestawController::class, 'index'])->name('zestawy.index');
+        Route::get('zestawy/{id}', [AsekZestawController::class, 'show'])->name('zestawy.show');
     });
 });
 

@@ -130,12 +130,15 @@ class UserController extends Controller
     public function show(User $user)
     {
         $this->authorize('view', $user);
-        
+
         $user->load(['tasks' => function ($query) {
             $query->with('vehicles')->orderBy('start_date', 'desc');
         }]);
-        
-        return view('users.show', compact('user'));
+
+        // Pobierz zestawy ASEK przypisane do użytkownika
+        $asekZestawy = $user->getAsekZestawy();
+
+        return view('users.show', compact('user', 'asekZestawy'));
     }
 
     /**

@@ -200,6 +200,85 @@
                 </div>
             </div>
 
+            <!-- ASEK Zestawy -->
+            @if($asekZestawy->count() > 0)
+                <div class="kt-card mb-6">
+                    <div class="kt-card-header">
+                        <h3 class="kt-card-title">
+                            <svg class="w-5 h-5 inline-block mr-2 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"></path>
+                            </svg>
+                            Zestawy asekuracyjne ({{ $asekZestawy->count() }})
+                        </h3>
+                    </div>
+                    <div class="kt-card-body">
+                        <div class="overflow-x-auto">
+                            <table class="table-kt">
+                                <thead>
+                                    <tr>
+                                        <th>Nazwa zestawu</th>
+                                        <th>Opis</th>
+                                        <th>Status</th>
+                                        <th>Status przeglądu</th>
+                                        <th>Akcje</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($asekZestawy as $zestaw)
+                                        <tr>
+                                            <td>
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 h-10 w-10">
+                                                        <div class="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/20 flex items-center justify-center">
+                                                            <svg class="h-6 w-6 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"></path>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                    <div class="ml-4">
+                                                        <div class="font-medium text-gray-900 dark:text-gray-100">{{ $zestaw->name }}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if($zestaw->description)
+                                                    <span class="text-gray-600 dark:text-gray-400">{{ Str::limit($zestaw->description, 50) }}</span>
+                                                @else
+                                                    <span class="text-gray-400 dark:text-gray-500">-</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if(strtolower($zestaw->status) == 'aktywny')
+                                                    <span class="badge-kt-success">Aktywny</span>
+                                                @else
+                                                    <span class="badge-kt-secondary">{{ $zestaw->status ?: 'Brak' }}</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($zestaw->status_przegladu)
+                                                    <span class="text-gray-900 dark:text-gray-100">{{ $zestaw->status_przegladu }}</span>
+                                                @else
+                                                    <span class="text-gray-400 dark:text-gray-500">-</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <a href="{{ route('asek.zestawy.show', $zestaw->id) }}" class="btn-kt-sm btn-kt-light">
+                                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
+                                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Szczegóły
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- Recent Tasks -->
             @if($user->tasks->count() > 0)
                 <div class="kt-card">

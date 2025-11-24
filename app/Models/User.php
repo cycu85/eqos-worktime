@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -291,5 +292,27 @@ class User extends Authenticatable
             ->sum(function($absence) {
                 return $absence->getDaysCount();
             });
+    }
+
+    /**
+     * Pobierz zestawy ASEK przypisane do użytkownika
+     * Wyszukuje po polu who_use w zewnętrznej bazie danych
+     * Obsługuje formaty: "Imię Nazwisko" oraz "Nazwisko Imię"
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<AsekZestaw>
+     */
+    public function getAsekZestawy()
+    {
+        $nameParts = explode(' ', trim($this->name), 2);
+
+        if (count($nameParts) === 2) {
+            $reversedName = $nameParts[1] . ' ' . $nameParts[0];
+
+            return AsekZestaw::where('who_use', $this->name)
+                ->orWhere('who_use', $reversedName)
+                ->get();
+        }
+
+        return AsekZestaw::where('who_use', $this->name)->get();
     }
 }
