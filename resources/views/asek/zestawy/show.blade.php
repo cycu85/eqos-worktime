@@ -16,14 +16,6 @@
                     Zestaw #{{ $zestaw->id }} &bull; {{ $tickets->count() }} elementów
                 </p>
             </div>
-            <div class="mt-3 sm:mt-0">
-                <a href="{{ route('asek.zestawy.index') }}" class="btn-kt-light">
-                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
-                    </svg>
-                    Powrót do listy
-                </a>
-            </div>
         </div>
     </x-slot>
 
@@ -97,7 +89,7 @@
                                     <th>Typ</th>
                                     <th>Producent / Model</th>
                                     <th>Numer seryjny</th>
-                                    <th>Kalibracja</th>
+                                    <th>Przegląd</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
@@ -138,22 +130,26 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @if($ticket->date_next_calib)
-                                                @if($ticket->calibration_overdue)
-                                                    <span class="badge-kt-danger">
-                                                        Przeterminowana: {{ $ticket->date_next_calib->format('d.m.Y') }}
-                                                    </span>
-                                                @elseif($ticket->requires_calibration)
-                                                    <span class="badge-kt-warning">
-                                                        {{ $ticket->date_next_calib->format('d.m.Y') }}
-                                                    </span>
+                                            @if(strtolower($ticket->type_calib) == 'wymaga')
+                                                @if($ticket->date_next_calib)
+                                                    @if($ticket->calibration_overdue)
+                                                        <span class="badge-kt-danger">
+                                                            Przeterminowany: {{ $ticket->date_next_calib->format('d.m.Y') }}
+                                                        </span>
+                                                    @elseif($ticket->requires_calibration)
+                                                        <span class="badge-kt-warning">
+                                                            {{ $ticket->date_next_calib->format('d.m.Y') }}
+                                                        </span>
+                                                    @else
+                                                        <span class="badge-kt-success">
+                                                            {{ $ticket->date_next_calib->format('d.m.Y') }}
+                                                        </span>
+                                                    @endif
                                                 @else
-                                                    <span class="badge-kt-success">
-                                                        {{ $ticket->date_next_calib->format('d.m.Y') }}
-                                                    </span>
+                                                    <span class="badge-kt-warning">Brak daty</span>
                                                 @endif
                                             @else
-                                                <span class="text-gray-400 dark:text-gray-500">-</span>
+                                                <span class="text-gray-400 dark:text-gray-500">Nie wymaga</span>
                                             @endif
                                         </td>
                                         <td>
