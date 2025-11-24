@@ -5,9 +5,10 @@ System zarządzania czasem pracy dla zespołów, umożliwiający śledzenie zada
 ## Funkcjonalności
 
 - **Zarządzanie zadaniami** - Tworzenie, edycja i śledzenie postępu zadań
-- **Zarządzanie zespołami** - Tworzenie zespołów z liderami i członkami  
+- **Zarządzanie zespołami** - Tworzenie zespołów z liderami i członkami
 - **Zarządzanie pojazdami** - Rejestr pojazdów/sprzętu firmy
 - **Zarządzanie użytkownikami** - System ról (Admin, Kierownik, Lider, Pracownik)
+- **Integracja z bazą ASEK** - Odczyt zestawów asekuracyjnych z zewnętrznej bazy danych MySQL
 - **Responsywny design** - Zoptymalizowany pod urządzenia mobilne z motywem Metronic
 - **System raportowania** - Filtrowanie i wyszukiwanie danych z eksportem do Excel
 - **Export danych** - Eksport listy zadań do formatu Excel (.xlsx) z obliczaniem czasu trwania
@@ -269,6 +270,13 @@ DB_DATABASE=eqos_worktime
 DB_USERNAME=eqos_user
 DB_PASSWORD=twoje_bezpieczne_haslo
 
+# Zewnętrzna baza danych ASEK (opcjonalnie, tylko odczyt)
+DB_EXTERNAL_HOST=127.0.0.1
+DB_EXTERNAL_PORT=3306
+DB_EXTERNAL_DATABASE=asek_db
+DB_EXTERNAL_USERNAME=readonly_user
+DB_EXTERNAL_PASSWORD=haslo_readonly
+
 # Pozostałe ustawienia...
 CACHE_STORE=file
 SESSION_DRIVER=file
@@ -511,6 +519,30 @@ routes/
 - **Kierownik** - Dostęp do wszystkich zadań i raportów (odczyt)
 - **Lider** - Zarządzanie własnymi zespołami i zadaniami
 - **Pracownik** - Dostęp do przypisanych zadań
+
+## Integracja z bazą ASEK
+
+Aplikacja umożliwia odczyt zestawów asekuracyjnych z zewnętrznej bazy danych MySQL (ASEK). Funkcjonalność obejmuje:
+
+### Dostępne widoki
+- `/asek/zestawy` - Lista wszystkich zestawów z filtrowaniem i sortowaniem
+- `/asek/zestawy/{id}` - Szczegóły zestawu z listą elementów (ticketów)
+
+### Funkcje
+- **Lista zestawów** - Filtrowanie po nazwie, opisie, użytkowniku i statusie
+- **Szczegóły zestawu** - Informacje o zestawie oraz lista elementów z datami przeglądów
+- **Przypisanie do użytkownika** - W profilu użytkownika wyświetlane są przypisane zestawy (wyszukiwanie po imieniu i nazwisku w obu formatach)
+- **Status przeglądów** - Kolorowe oznaczenia dat przeglądów (zielony - OK, żółty - zbliża się, czerwony - przeterminowany)
+
+### Konfiguracja
+Dodaj zmienne do pliku `.env`:
+```env
+DB_EXTERNAL_HOST=adres_serwera_asek
+DB_EXTERNAL_PORT=3306
+DB_EXTERNAL_DATABASE=nazwa_bazy_asek
+DB_EXTERNAL_USERNAME=uzytkownik_readonly
+DB_EXTERNAL_PASSWORD=haslo
+```
 
 ## Rozwiązywanie problemów
 
