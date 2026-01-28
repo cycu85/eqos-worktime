@@ -180,11 +180,8 @@ class DelegationController extends Controller
         ]);
 
         if ($validated['country'] !== 'Polska' && !empty($validated['arrival_date'])) {
-            // Get exchange rate from the day before return date
-            $arrivalDate = \Carbon\Carbon::parse($validated['arrival_date']);
-            $rateDateString = $arrivalDate->subDay()->format('Y-m-d');
-            
-            $nbpData = $this->nbpService->getRateForDate('EUR', $rateDateString);
+            // Get exchange rate from the day before return date (or earlier if weekend/holiday)
+            $nbpData = $this->nbpService->getRateBeforeDate('EUR', $validated['arrival_date']);
             if ($nbpData) {
                 $validated['exchange_rate'] = $nbpData['rate'];
                 $validated['nbp_table_number'] = $nbpData['no'];
@@ -377,11 +374,8 @@ class DelegationController extends Controller
         ]);
 
         if ($validated['country'] !== 'Polska' && !empty($validated['arrival_date'])) {
-            // Get exchange rate from the day before return date
-            $arrivalDate = \Carbon\Carbon::parse($validated['arrival_date']);
-            $rateDateString = $arrivalDate->subDay()->format('Y-m-d');
-            
-            $nbpData = $this->nbpService->getRateForDate('EUR', $rateDateString);
+            // Get exchange rate from the day before return date (or earlier if weekend/holiday)
+            $nbpData = $this->nbpService->getRateBeforeDate('EUR', $validated['arrival_date']);
             if ($nbpData) {
                 $validated['exchange_rate'] = $nbpData['rate'];
                 $validated['nbp_table_number'] = $nbpData['no'];
@@ -654,10 +648,7 @@ class DelegationController extends Controller
 
             // Handle currency and exchange rates
             if ($validated['country'] !== 'Polska' && !empty($validated['arrival_date'])) {
-                $arrivalDate = \Carbon\Carbon::parse($validated['arrival_date']);
-                $rateDateString = $arrivalDate->subDay()->format('Y-m-d');
-                
-                $nbpData = $this->nbpService->getRateForDate('EUR', $rateDateString);
+                $nbpData = $this->nbpService->getRateBeforeDate('EUR', $validated['arrival_date']);
                 if ($nbpData) {
                     $delegationData['exchange_rate'] = $nbpData['rate'];
                     $delegationData['nbp_table_number'] = $nbpData['no'];
