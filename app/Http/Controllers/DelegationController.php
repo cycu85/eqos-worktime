@@ -91,7 +91,29 @@ class DelegationController extends Controller
         // Get unique countries for filter dropdown
         $countries = Delegation::distinct()->pluck('country')->filter()->sort()->values();
 
-        return view('delegations.index', compact('delegations', 'countries'));
+        // Pobierz dane delegacji dla kalendarz (filtr roleowy, bez filtrów wyszukiwania)
+        $calendarQuery = Delegation::query()->whereNotNull('departure_date');
+        if (!$user->isAdmin() && !$user->isKierownik() && !$user->isKsiegowy()) {
+            $calNameParts = explode(' ', trim($user->name), 2);
+            $calendarQuery->where('first_name', $calNameParts[0] ?? '')
+                          ->where('last_name', $calNameParts[1] ?? '');
+        }
+        $calendarDelegations = $calendarQuery->get()->map(function ($delegation) {
+            return [
+                'id' => $delegation->id,
+                'employee' => $delegation->full_name,
+                'travel_purpose' => $delegation->travel_purpose,
+                'destination' => $delegation->destination_city . ', ' . $delegation->country,
+                'departure_date' => $delegation->departure_date->format('Y-m-d'),
+                'arrival_date' => $delegation->arrival_date ? $delegation->arrival_date->format('Y-m-d') : null,
+                'departure_time' => $delegation->departure_time,
+                'arrival_time' => $delegation->arrival_time,
+                'status' => $delegation->delegation_status,
+                'url' => route('delegations.show', $delegation),
+            ];
+        })->values();
+
+        return view('delegations.index', compact('delegations', 'countries', 'calendarDelegations'));
     }
 
     public function create()

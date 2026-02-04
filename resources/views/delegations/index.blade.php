@@ -160,6 +160,65 @@
                 </div>
             @endif
 
+            <!-- Kalendarz delegacji -->
+            <div class="kt-card mb-6" id="del-calendar-section">
+                <div class="kt-card-header">
+                    <h3 class="kt-card-title">Kalendarz delegacji</h3>
+                    <div class="flex items-center justify-between w-full">
+                        <div class="flex items-center space-x-2">
+                            <button id="del-prev-period" class="btn-kt-light btn-sm">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                            <span id="del-current-period" class="text-lg font-semibold text-gray-900 dark:text-gray-100 px-4 min-w-[200px] text-left"></span>
+                            <button id="del-next-period" class="btn-kt-light btn-sm">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="calendar-view-toggle">
+                            <button id="del-month-view" class="btn-kt-primary btn-sm">Miesiąc</button>
+                            <button id="del-week-view" class="btn-kt-light btn-sm">Tydzień</button>
+                            <button id="del-day-view" class="btn-kt-light btn-sm">Dzień</button>
+                        </div>
+
+                        <div>
+                            <button id="del-today-btn" class="btn-kt-secondary btn-sm">Dziś</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="kt-card-body">
+                    <!-- Month View -->
+                    <div id="del-month-view-container">
+                        <div class="grid grid-cols-8 gap-1 mb-2">
+                            <div class="p-2 text-center text-sm font-medium text-gray-600 dark:text-gray-400">Tyd.</div>
+                            <div class="p-2 text-center text-sm font-medium text-gray-600 dark:text-gray-400">Pon</div>
+                            <div class="p-2 text-center text-sm font-medium text-gray-600 dark:text-gray-400">Wt</div>
+                            <div class="p-2 text-center text-sm font-medium text-gray-600 dark:text-gray-400">Śr</div>
+                            <div class="p-2 text-center text-sm font-medium text-gray-600 dark:text-gray-400">Czw</div>
+                            <div class="p-2 text-center text-sm font-medium text-gray-600 dark:text-gray-400">Pt</div>
+                            <div class="p-2 text-center text-sm font-medium text-gray-600 dark:text-gray-400">Sob</div>
+                            <div class="p-2 text-center text-sm font-medium text-gray-600 dark:text-gray-400">Nie</div>
+                        </div>
+                        <div id="del-calendar-grid" class="grid grid-cols-8 gap-1"></div>
+                    </div>
+
+                    <!-- Week View -->
+                    <div id="del-week-view-container" class="hidden">
+                        <div id="del-week-headers" class="grid grid-cols-7 gap-1 mb-1"></div>
+                        <div id="del-week-grid" class="grid grid-cols-7 gap-1"></div>
+                    </div>
+
+                    <!-- Day View -->
+                    <div id="del-day-view-container" class="hidden">
+                        <div id="del-day-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+
             <div class="kt-card">
                 <div class="kt-card-body">
                     <div class="overflow-x-auto">
@@ -396,4 +455,331 @@
             </div>
         </div>
     </div>
+
+    <script>
+        const delegationsData = @json($calendarDelegations);
+
+        let delCurrentDate = new Date();
+        let delCurrentView = 'month';
+
+        function delEsc(str) {
+            return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function delGetWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        function delFormatDateStr(date) {
+            return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+        }
+
+        function delFormatDateDisplay(dateStr) {
+            if (!dateStr) return '';
+            const p = dateStr.split('-');
+            return p[2] + '.' + p[1] + '.' + p[0];
+        }
+
+        function delFormatMonth(date) {
+            const months = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
+                'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
+            return months[date.getMonth()] + ' ' + date.getFullYear();
+        }
+
+        function delFormatWeek(date) {
+            const start = new Date(date);
+            start.setDate(date.getDate() - (date.getDay() + 6) % 7);
+            const end = new Date(start);
+            end.setDate(start.getDate() + 6);
+            const months = ['Sty', 'Lut', 'Mar', 'Kwi', 'Maj', 'Cze', 'Lip', 'Sie', 'Wrz', 'Paź', 'Lis', 'Gru'];
+            return `Tydzień ${delGetWeekNumber(start)}: ${start.getDate()} ${months[start.getMonth()]} - ${end.getDate()} ${months[end.getMonth()]} ${end.getFullYear()}`;
+        }
+
+        function delFormatDay(date) {
+            const days = ['Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota'];
+            const months = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca',
+                'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
+            return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+        }
+
+        function delGetStatusBadge(status) {
+            const map = {
+                'draft': 'badge-kt-light',
+                'employee_approved': 'badge-kt-warning',
+                'approved': 'badge-kt-success',
+                'completed': 'badge-kt-info',
+                'cancelled': 'badge-kt-danger'
+            };
+            return map[status] || 'badge-kt-light';
+        }
+
+        function delGetStatusLabel(status) {
+            const map = {
+                'draft': 'Szkic',
+                'employee_approved': 'Akceptowana',
+                'approved': 'Zatwierdzona',
+                'completed': 'Zakończona',
+                'cancelled': 'Anulowana'
+            };
+            return map[status] || status;
+        }
+
+        // Delegacja pokrywa dany dzień jeśli: departure_date <= dzień <= arrival_date
+        // Jeśli brak arrival_date, traktujemy jako jedniodniowe na departure_date
+        function delGetForDate(dateStr) {
+            return delegationsData.filter(d => {
+                if (!d.departure_date) return false;
+                const end = d.arrival_date || d.departure_date;
+                return d.departure_date <= dateStr && dateStr <= end;
+            });
+        }
+
+        function delUpdatePeriod() {
+            const el = document.getElementById('del-current-period');
+            if (delCurrentView === 'month') el.textContent = delFormatMonth(delCurrentDate);
+            else if (delCurrentView === 'week') el.textContent = delFormatWeek(delCurrentDate);
+            else el.textContent = delFormatDay(delCurrentDate);
+        }
+
+        function delSwitchView(view) {
+            delCurrentView = view;
+            document.getElementById('del-month-view').className = 'btn-kt-light btn-sm';
+            document.getElementById('del-week-view').className = 'btn-kt-light btn-sm';
+            document.getElementById('del-day-view').className = 'btn-kt-light btn-sm';
+            document.getElementById(`del-${view}-view`).className = 'btn-kt-primary btn-sm';
+
+            document.getElementById('del-month-view-container').classList.toggle('hidden', view !== 'month');
+            document.getElementById('del-week-view-container').classList.toggle('hidden', view !== 'week');
+            document.getElementById('del-day-view-container').classList.toggle('hidden', view !== 'day');
+
+            delUpdatePeriod();
+            delRender();
+        }
+
+        function delRender() {
+            delUpdatePeriod();
+            if (delCurrentView === 'month') delRenderMonth();
+            else if (delCurrentView === 'week') delRenderWeek();
+            else delRenderDay();
+        }
+
+        // ─── WIDOK MIESIĘCZNY ───────────────────────────────────────────
+        function delRenderMonth() {
+            const year = delCurrentDate.getFullYear();
+            const month = delCurrentDate.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const startingDay = (firstDay.getDay() + 6) % 7; // Pon = 0
+
+            const grid = document.getElementById('del-calendar-grid');
+            grid.innerHTML = '';
+
+            const rows = Math.ceil((startingDay + daysInMonth) / 7);
+            let weekStart = new Date(year, month, 1 - startingDay);
+            let dayIndex = 0;
+
+            for (let row = 0; row < rows; row++) {
+                // Komórka numeru tygodnia
+                const wCell = document.createElement('div');
+                wCell.className = 'h-40 flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700';
+                wCell.textContent = delGetWeekNumber(weekStart);
+                grid.appendChild(wCell);
+
+                for (let col = 0; col < 7; col++) {
+                    const cell = document.createElement('div');
+
+                    if (dayIndex < startingDay) {
+                        // Dni poprzedni miesiąc
+                        const prevDay = new Date(year, month, 0).getDate() - startingDay + dayIndex + 1;
+                        cell.className = 'h-40 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50';
+                        const num = document.createElement('div');
+                        num.className = 'text-xs font-medium text-gray-400 dark:text-gray-500 mb-1';
+                        num.textContent = prevDay;
+                        cell.appendChild(num);
+                        cell.addEventListener('click', () => {
+                            delCurrentDate = new Date(year, month - 1, prevDay);
+                            delSwitchView('day');
+                        });
+
+                    } else if (dayIndex - startingDay + 1 <= daysInMonth) {
+                        // Dni bieżący miesiąc
+                        const day = dayIndex - startingDay + 1;
+                        const today = new Date();
+                        const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
+
+                        cell.className = `h-40 border border-gray-200 dark:border-gray-700 p-1 overflow-y-auto transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer flex flex-col ${
+                            isToday ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600' : 'bg-white dark:bg-gray-800'
+                        }`;
+
+                        const num = document.createElement('div');
+                        num.className = `text-xs font-medium mb-1 hover:underline ${
+                            isToday ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-gray-900 dark:text-gray-100'
+                        }`;
+                        num.textContent = day;
+                        num.title = 'Kliknij aby przejść do widoku dnia';
+                        cell.appendChild(num);
+
+                        const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+                        const dels = delGetForDate(dateStr);
+                        const container = document.createElement('div');
+                        container.className = 'flex-1 space-y-1 overflow-y-auto';
+
+                        dels.slice(0, 3).forEach(d => {
+                            const el = document.createElement('div');
+                            el.className = 'text-xs px-1 py-0.5 rounded cursor-pointer hover:opacity-80 transition-opacity shadow-sm block w-full ' + delGetStatusBadge(d.status);
+                            el.textContent = d.employee.length > 15 ? d.employee.substring(0, 15) + '...' : d.employee;
+                            el.title = `${d.employee}\nCel: ${d.travel_purpose}\nMiejsce: ${d.destination}\nWyjazd: ${delFormatDateDisplay(d.departure_date)}${d.departure_time ? ' ' + d.departure_time : ''}\nPrzyjazd: ${delFormatDateDisplay(d.arrival_date || d.departure_date)}${d.arrival_time ? ' ' + d.arrival_time : ''}\nStatus: ${delGetStatusLabel(d.status)}`;
+                            el.onclick = (e) => { e.stopPropagation(); window.location.href = d.url; };
+                            container.appendChild(el);
+                        });
+
+                        if (dels.length > 3) {
+                            const more = document.createElement('div');
+                            more.className = 'text-xs text-gray-500 dark:text-gray-400 font-medium px-1';
+                            more.textContent = `+${dels.length - 3} więcej`;
+                            container.appendChild(more);
+                        }
+
+                        cell.appendChild(container);
+                        cell.addEventListener('click', (e) => {
+                            if (e.target.closest('.badge-kt-light, .badge-kt-warning, .badge-kt-success, .badge-kt-info, .badge-kt-danger')) return;
+                            delCurrentDate = new Date(year, month, day);
+                            delSwitchView('day');
+                        });
+
+                    } else {
+                        // Dni następny miesiąc
+                        const nextDay = dayIndex - startingDay - daysInMonth + 1;
+                        cell.className = 'h-40 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50';
+                        const num = document.createElement('div');
+                        num.className = 'text-xs font-medium text-gray-400 dark:text-gray-500 mb-1';
+                        num.textContent = nextDay;
+                        cell.appendChild(num);
+                        cell.addEventListener('click', () => {
+                            delCurrentDate = new Date(year, month + 1, nextDay);
+                            delSwitchView('day');
+                        });
+                    }
+
+                    grid.appendChild(cell);
+                    dayIndex++;
+                }
+
+                weekStart.setDate(weekStart.getDate() + 7);
+            }
+        }
+
+        // ─── WIDOK TYGODNIOWY ───────────────────────────────────────────
+        function delRenderWeek() {
+            const start = new Date(delCurrentDate);
+            start.setDate(delCurrentDate.getDate() - (delCurrentDate.getDay() + 6) % 7);
+
+            // Nagłówki dni z datami
+            const headers = document.getElementById('del-week-headers');
+            headers.innerHTML = '';
+            const dayNames = ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Nie'];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(start);
+                d.setDate(start.getDate() + i);
+                const today = new Date();
+                const isToday = d.toDateString() === today.toDateString();
+                const h = document.createElement('div');
+                h.className = `p-2 text-center text-sm font-medium border-b border-gray-200 dark:border-gray-700 ${
+                    isToday ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-600 dark:text-gray-400'
+                }`;
+                h.innerHTML = `${dayNames[i]}<br><span class="${isToday ? 'font-bold' : ''}">${d.getDate()}</span>`;
+                headers.appendChild(h);
+            }
+
+            // Komórki tygodnia
+            const grid = document.getElementById('del-week-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(start);
+                d.setDate(start.getDate() + i);
+                const today = new Date();
+                const isToday = d.toDateString() === today.toDateString();
+
+                const cell = document.createElement('div');
+                cell.className = `min-h-40 border border-gray-200 dark:border-gray-700 p-1 space-y-1 ${
+                    isToday ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-white dark:bg-gray-800'
+                }`;
+
+                const dateStr = delFormatDateStr(d);
+                const dels = delGetForDate(dateStr);
+
+                if (dels.length > 0) {
+                    dels.forEach(del => {
+                        const el = document.createElement('div');
+                        el.className = 'text-xs px-1.5 py-1 rounded cursor-pointer hover:opacity-80 transition-opacity shadow-sm ' + delGetStatusBadge(del.status);
+                        el.innerHTML = `<div class="font-medium truncate">${delEsc(del.employee)}</div><div class="opacity-75 truncate">${delEsc(del.destination)}</div>`;
+                        el.title = `${del.employee}\n${del.travel_purpose}\nStatus: ${delGetStatusLabel(del.status)}`;
+                        el.onclick = () => window.location.href = del.url;
+                        cell.appendChild(el);
+                    });
+                } else {
+                    const empty = document.createElement('div');
+                    empty.className = 'text-xs text-gray-400 dark:text-gray-500 text-center py-3';
+                    empty.textContent = '—';
+                    cell.appendChild(empty);
+                }
+
+                grid.appendChild(cell);
+            }
+        }
+
+        // ─── WIDOK DZIENNI ──────────────────────────────────────────────
+        function delRenderDay() {
+            const list = document.getElementById('del-day-list');
+            list.innerHTML = '';
+
+            const dateStr = delFormatDateStr(delCurrentDate);
+            const dels = delGetForDate(dateStr);
+
+            if (dels.length > 0) {
+                dels.forEach(d => {
+                    const el = document.createElement('div');
+                    el.className = 'p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50';
+                    el.innerHTML = `
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-medium text-gray-900 dark:text-gray-100">${delEsc(d.employee)}</span>
+                            <span class="${delGetStatusBadge(d.status)}">${delGetStatusLabel(d.status)}</span>
+                        </div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400 space-y-0.5">
+                            <div>Cel: ${delEsc(d.travel_purpose)}</div>
+                            <div>Miejsce: ${delEsc(d.destination)}</div>
+                            <div>Wyjazd: ${delFormatDateDisplay(d.departure_date)}${d.departure_time ? ' ' + d.departure_time : ''}</div>
+                            <div>Przyjazd: ${delFormatDateDisplay(d.arrival_date || d.departure_date)}${d.arrival_time ? ' ' + d.arrival_time : ''}</div>
+                        </div>
+                    `;
+                    el.onclick = () => window.location.href = d.url;
+                    list.appendChild(el);
+                });
+            } else {
+                list.innerHTML = '<div class="text-center text-gray-500 dark:text-gray-400 py-8">Brak delegacji na wybrany dzień</div>';
+            }
+        }
+
+        // ─── NAWIGACJA ──────────────────────────────────────────────────
+        function delNavigate(direction) {
+            if (delCurrentView === 'month') delCurrentDate.setMonth(delCurrentDate.getMonth() + direction);
+            else if (delCurrentView === 'week') delCurrentDate.setDate(delCurrentDate.getDate() + direction * 7);
+            else delCurrentDate.setDate(delCurrentDate.getDate() + direction);
+            delRender();
+        }
+
+        // ─── EVENT LISTENERS ────────────────────────────────────────────
+        document.getElementById('del-month-view').addEventListener('click', () => delSwitchView('month'));
+        document.getElementById('del-week-view').addEventListener('click', () => delSwitchView('week'));
+        document.getElementById('del-day-view').addEventListener('click', () => delSwitchView('day'));
+        document.getElementById('del-prev-period').addEventListener('click', () => delNavigate(-1));
+        document.getElementById('del-next-period').addEventListener('click', () => delNavigate(1));
+        document.getElementById('del-today-btn').addEventListener('click', () => { delCurrentDate = new Date(); delRender(); });
+
+        document.addEventListener('DOMContentLoaded', () => { delRender(); });
+    </script>
 </x-app-layout>
