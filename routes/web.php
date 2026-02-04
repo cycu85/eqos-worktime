@@ -89,6 +89,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('vehicles', VehicleController::class);
         Route::resource('users', UserController::class);
         Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
+        Route::post('users/{user}/refresh-asek', [UserController::class, 'refreshAsek'])->name('users.refresh-asek');
         Route::resource('teams', TeamController::class);
         
         // Settings routes

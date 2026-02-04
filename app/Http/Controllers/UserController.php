@@ -132,23 +132,30 @@ class UserController extends Controller
     {
         $this->authorize('view', $user);
 
-        $user->load(['tasks' => function ($query) {
-            $query->with('vehicles')->orderBy('start_date', 'desc');
-        }]);
+        // Statystyki zadań po statusach (1 zapytanie zamiast 4)
+        $taskStatusCounts = $user->tasks()
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
 
-        // Pobierz zestawy ASEK przypisane do użytkownika
+        // Zadania z paginacją + eager loading vehicles i workLogs
+        $tasks = $user->tasks()
+            ->with('vehicles', 'workLogs')
+            ->orderBy('start_date', 'desc')
+            ->paginate(perPage: 25, pageName: 'tasks_page');
+
         $asekZestawy = $user->getAsekZestawy();
 
-        // Pobierz delegacje przypisane do użytkownika
+        // Delegacje z paginacją
         $nameParts = explode(' ', trim($user->name), 2);
         $firstName = $nameParts[0] ?? '';
         $lastName = $nameParts[1] ?? '';
         $delegations = Delegation::where('first_name', $firstName)
             ->where('last_name', $lastName)
             ->orderBy('departure_date', 'desc')
-            ->get();
+            ->paginate(perPage: 25, pageName: 'delegations_page');
 
-        return view('users.show', compact('user', 'asekZestawy', 'delegations'));
+        return view('users.show', compact('user', 'tasks', 'taskStatusCounts', 'asekZestawy', 'delegations'));
     }
 
     /**
@@ -263,5 +270,20 @@ class UserController extends Controller
         $status = $user->is_active ? 'aktywowany' : 'dezaktywowany';
 
         return redirect()->back()->with('success', "Użytkownik został $status pomyślnie.");
+    }
+
+    /**
+     * Odśwież cache zestawów ASEK dla użytkownika
+     *
+     * @param User $user Użytkownik
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function refreshAsek(User $user)
+    {
+        $this->authorize('view', $user);
+
+        cache()->forget("asek_zestawy_{$user->id}");
+
+        return redirect()->route('users.show', $user)->with('success', 'Informacje o zestawach ASEK odświeżone.');
     }
 }

@@ -88,7 +88,7 @@
                         </div>
                         <div>
                             <div class="text-sm font-medium text-blue-600 dark:text-blue-400">Wszystkie zadania</div>
-                            <div class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ $user->tasks->count() }}</div>
+                            <div class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ $tasks->total() }}</div>
                         </div>
                     </div>
                 </div>
@@ -102,7 +102,7 @@
                         </div>
                         <div>
                             <div class="text-sm font-medium text-green-600 dark:text-green-400">Ukończone</div>
-                            <div class="text-2xl font-bold text-green-900 dark:text-green-100">{{ $user->tasks->where('status', 'completed')->count() }}</div>
+                            <div class="text-2xl font-bold text-green-900 dark:text-green-100">{{ $taskStatusCounts['completed'] ?? 0 }}</div>
                         </div>
                     </div>
                 </div>
@@ -116,7 +116,7 @@
                         </div>
                         <div>
                             <div class="text-sm font-medium text-blue-600 dark:text-blue-400">W trakcie</div>
-                            <div class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ $user->tasks->where('status', 'in_progress')->count() }}</div>
+                            <div class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ $taskStatusCounts['in_progress'] ?? 0 }}</div>
                         </div>
                     </div>
                 </div>
@@ -130,7 +130,7 @@
                         </div>
                         <div>
                             <div class="text-sm font-medium text-yellow-600 dark:text-yellow-400">Planowane</div>
-                            <div class="text-2xl font-bold text-yellow-900 dark:text-yellow-100">{{ $user->tasks->where('status', 'planned')->count() }}</div>
+                            <div class="text-2xl font-bold text-yellow-900 dark:text-yellow-100">{{ $taskStatusCounts['planned'] ?? 0 }}</div>
                         </div>
                     </div>
                 </div>
@@ -192,7 +192,7 @@
                                 </div>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Przypisane zadania</dt>
-                                    <dd class="text-base text-gray-900 dark:text-gray-100">{{ $user->tasks->count() }} zadań</dd>
+                                    <dd class="text-base text-gray-900 dark:text-gray-100">{{ $tasks->total() }} zadań</dd>
                                 </div>
                             </div>
                         </div>
@@ -201,15 +201,23 @@
             </div>
 
             <!-- ASEK Zestawy -->
-            @if($asekZestawy->count() > 0)
-                <div class="kt-card mb-6">
-                    <div class="kt-card-header">
+            <div class="kt-card mb-6">
+                    <div class="kt-card-header flex items-center justify-between">
                         <h3 class="kt-card-title">
                             <svg class="w-5 h-5 inline-block mr-2 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"></path>
                             </svg>
                             Zestawy asekuracyjne ({{ $asekZestawy->count() }})
                         </h3>
+                        <form method="POST" action="{{ route('users.refresh-asek', $user) }}" class="inline">
+                            @csrf
+                            <button type="submit" class="btn-kt-sm btn-kt-light">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                                Odśwież informacje o zestawach
+                            </button>
+                        </form>
                     </div>
                     <div class="kt-card-body">
                         <div class="overflow-x-auto">
@@ -224,7 +232,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($asekZestawy as $zestaw)
+                                    @forelse($asekZestawy as $zestaw)
                                         <tr>
                                             <td>
                                                 <div class="flex items-center">
@@ -271,26 +279,31 @@
                                                 </a>
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center text-gray-400 dark:text-gray-500 py-4">
+                                                Brak zestawów asekuracyjnych przypisanych do tego użytkownika
+                                            </td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-            @endif
 
             <!-- Zakładki: Zadania / Delegacje -->
-            @if($user->tasks->count() > 0 || $delegations->count() > 0)
+            @if($tasks->total() > 0 || $delegations->total() > 0)
                 <div class="kt-card">
                     <!-- Tab Navigation -->
                     <div class="flex border-b border-gray-200 dark:border-gray-700">
                         <button onclick="showTab('tasks')" id="tabBtn-tasks"
                                 class="px-6 py-3 text-sm font-semibold border-b-2 border-blue-600 text-blue-600 dark:text-blue-400">
-                            Zadania ({{ $user->tasks->count() }})
+                            Zadania ({{ $tasks->total() }})
                         </button>
                         <button onclick="showTab('delegations')" id="tabBtn-delegations"
                                 class="px-6 py-3 text-sm font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                            Delegacje ({{ $delegations->count() }})
+                            Delegacje ({{ $delegations->total() }})
                         </button>
                     </div>
 
@@ -308,7 +321,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($user->tasks as $task)
+                                    @forelse($tasks as $task)
                                         <tr>
                                             <td>
                                                 <div class="font-medium">{{ $task->title }}</div>
@@ -363,6 +376,11 @@
                                 </tbody>
                             </table>
                         </div>
+                        @if($tasks->lastPage() > 1)
+                            <div class="mt-4">
+                                {{ $tasks->links() }}
+                            </div>
+                        @endif
                     </div>
 
                     <!-- Tab: Delegacje -->
@@ -446,6 +464,11 @@
                                 </tbody>
                             </table>
                         </div>
+                        @if($delegations->lastPage() > 1)
+                            <div class="mt-4">
+                                {{ $delegations->links() }}
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endif

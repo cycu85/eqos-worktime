@@ -303,16 +303,18 @@ class User extends Authenticatable
      */
     public function getAsekZestawy()
     {
-        $nameParts = explode(' ', trim($this->name), 2);
+        return cache()->remember("asek_zestawy_{$this->id}", null, function () {
+            $nameParts = explode(' ', trim($this->name), 2);
 
-        if (count($nameParts) === 2) {
-            $reversedName = $nameParts[1] . ' ' . $nameParts[0];
+            if (count($nameParts) === 2) {
+                $reversedName = $nameParts[1] . ' ' . $nameParts[0];
 
-            return AsekZestaw::where('who_use', $this->name)
-                ->orWhere('who_use', $reversedName)
-                ->get();
-        }
+                return AsekZestaw::where('who_use', $this->name)
+                    ->orWhere('who_use', $reversedName)
+                    ->get();
+            }
 
-        return AsekZestaw::where('who_use', $this->name)->get();
+            return AsekZestaw::where('who_use', $this->name)->get();
+        });
     }
 }
