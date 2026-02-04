@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Delegation;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -138,7 +139,16 @@ class UserController extends Controller
         // Pobierz zestawy ASEK przypisane do użytkownika
         $asekZestawy = $user->getAsekZestawy();
 
-        return view('users.show', compact('user', 'asekZestawy'));
+        // Pobierz delegacje przypisane do użytkownika
+        $nameParts = explode(' ', trim($user->name), 2);
+        $firstName = $nameParts[0] ?? '';
+        $lastName = $nameParts[1] ?? '';
+        $delegations = Delegation::where('first_name', $firstName)
+            ->where('last_name', $lastName)
+            ->orderBy('departure_date', 'desc')
+            ->get();
+
+        return view('users.show', compact('user', 'asekZestawy', 'delegations'));
     }
 
     /**

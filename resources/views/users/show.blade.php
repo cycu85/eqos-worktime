@@ -279,13 +279,23 @@
                 </div>
             @endif
 
-            <!-- Recent Tasks -->
-            @if($user->tasks->count() > 0)
+            <!-- Zakładki: Zadania / Delegacje -->
+            @if($user->tasks->count() > 0 || $delegations->count() > 0)
                 <div class="kt-card">
-                    <div class="kt-card-header">
-                        <h3 class="kt-card-title">Ostatnie zadania ({{ $user->tasks->count() }})</h3>
+                    <!-- Tab Navigation -->
+                    <div class="flex border-b border-gray-200 dark:border-gray-700">
+                        <button onclick="showTab('tasks')" id="tabBtn-tasks"
+                                class="px-6 py-3 text-sm font-semibold border-b-2 border-blue-600 text-blue-600 dark:text-blue-400">
+                            Zadania ({{ $user->tasks->count() }})
+                        </button>
+                        <button onclick="showTab('delegations')" id="tabBtn-delegations"
+                                class="px-6 py-3 text-sm font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                            Delegacje ({{ $delegations->count() }})
+                        </button>
                     </div>
-                    <div class="kt-card-body">
+
+                    <!-- Tab: Zadania -->
+                    <div id="tabPanel-tasks" class="kt-card-body">
                         <div class="overflow-x-auto">
                             <table class="table-kt">
                                 <thead>
@@ -298,7 +308,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($user->tasks as $task)
+                                    @forelse($user->tasks as $task)
                                         <tr>
                                             <td>
                                                 <div class="font-medium">{{ $task->title }}</div>
@@ -343,13 +353,116 @@
                                                 @endif
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center text-gray-400 dark:text-gray-500 py-4">
+                                                Brak zadań do wyświetlenia
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Delegacje -->
+                    <div id="tabPanel-delegations" class="kt-card-body hidden">
+                        <div class="overflow-x-auto">
+                            <table class="table-kt">
+                                <thead>
+                                    <tr>
+                                        <th>NR</th>
+                                        <th>Cel podróży</th>
+                                        <th>Miejsce</th>
+                                        <th>Wyjazd</th>
+                                        <th>Pojazd</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($delegations as $delegation)
+                                        <tr>
+                                            <td>
+                                                <a href="{{ route('delegations.show', $delegation) }}"
+                                                   class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+                                                    #{{ $delegation->id }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <div class="text-gray-700 dark:text-gray-300">{{ Str::limit($delegation->travel_purpose, 50) }}</div>
+                                            </td>
+                                            <td class="text-sm">
+                                                {{ $delegation->destination_city }}, {{ $delegation->country }}
+                                            </td>
+                                            <td class="text-sm">
+                                                @if($delegation->departure_date)
+                                                    {{ $delegation->departure_date->format('d.m.Y') }}
+                                                    @if($delegation->departure_time)
+                                                        <br><small class="text-gray-400 dark:text-gray-500">{{ $delegation->departure_time }}</small>
+                                                    @endif
+                                                @else
+                                                    <span class="text-gray-400 dark:text-gray-500 italic text-xs">Brak</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($delegation->vehicle_registration)
+                                                    @php
+                                                        $vehicles = array_filter(array_map('trim', explode(',', $delegation->vehicle_registration)));
+                                                    @endphp
+                                                    <div class="flex flex-wrap gap-1">
+                                                        @foreach($vehicles as $vehicle)
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                                {{ $vehicle }}
+                                                            </span>
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <span class="text-gray-400 dark:text-gray-500 italic text-xs">Brak</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @php
+                                                    $statusConfig = match($delegation->delegation_status) {
+                                                        'draft' => ['label' => 'Szkic', 'class' => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'],
+                                                        'employee_approved' => ['label' => 'Zaakceptowana', 'class' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'],
+                                                        'approved' => ['label' => 'Zatwierdzona', 'class' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'],
+                                                        'completed' => ['label' => 'Zakończona', 'class' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'],
+                                                        'cancelled' => ['label' => 'Anulowana', 'class' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'],
+                                                        default => ['label' => $delegation->delegation_status ?? 'Brak', 'class' => 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'],
+                                                    };
+                                                @endphp
+                                                <div class="text-xs font-medium px-2 py-1 rounded {{ $statusConfig['class'] }} inline-block">
+                                                    {{ $statusConfig['label'] }}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" class="text-center text-gray-400 dark:text-gray-500 py-4">
+                                                Brak delegacji do wyświetlenia
+                                            </td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             @endif
+
+            <script>
+                function showTab(tab) {
+                    document.querySelectorAll('[id^="tabPanel-"]').forEach(function(el) {
+                        el.classList.add('hidden');
+                    });
+                    document.getElementById('tabPanel-' + tab).classList.remove('hidden');
+
+                    document.querySelectorAll('[id^="tabBtn-"]').forEach(function(btn) {
+                        btn.className = 'px-6 py-3 text-sm font-semibold border-b-2 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300';
+                    });
+                    document.getElementById('tabBtn-' + tab).className = 'px-6 py-3 text-sm font-semibold border-b-2 border-blue-600 text-blue-600 dark:text-blue-400';
+                }
+            </script>
         </div>
     </div>
 </x-app-layout>
