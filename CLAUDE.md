@@ -276,7 +276,7 @@ php artisan view:clear
   - `POST /finanse/cennik` - dodanie ceny
   - `PUT /finanse/cennik/{price}` - edycja ceny
   - `DELETE /finanse/cennik/{price}` - usunięcie ceny
-- **Dostęp**: role admin, kierownik, ksiegowy
+- **Dostęp**: tylko rola admin
 
 #### 5. Aktualizacja FinanceController
 - Zapytanie używa podzapytania do znalezienia aktualnej ceny:

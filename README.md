@@ -558,8 +558,6 @@ System zarządzania wartością wykonanych zadań z cennikiem i raportowaniem fi
 
 ### Dostęp
 - **Admin** - Pełny dostęp do listy finansowej i cennika
-- **Kierownik** - Pełny dostęp do listy finansowej i cennika
-- **Księgowy** - Pełny dostęp do listy finansowej i cennika
 
 ## Integracja z bazą ASEK
 

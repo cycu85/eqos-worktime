@@ -87,11 +87,11 @@ Route::middleware('auth')->group(function () {
     Route::get('tasks/export/daily', [TaskController::class, 'exportDaily'])->name('tasks.export.daily')->middleware('role:admin,kierownik');
 
     // Finance
-    Route::get('finanse', [FinanceController::class, 'index'])->name('finanse.index')->middleware('role:admin,kierownik,ksiegowy');
-    Route::get('finanse/export/excel', [FinanceController::class, 'export'])->name('finanse.export')->middleware('role:admin,kierownik,ksiegowy');
+    Route::get('finanse', [FinanceController::class, 'index'])->name('finanse.index')->middleware('role:admin');
+    Route::get('finanse/export/excel', [FinanceController::class, 'export'])->name('finanse.export')->middleware('role:admin');
 
     // Price List
-    Route::middleware('role:admin,kierownik,ksiegowy')->prefix('finanse')->name('finanse.')->group(function () {
+    Route::middleware('role:admin')->prefix('finanse')->name('finanse.')->group(function () {
         Route::get('cennik', [PriceListController::class, 'index'])->name('price-list.index');
         Route::post('cennik', [PriceListController::class, 'store'])->name('price-list.store');
         Route::put('cennik/{price}', [PriceListController::class, 'update'])->name('price-list.update');
