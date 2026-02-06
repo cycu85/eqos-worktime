@@ -247,3 +247,79 @@ php artisan view:clear
 - `app/Http/Controllers/UserController.php` - pobieranie zestawów
 - `app/Models/User.php` - metoda getAsekZestawy()
 - `routes/web.php` - trasy /asek/*
+
+## Development Session Summary (2026-02-06)
+
+### Refaktoryzacja modułu Finanse - Cennik z datami obowiązywania
+
+#### 1. Zmiana podejścia do cen
+- **Poprzednie podejście**: Cena bezpośrednio w tabeli `task_types` (pole `value`)
+- **Nowe podejście**: Osobna tabela `task_type_prices` z datami obowiązywania cen
+
+#### 2. Nowa tabela task_type_prices
+- **Pola**:
+  - `id` - klucz główny
+  - `task_type_id` - FK do task_types (ON DELETE CASCADE)
+  - `price` - cena (decimal 10,2)
+  - `valid_from` - data od kiedy cena obowiązuje
+  - `created_at`, `updated_at` - timestampy
+- **Indeks**: `(task_type_id, valid_from)` dla szybkiego wyszukiwania
+
+#### 3. Nowy model TaskTypePrice
+- Relacja `belongsTo(TaskType::class)`
+- Metoda statyczna `getPriceForDate($taskTypeId, $date)` - zwraca aktualną cenę na dany dzień
+- Model TaskType rozszerzony o relację `hasMany(TaskTypePrice::class)`
+
+#### 4. Nowy kontroler PriceListController
+- **Trasy**:
+  - `GET /finanse/cennik` - lista cen
+  - `POST /finanse/cennik` - dodanie ceny
+  - `PUT /finanse/cennik/{price}` - edycja ceny
+  - `DELETE /finanse/cennik/{price}` - usunięcie ceny
+- **Dostęp**: role admin, kierownik, ksiegowy
+
+#### 5. Aktualizacja FinanceController
+- Zapytanie używa podzapytania do znalezienia aktualnej ceny:
+  ```sql
+  SELECT price FROM task_type_prices
+  WHERE task_type_id = tasks.task_type_id
+    AND valid_from <= task_work_logs.work_date
+  ORDER BY valid_from DESC
+  LIMIT 1
+  ```
+- Obliczenia uwzględniają cenę obowiązującą na dzień wykonania pracy (work_date)
+
+#### 6. Submenu w nawigacji
+- Menu "Finanse" przekształcone w dropdown:
+  - "Lista finansowa" → `/finanse`
+  - "Cennik" → `/finanse/cennik`
+- Implementacja dla desktop i mobile (responsive)
+
+#### 7. Czyszczenie kodu
+- Usunięto pole `value` z tabeli `task_types` (migracja remove_value_from_task_types_table)
+- Usunięto pole `value` z modelu TaskType
+- Usunięto walidację `value` z TaskTypeController
+- Usunięto kolumnę "Wartość za szt." z widoku task-types/index.blade.php
+- Usunięto pole value z modali dodawania/edycji typu zadania
+
+#### 8. Export do Excel
+- Nowa klasa `FinanceExport` wzorowana na `TaskExport`
+- Metoda `export()` w FinanceController
+- Trasa `GET /finanse/export/excel`
+- Przycisk "Export do Excel" na widoku listy finansowej
+- Export zachowuje wszystkie aktywne filtry (daty, rodzaj zadania, zespół)
+
+#### Pliki utworzone/zmodyfikowane:
+- `database/migrations/2026_02_06_110126_create_task_type_prices_table.php` - nowa tabela
+- `database/migrations/2026_02_06_110138_remove_value_from_task_types_table.php` - usunięcie value
+- `app/Models/TaskTypePrice.php` - nowy model
+- `app/Models/TaskType.php` - usunięcie value, dodanie relacji prices()
+- `app/Http/Controllers/PriceListController.php` - nowy kontroler
+- `app/Http/Controllers/FinanceController.php` - podzapytanie do cen, metoda export()
+- `app/Http/Controllers/TaskTypeController.php` - usunięcie value z walidacji
+- `app/Exports/FinanceExport.php` - nowa klasa exportu
+- `resources/views/finanse/price-list/index.blade.php` - nowy widok cennika
+- `resources/views/finanse/index.blade.php` - przycisk Export do Excel
+- `resources/views/layouts/navigation.blade.php` - submenu dropdown
+- `resources/views/settings/task-types/index.blade.php` - usunięcie kolumny value
+- `routes/web.php` - nowe trasy dla cennika i exportu

@@ -3,6 +3,8 @@
 use App\Http\Controllers\AbsenceController;
 use App\Http\Controllers\AsekZestawController;
 use App\Http\Controllers\DelegationController;
+use App\Http\Controllers\FinanceController;
+use App\Http\Controllers\PriceListController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TaskController;
@@ -83,7 +85,19 @@ Route::middleware('auth')->group(function () {
     // Task export - only for admin and kierownik
     Route::get('tasks/export/excel', [TaskController::class, 'export'])->name('tasks.export')->middleware('role:admin,kierownik');
     Route::get('tasks/export/daily', [TaskController::class, 'exportDaily'])->name('tasks.export.daily')->middleware('role:admin,kierownik');
-    
+
+    // Finance
+    Route::get('finanse', [FinanceController::class, 'index'])->name('finanse.index')->middleware('role:admin,kierownik,ksiegowy');
+    Route::get('finanse/export/excel', [FinanceController::class, 'export'])->name('finanse.export')->middleware('role:admin,kierownik,ksiegowy');
+
+    // Price List
+    Route::middleware('role:admin,kierownik,ksiegowy')->prefix('finanse')->name('finanse.')->group(function () {
+        Route::get('cennik', [PriceListController::class, 'index'])->name('price-list.index');
+        Route::post('cennik', [PriceListController::class, 'store'])->name('price-list.store');
+        Route::put('cennik/{price}', [PriceListController::class, 'update'])->name('price-list.update');
+        Route::delete('cennik/{price}', [PriceListController::class, 'destroy'])->name('price-list.destroy');
+    });
+
     // Admin only routes
     Route::middleware('role:admin')->group(function () {
         Route::resource('vehicles', VehicleController::class);

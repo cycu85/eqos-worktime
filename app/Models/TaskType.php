@@ -24,6 +24,11 @@ class TaskType extends Model
         return $this->hasMany(Task::class);
     }
 
+    public function prices()
+    {
+        return $this->hasMany(TaskTypePrice::class);
+    }
+
     public function scopeActive($query)
     {
         return $query->where('active', true);

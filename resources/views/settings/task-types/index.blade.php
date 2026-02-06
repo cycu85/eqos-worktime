@@ -80,7 +80,7 @@
                                     </td>
                                     <td class="text-right">
                                         <div class="flex items-center justify-end space-x-2">
-                                            <button type="button" onclick="editTaskType({{ $taskType->id }}, '{{ addslashes($taskType->name) }}', '{{ addslashes($taskType->description ?? '') }}', {{ $taskType->active ? 'true' : 'false' }})" 
+                                            <button type="button" onclick="editTaskType({{ $taskType->id }}, '{{ addslashes($taskType->name) }}', '{{ addslashes($taskType->description ?? '') }}', {{ $taskType->active ? 'true' : 'false' }})"
                                                     class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-800 rounded-md transition-colors">
                                                 <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
@@ -161,7 +161,7 @@
                 </div>
                 <div>
                     <label for="description" class="form-kt-label">Opis</label>
-                    <textarea class="form-kt-control" id="description" name="description" rows="3" 
+                    <textarea class="form-kt-control" id="description" name="description" rows="3"
                               placeholder="Opcjonalny opis typu zadania"></textarea>
                 </div>
                 <div class="flex justify-end space-x-3 pt-4">
@@ -194,7 +194,7 @@
                 </div>
                 <div>
                     <label for="edit_description" class="form-kt-label">Opis</label>
-                    <textarea class="form-kt-control" id="edit_description" name="description" rows="3" 
+                    <textarea class="form-kt-control" id="edit_description" name="description" rows="3"
                               placeholder="Opcjonalny opis typu zadania"></textarea>
                 </div>
                 <div>
@@ -228,11 +228,11 @@ function closeAddModal() {
 function editTaskType(id, name, description, active) {
     const form = document.getElementById('editTaskTypeForm');
     form.action = `/settings/task-types/${id}`;
-    
+
     document.getElementById('edit_name').value = name;
     document.getElementById('edit_description').value = description;
     document.getElementById('edit_active').checked = active;
-    
+
     document.getElementById('editTaskTypeModal').classList.remove('hidden');
 }
 

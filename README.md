@@ -7,11 +7,16 @@ System zarządzania czasem pracy dla zespołów, umożliwiający śledzenie zada
 - **Zarządzanie zadaniami** - Tworzenie, edycja i śledzenie postępu zadań
 - **Zarządzanie zespołami** - Tworzenie zespołów z liderami i członkami
 - **Zarządzanie pojazdami** - Rejestr pojazdów/sprzętu firmy
-- **Zarządzanie użytkownikami** - System ról (Admin, Kierownik, Lider, Pracownik)
+- **Zarządzanie użytkownikami** - System ról (Admin, Kierownik, Lider, Pracownik, Księgowy)
+- **Moduł Finanse** - Przegląd wartości zadań z cennikiem i exportem do Excel
+  - Lista finansowa z filtrowaniem po dacie, zespole i rodzaju zadania
+  - Cennik z datami obowiązywania cen
+  - Automatyczne wyliczanie wartości na podstawie ilości zadań i aktualnej ceny
+  - Export wyfiltrowanych danych do Excel
 - **Integracja z bazą ASEK** - Odczyt zestawów asekuracyjnych z zewnętrznej bazy danych MySQL
 - **Responsywny design** - Zoptymalizowany pod urządzenia mobilne z motywem Metronic
 - **System raportowania** - Filtrowanie i wyszukiwanie danych z eksportem do Excel
-- **Export danych** - Eksport listy zadań do formatu Excel (.xlsx) z obliczaniem czasu trwania
+- **Export danych** - Eksport listy zadań i danych finansowych do formatu Excel (.xlsx)
 - **Bezpieczeństwo** - Kontrola dostępu oparta na rolach
 - **Interface w języku polskim** - Pełne tłumaczenie aplikacji
 
@@ -516,9 +521,45 @@ routes/
 ## Struktura ról
 
 - **Admin** - Pełny dostęp do wszystkich funkcji systemu
-- **Kierownik** - Dostęp do wszystkich zadań i raportów (odczyt)
+- **Kierownik** - Dostęp do wszystkich zadań, raportów i modułu Finanse
 - **Lider** - Zarządzanie własnymi zespołami i zadaniami
 - **Pracownik** - Dostęp do przypisanych zadań
+- **Księgowy** - Dostęp do modułu Finanse i delegacji
+
+## Moduł Finanse
+
+System zarządzania wartością wykonanych zadań z cennikiem i raportowaniem finansowym.
+
+### Dostępne widoki
+- `/finanse` - Lista finansowa z podsumowaniem zadań i wartości
+- `/finanse/cennik` - Zarządzanie cennikiem zadań
+
+### Funkcje
+- **Lista finansowa** - Przegląd zadań pogrupowanych po dacie, zespole i rodzaju zadania
+  - Filtrowanie po zakresie dat (domyślnie bieżący miesiąc)
+  - Filtrowanie po rodzaju zadania
+  - Filtrowanie po zespole
+  - Karty podsumowania: łączna ilość zadań i łączna wartość
+  - Tabela z informacjami: data, zespół, ilość zadań, rodzaj zadania, wartość za sztukę, suma
+- **Cennik** - Zarządzanie cenami dla rodzajów zadań
+  - Dodawanie, edycja i usuwanie cen
+  - Data obowiązywania ceny (valid_from)
+  - Historia cen dla każdego rodzaju zadania
+  - System automatycznie dobiera aktualną cenę na podstawie daty wykonania zadania
+- **Export do Excel** - Eksport wyfiltrowanych danych do pliku Excel (.xlsx)
+  - Zachowuje wszystkie aktywne filtry
+  - Kolumny: Data, Zespół, Rodzaj zadania, Ilość zadań, Wartość za szt., Suma
+
+### Logika cennika
+- Każdy rodzaj zadania może mieć wiele cen z różnymi datami obowiązywania
+- System automatycznie wybiera cenę obowiązującą na dzień wykonania zadania (work_date)
+- Jeśli dla danego dnia nie ma ceny, wartość wynosi 0
+- Wyszukiwanie ceny: najnowsza cena gdzie `valid_from <= work_date`
+
+### Dostęp
+- **Admin** - Pełny dostęp do listy finansowej i cennika
+- **Kierownik** - Pełny dostęp do listy finansowej i cennika
+- **Księgowy** - Pełny dostęp do listy finansowej i cennika
 
 ## Integracja z bazą ASEK
 
