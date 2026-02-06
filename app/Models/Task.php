@@ -440,4 +440,14 @@ class Task extends Model
 
         return $teamMembers + $includeLeader;
     }
+
+    /**
+     * Pobierz łączną ilość wykonanych zadań ze wszystkich work_logs
+     *
+     * @return int
+     */
+    public function getTotalCompletedTasks()
+    {
+        return $this->workLogs->sum('completed_tasks_count') ?? 0;
+    }
 }

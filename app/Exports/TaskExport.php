@@ -112,6 +112,7 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'Data zakończenia',
             'Czas',
             'Roboczogodziny',
+            'Ilość wykonanych zadań',
             'Notatki',
             'Utworzono'
         ];
@@ -133,6 +134,7 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             $task->end_date ? $task->end_date->format('Y-m-d') : '',
             $this->calculateDurationFromWorkLogs($task),
             $this->calculateWorkHours($task),
+            $task->getTotalCompletedTasks(),
             $task->notes,
             $task->created_at->format('Y-m-d H:i')
         ];
