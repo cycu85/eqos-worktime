@@ -8,7 +8,9 @@ use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\PriceListController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\LeasingController;
 use App\Http\Controllers\Settings\CostCategoryController;
+use App\Http\Controllers\Settings\LeasingCostTypeController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskTypeController;
 use App\Http\Controllers\TaskWorkLogController;
@@ -99,7 +101,13 @@ Route::middleware('auth')->group(function () {
         Route::put('cennik/{price}', [PriceListController::class, 'update'])->name('price-list.update');
         Route::delete('cennik/{price}', [PriceListController::class, 'destroy'])->name('price-list.destroy');
 
-        // Koszty
+        // Koszty — Leasing (musi być przed koszty/{cost})
+        Route::get('koszty/leasing', [LeasingController::class, 'index'])->name('leasing.index');
+        Route::post('koszty/leasing', [LeasingController::class, 'store'])->name('leasing.store');
+        Route::put('koszty/leasing/{leasing}', [LeasingController::class, 'update'])->name('leasing.update');
+        Route::delete('koszty/leasing/{leasing}', [LeasingController::class, 'destroy'])->name('leasing.destroy');
+
+        // Koszty ogólne
         Route::get('koszty', [CostController::class, 'index'])->name('costs.index');
         Route::post('koszty', [CostController::class, 'store'])->name('costs.store');
         Route::put('koszty/{cost}', [CostController::class, 'update'])->name('costs.update');
@@ -138,6 +146,13 @@ Route::middleware('auth')->group(function () {
         Route::put('settings/cost-categories/{category}', [CostCategoryController::class, 'update'])->name('settings.cost-categories.update');
         Route::delete('settings/cost-categories/{category}', [CostCategoryController::class, 'destroy'])->name('settings.cost-categories.destroy');
         Route::patch('settings/cost-categories/{category}/toggle-active', [CostCategoryController::class, 'toggleActive'])->name('settings.cost-categories.toggle-active');
+
+        // Leasing Cost Types management
+        Route::get('settings/leasing-cost-types', [LeasingCostTypeController::class, 'index'])->name('settings.leasing-cost-types.index');
+        Route::post('settings/leasing-cost-types', [LeasingCostTypeController::class, 'store'])->name('settings.leasing-cost-types.store');
+        Route::put('settings/leasing-cost-types/{type}', [LeasingCostTypeController::class, 'update'])->name('settings.leasing-cost-types.update');
+        Route::delete('settings/leasing-cost-types/{type}', [LeasingCostTypeController::class, 'destroy'])->name('settings.leasing-cost-types.destroy');
+        Route::patch('settings/leasing-cost-types/{type}/toggle-active', [LeasingCostTypeController::class, 'toggleActive'])->name('settings.leasing-cost-types.toggle-active');
     });
 
     // ASEK Zestawy routes (read-only from external database)
