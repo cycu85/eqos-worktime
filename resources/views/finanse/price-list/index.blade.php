@@ -35,7 +35,7 @@
                             <thead>
                                 <tr>
                                     <th>Rodzaj zadania</th>
-                                    <th>Cena (zł)</th>
+                                    <th>Cena (€)</th>
                                     <th>Obowiązuje od</th>
                                     <th>Dodano</th>
                                     <th class="text-center">Akcje</th>
@@ -48,7 +48,7 @@
                                             {{ $price->taskType->name }}
                                         </td>
                                         <td>
-                                            {{ number_format($price->price, 2, ',', ' ') }} zł
+                                            {{ number_format($price->price, 2, ',', ' ') }} €
                                         </td>
                                         <td>
                                             {{ $price->valid_from->format('Y-m-d') }}
@@ -109,7 +109,7 @@
                     </div>
                     <div class="mb-4">
                         <label for="add_price" class="form-kt-label">
-                            Cena (zł)
+                            Cena (€)
                         </label>
                         <input
                             type="number"
@@ -169,7 +169,7 @@
                     </div>
                     <div class="mb-4">
                         <label for="edit_price" class="form-kt-label">
-                            Cena (zł)
+                            Cena (€)
                         </label>
                         <input
                             type="number"

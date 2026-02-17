@@ -93,7 +93,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Łączna wartość</p>
-                                <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ number_format($grandTotalValue, 2, ',', ' ') }} zł</p>
+                                <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ number_format($grandTotalValue, 2, ',', ' ') }} €</p>
                             </div>
                         </div>
                     </div>
@@ -111,8 +111,8 @@
                                     <th>Zespół</th>
                                     <th class="text-right">Ilość zadań</th>
                                     <th>Rodzaj zadania</th>
-                                    <th class="text-right">Wartość za szt. (zł)</th>
-                                    <th class="text-right">Suma (zł)</th>
+                                    <th class="text-right">Wartość za szt. (€)</th>
+                                    <th class="text-right">Suma (€)</th>
                                 </tr>
                             </thead>
                             <tbody>

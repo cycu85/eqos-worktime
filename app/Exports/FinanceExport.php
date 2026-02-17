@@ -77,8 +77,8 @@ class FinanceExport implements FromCollection, WithHeadings, WithMapping, WithSt
             'Zespół',
             'Rodzaj zadania',
             'Ilość zadań',
-            'Wartość za szt. (zł)',
-            'Suma (zł)',
+            'Wartość za szt. (€)',
+            'Suma (€)',
         ];
     }
 

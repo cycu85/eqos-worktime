@@ -60,7 +60,7 @@
                                 Lista kosztów
                             </h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                Łączna kwota: <strong>{{ number_format($totalAmount, 2, ',', ' ') }} zł</strong>
+                                Łączna kwota: <strong>{{ number_format($totalAmount, 2, ',', ' ') }} €</strong>
                             </p>
                         </div>
                         <button onclick="openAddModal()" class="btn-kt-primary">
@@ -92,7 +92,7 @@
                                             </span>
                                         </td>
                                         <td class="font-medium">
-                                            {{ number_format($cost->amount, 2, ',', ' ') }} zł
+                                            {{ number_format($cost->amount, 2, ',', ' ') }} €
                                         </td>
                                         <td>
                                             {{ $cost->cost_date->format('Y-m-d') }}
@@ -159,7 +159,7 @@
                         </select>
                     </div>
                     <div>
-                        <label for="add_amount" class="form-kt-label">Kwota (zł) <span class="text-red-500">*</span></label>
+                        <label for="add_amount" class="form-kt-label">Kwota (€) <span class="text-red-500">*</span></label>
                         <input type="number" name="amount" id="add_amount" step="0.01" min="0" class="form-kt-control" required>
                     </div>
                     <div>
@@ -208,7 +208,7 @@
                         </select>
                     </div>
                     <div>
-                        <label for="edit_amount" class="form-kt-label">Kwota (zł) <span class="text-red-500">*</span></label>
+                        <label for="edit_amount" class="form-kt-label">Kwota (€) <span class="text-red-500">*</span></label>
                         <input type="number" name="amount" id="edit_amount" step="0.01" min="0" class="form-kt-control" required>
                     </div>
                     <div>
