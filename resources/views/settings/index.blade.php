@@ -52,7 +52,7 @@
                             </div>
                         </a>
 
-                        <a href="{{ route('settings.delegations.index') }}" 
+                        <a href="{{ route('settings.delegations.index') }}"
                            class="flex items-center p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors duration-200 group">
                             <div class="flex-shrink-0">
                                 <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-900/50 transition-colors duration-200">
@@ -67,6 +67,26 @@
                                 </h4>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">
                                     Stawki diet i domyślne wartości
+                                </p>
+                            </div>
+                        </a>
+
+                        <a href="{{ route('settings.cost-categories.index') }}"
+                           class="flex items-center p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors duration-200 group">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors duration-200">
+                                    <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
+                                        <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-orange-600 dark:group-hover:text-orange-400">
+                                    Kategorie kosztów
+                                </h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    Zarządzaj kategoriami kosztów
                                 </p>
                             </div>
                         </a>

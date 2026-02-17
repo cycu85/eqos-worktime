@@ -44,6 +44,9 @@
                                     <a href="{{ route('finanse.price-list.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                         Cennik
                                     </a>
+                                    <a href="{{ route('finanse.costs.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        Koszty
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -169,6 +172,9 @@
                         </x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('finanse.price-list.index')" :active="request()->routeIs('finanse.price-list.*')">
                             Cennik
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('finanse.costs.index')" :active="request()->routeIs('finanse.costs.*')">
+                            Koszty
                         </x-responsive-nav-link>
                     </div>
                 </div>

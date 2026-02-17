@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\AbsenceController;
 use App\Http\Controllers\AsekZestawController;
+use App\Http\Controllers\CostController;
 use App\Http\Controllers\DelegationController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\PriceListController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\Settings\CostCategoryController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskTypeController;
 use App\Http\Controllers\TaskWorkLogController;
@@ -96,6 +98,12 @@ Route::middleware('auth')->group(function () {
         Route::post('cennik', [PriceListController::class, 'store'])->name('price-list.store');
         Route::put('cennik/{price}', [PriceListController::class, 'update'])->name('price-list.update');
         Route::delete('cennik/{price}', [PriceListController::class, 'destroy'])->name('price-list.destroy');
+
+        // Koszty
+        Route::get('koszty', [CostController::class, 'index'])->name('costs.index');
+        Route::post('koszty', [CostController::class, 'store'])->name('costs.store');
+        Route::put('koszty/{cost}', [CostController::class, 'update'])->name('costs.update');
+        Route::delete('koszty/{cost}', [CostController::class, 'destroy'])->name('costs.destroy');
     });
 
     // Admin only routes
@@ -123,6 +131,13 @@ Route::middleware('auth')->group(function () {
         Route::get('settings/delegations', [\App\Http\Controllers\Settings\DelegationSettingsController::class, 'index'])->name('settings.delegations.index');
         Route::put('settings/delegations', [\App\Http\Controllers\Settings\DelegationSettingsController::class, 'update'])->name('settings.delegations.update');
         Route::put('settings/delegations/defaults', [\App\Http\Controllers\Settings\DelegationSettingsController::class, 'updateDefaults'])->name('settings.delegations.update-defaults');
+
+        // Cost Categories management
+        Route::get('settings/cost-categories', [CostCategoryController::class, 'index'])->name('settings.cost-categories.index');
+        Route::post('settings/cost-categories', [CostCategoryController::class, 'store'])->name('settings.cost-categories.store');
+        Route::put('settings/cost-categories/{category}', [CostCategoryController::class, 'update'])->name('settings.cost-categories.update');
+        Route::delete('settings/cost-categories/{category}', [CostCategoryController::class, 'destroy'])->name('settings.cost-categories.destroy');
+        Route::patch('settings/cost-categories/{category}/toggle-active', [CostCategoryController::class, 'toggleActive'])->name('settings.cost-categories.toggle-active');
     });
 
     // ASEK Zestawy routes (read-only from external database)
