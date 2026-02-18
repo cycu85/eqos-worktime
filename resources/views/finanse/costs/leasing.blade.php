@@ -36,12 +36,12 @@
                 <div class="kt-card-body">
                     <form method="GET" action="{{ route('finanse.leasing.index') }}" class="flex flex-wrap gap-4 items-end">
                         <div>
-                            <label for="date_from" class="form-kt-label">Data płatności od</label>
+                            <label for="date_from" class="form-kt-label">Data od</label>
                             <input type="date" name="date_from" id="date_from" class="form-kt-control"
                                    value="{{ request('date_from') }}">
                         </div>
                         <div>
-                            <label for="date_to" class="form-kt-label">Data płatności do</label>
+                            <label for="date_to" class="form-kt-label">Data do</label>
                             <input type="date" name="date_to" id="date_to" class="form-kt-control"
                                    value="{{ request('date_to') }}">
                         </div>
@@ -80,14 +80,14 @@
                     <div class="flex justify-between items-center mb-6">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                Lista leasingów
+                                Lista kosztów leasingowych
                             </h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                Łączna kwota rat: <strong>{{ number_format($totalAmount, 2, ',', ' ') }} €</strong>
+                                Łączna kwota: <strong>{{ number_format($totalAmount, 2, ',', ' ') }} €</strong>
                             </p>
                         </div>
                         <button onclick="openAddModal()" class="btn-kt-primary">
-                            Dodaj leasing
+                            Dodaj koszt
                         </button>
                     </div>
 
@@ -95,13 +95,12 @@
                         <table class="table-kt">
                             <thead>
                                 <tr>
-                                    <th>Pojazd</th>
-                                    <th>Leasingodawca</th>
-                                    <th>Nr umowy</th>
+                                    <th>Nazwa</th>
                                     <th>Typ kosztu</th>
-                                    <th>Kwota raty</th>
-                                    <th>Data płatności</th>
-                                    <th>Okres leasingu</th>
+                                    <th>Pojazd</th>
+                                    <th>Kwota</th>
+                                    <th>Data</th>
+                                    <th>Opis</th>
                                     <th class="text-center">Akcje</th>
                                 </tr>
                             </thead>
@@ -109,31 +108,33 @@
                                 @forelse($leasings as $leasing)
                                     <tr>
                                         <td class="font-medium text-gray-900 dark:text-gray-100">
-                                            {{ $leasing->vehicle->name }}<br>
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">{{ $leasing->vehicle->registration }}</span>
+                                            {{ $leasing->name }}
                                         </td>
-                                        <td>{{ $leasing->lessor }}</td>
-                                        <td class="font-mono text-sm">{{ $leasing->contract_number }}</td>
                                         <td>
                                             <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                                                 {{ $leasing->leasingCostType->name }}
                                             </span>
                                         </td>
+                                        <td class="text-gray-600 dark:text-gray-400">
+                                            {{ $leasing->vehicle ? $leasing->vehicle->name . ' (' . $leasing->vehicle->registration . ')' : '-' }}
+                                        </td>
                                         <td class="font-medium">
                                             {{ number_format($leasing->amount, 2, ',', ' ') }} €
                                         </td>
-                                        <td>{{ $leasing->payment_date->format('Y-m-d') }}</td>
-                                        <td class="text-sm text-gray-600 dark:text-gray-400">
-                                            {{ $leasing->date_from->format('Y-m-d') }} — {{ $leasing->date_to->format('Y-m-d') }}
+                                        <td>
+                                            {{ $leasing->cost_date->format('Y-m-d') }}
+                                        </td>
+                                        <td class="text-gray-500 dark:text-gray-400">
+                                            {{ $leasing->description ?: '-' }}
                                         </td>
                                         <td class="text-center">
                                             <button
-                                                onclick="editLeasing({{ $leasing->id }}, {{ $leasing->vehicle_id }}, {{ $leasing->leasing_cost_type_id }}, '{{ addslashes($leasing->lessor) }}', '{{ addslashes($leasing->contract_number) }}', '{{ $leasing->date_from->format('Y-m-d') }}', '{{ $leasing->date_to->format('Y-m-d') }}', {{ $leasing->amount }}, '{{ $leasing->payment_date->format('Y-m-d') }}', '{{ addslashes($leasing->description ?? '') }}')"
+                                                onclick="editLeasing({{ $leasing->id }}, '{{ addslashes($leasing->name) }}', {{ $leasing->leasing_cost_type_id }}, {{ $leasing->vehicle_id ?? 'null' }}, {{ $leasing->amount }}, '{{ $leasing->cost_date->format('Y-m-d') }}', '{{ addslashes($leasing->description ?? '') }}')"
                                                 class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
                                             >
                                                 Edytuj
                                             </button>
-                                            <form action="{{ route('finanse.leasing.destroy', $leasing) }}" method="POST" class="inline-block" onsubmit="return confirm('Czy na pewno chcesz usunąć ten rekord?')">
+                                            <form action="{{ route('finanse.leasing.destroy', $leasing) }}" method="POST" class="inline-block" onsubmit="return confirm('Czy na pewno chcesz usunąć ten koszt?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
@@ -144,8 +145,8 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center text-gray-500 dark:text-gray-400 py-4">
-                                            Brak rekordów leasingu do wyświetlenia
+                                        <td colspan="7" class="text-center text-gray-500 dark:text-gray-400 py-4">
+                                            Brak kosztów leasingowych do wyświetlenia
                                         </td>
                                     </tr>
                                 @endforelse
@@ -157,12 +158,12 @@
         </div>
     </div>
 
-    <!-- Modal dodawania leasingu -->
+    <!-- Modal dodawania kosztu -->
     <div id="addModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" onclick="if(event.target === this) closeAddModal()">
-        <div class="relative top-10 mx-auto p-5 border w-full max-w-xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <div class="relative top-10 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div class="mt-3">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Dodaj leasing</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Dodaj koszt leasingowy</h3>
                     <button type="button" onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -171,57 +172,39 @@
                 </div>
                 <form method="POST" action="{{ route('finanse.leasing.store') }}" class="space-y-4">
                     @csrf
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="add_vehicle_id" class="form-kt-label">Pojazd <span class="text-red-500">*</span></label>
-                            <select name="vehicle_id" id="add_vehicle_id" class="form-kt-select" required>
-                                <option value="">Wybierz pojazd</option>
-                                @foreach($vehicles as $vehicle)
-                                    <option value="{{ $vehicle->id }}">{{ $vehicle->name }} ({{ $vehicle->registration }})</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label for="add_leasing_cost_type_id" class="form-kt-label">Typ kosztu <span class="text-red-500">*</span></label>
-                            <select name="leasing_cost_type_id" id="add_leasing_cost_type_id" class="form-kt-select" required>
-                                <option value="">Wybierz typ</option>
-                                @foreach($costTypes as $type)
-                                    <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div>
+                        <label for="add_name" class="form-kt-label">Nazwa <span class="text-red-500">*</span></label>
+                        <input type="text" name="name" id="add_name" class="form-kt-control" required maxlength="255">
                     </div>
                     <div>
-                        <label for="add_lessor" class="form-kt-label">Leasingodawca <span class="text-red-500">*</span></label>
-                        <input type="text" name="lessor" id="add_lessor" class="form-kt-control" required maxlength="255">
+                        <label for="add_leasing_cost_type_id" class="form-kt-label">Typ kosztu <span class="text-red-500">*</span></label>
+                        <select name="leasing_cost_type_id" id="add_leasing_cost_type_id" class="form-kt-select" required>
+                            <option value="">Wybierz typ</option>
+                            @foreach($costTypes as $type)
+                                <option value="{{ $type->id }}">{{ $type->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
-                        <label for="add_contract_number" class="form-kt-label">Numer umowy <span class="text-red-500">*</span></label>
-                        <input type="text" name="contract_number" id="add_contract_number" class="form-kt-control" required maxlength="255">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="add_date_from" class="form-kt-label">Okres od <span class="text-red-500">*</span></label>
-                            <input type="date" name="date_from" id="add_date_from" class="form-kt-control" required>
-                        </div>
-                        <div>
-                            <label for="add_date_to" class="form-kt-label">Okres do <span class="text-red-500">*</span></label>
-                            <input type="date" name="date_to" id="add_date_to" class="form-kt-control" required>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="add_amount" class="form-kt-label">Kwota raty (€) <span class="text-red-500">*</span></label>
-                            <input type="number" name="amount" id="add_amount" step="0.01" min="0" class="form-kt-control" required>
-                        </div>
-                        <div>
-                            <label for="add_payment_date" class="form-kt-label">Data płatności <span class="text-red-500">*</span></label>
-                            <input type="date" name="payment_date" id="add_payment_date" class="form-kt-control" required>
-                        </div>
+                        <label for="add_vehicle_id" class="form-kt-label">Pojazd</label>
+                        <select name="vehicle_id" id="add_vehicle_id" class="form-kt-select">
+                            <option value="">Brak</option>
+                            @foreach($vehicles as $vehicle)
+                                <option value="{{ $vehicle->id }}">{{ $vehicle->name }} ({{ $vehicle->registration }})</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
-                        <label for="add_description" class="form-kt-label">Uwagi</label>
-                        <textarea name="description" id="add_description" rows="3" class="form-kt-control" placeholder="Opcjonalne uwagi"></textarea>
+                        <label for="add_amount" class="form-kt-label">Kwota (€) <span class="text-red-500">*</span></label>
+                        <input type="number" name="amount" id="add_amount" step="0.01" min="0" class="form-kt-control" required>
+                    </div>
+                    <div>
+                        <label for="add_cost_date" class="form-kt-label">Data <span class="text-red-500">*</span></label>
+                        <input type="date" name="cost_date" id="add_cost_date" class="form-kt-control" required>
+                    </div>
+                    <div>
+                        <label for="add_description" class="form-kt-label">Opis</label>
+                        <textarea name="description" id="add_description" rows="3" class="form-kt-control" placeholder="Opcjonalny opis kosztu"></textarea>
                     </div>
                     <div class="flex justify-end gap-2 pt-2">
                         <button type="button" onclick="closeAddModal()" class="btn-kt-secondary">Anuluj</button>
@@ -232,12 +215,12 @@
         </div>
     </div>
 
-    <!-- Modal edycji leasingu -->
+    <!-- Modal edycji kosztu -->
     <div id="editModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" onclick="if(event.target === this) closeEditModal()">
-        <div class="relative top-10 mx-auto p-5 border w-full max-w-xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <div class="relative top-10 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white dark:bg-gray-800">
             <div class="mt-3">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Edytuj leasing</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Edytuj koszt leasingowy</h3>
                     <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -247,57 +230,39 @@
                 <form method="POST" id="editForm" class="space-y-4">
                     @csrf
                     @method('PUT')
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="edit_vehicle_id" class="form-kt-label">Pojazd <span class="text-red-500">*</span></label>
-                            <select name="vehicle_id" id="edit_vehicle_id" class="form-kt-select" required>
-                                <option value="">Wybierz pojazd</option>
-                                @foreach($vehicles as $vehicle)
-                                    <option value="{{ $vehicle->id }}">{{ $vehicle->name }} ({{ $vehicle->registration }})</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label for="edit_leasing_cost_type_id" class="form-kt-label">Typ kosztu <span class="text-red-500">*</span></label>
-                            <select name="leasing_cost_type_id" id="edit_leasing_cost_type_id" class="form-kt-select" required>
-                                <option value="">Wybierz typ</option>
-                                @foreach($costTypes as $type)
-                                    <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div>
+                        <label for="edit_name" class="form-kt-label">Nazwa <span class="text-red-500">*</span></label>
+                        <input type="text" name="name" id="edit_name" class="form-kt-control" required maxlength="255">
                     </div>
                     <div>
-                        <label for="edit_lessor" class="form-kt-label">Leasingodawca <span class="text-red-500">*</span></label>
-                        <input type="text" name="lessor" id="edit_lessor" class="form-kt-control" required maxlength="255">
+                        <label for="edit_leasing_cost_type_id" class="form-kt-label">Typ kosztu <span class="text-red-500">*</span></label>
+                        <select name="leasing_cost_type_id" id="edit_leasing_cost_type_id" class="form-kt-select" required>
+                            <option value="">Wybierz typ</option>
+                            @foreach($costTypes as $type)
+                                <option value="{{ $type->id }}">{{ $type->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
-                        <label for="edit_contract_number" class="form-kt-label">Numer umowy <span class="text-red-500">*</span></label>
-                        <input type="text" name="contract_number" id="edit_contract_number" class="form-kt-control" required maxlength="255">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="edit_date_from" class="form-kt-label">Okres od <span class="text-red-500">*</span></label>
-                            <input type="date" name="date_from" id="edit_date_from" class="form-kt-control" required>
-                        </div>
-                        <div>
-                            <label for="edit_date_to" class="form-kt-label">Okres do <span class="text-red-500">*</span></label>
-                            <input type="date" name="date_to" id="edit_date_to" class="form-kt-control" required>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="edit_amount" class="form-kt-label">Kwota raty (€) <span class="text-red-500">*</span></label>
-                            <input type="number" name="amount" id="edit_amount" step="0.01" min="0" class="form-kt-control" required>
-                        </div>
-                        <div>
-                            <label for="edit_payment_date" class="form-kt-label">Data płatności <span class="text-red-500">*</span></label>
-                            <input type="date" name="payment_date" id="edit_payment_date" class="form-kt-control" required>
-                        </div>
+                        <label for="edit_vehicle_id" class="form-kt-label">Pojazd</label>
+                        <select name="vehicle_id" id="edit_vehicle_id" class="form-kt-select">
+                            <option value="">Brak</option>
+                            @foreach($vehicles as $vehicle)
+                                <option value="{{ $vehicle->id }}">{{ $vehicle->name }} ({{ $vehicle->registration }})</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
-                        <label for="edit_description" class="form-kt-label">Uwagi</label>
-                        <textarea name="description" id="edit_description" rows="3" class="form-kt-control" placeholder="Opcjonalne uwagi"></textarea>
+                        <label for="edit_amount" class="form-kt-label">Kwota (€) <span class="text-red-500">*</span></label>
+                        <input type="number" name="amount" id="edit_amount" step="0.01" min="0" class="form-kt-control" required>
+                    </div>
+                    <div>
+                        <label for="edit_cost_date" class="form-kt-label">Data <span class="text-red-500">*</span></label>
+                        <input type="date" name="cost_date" id="edit_cost_date" class="form-kt-control" required>
+                    </div>
+                    <div>
+                        <label for="edit_description" class="form-kt-label">Opis</label>
+                        <textarea name="description" id="edit_description" rows="3" class="form-kt-control" placeholder="Opcjonalny opis kosztu"></textarea>
                     </div>
                     <div class="flex justify-end gap-2 pt-2">
                         <button type="button" onclick="closeEditModal()" class="btn-kt-secondary">Anuluj</button>
@@ -310,25 +275,28 @@
 
     <script>
         function openAddModal() {
-            document.getElementById('add_payment_date').value = '{{ date('Y-m-d') }}';
+            document.getElementById('add_cost_date').value = '{{ date('Y-m-d') }}';
             document.getElementById('addModal').classList.remove('hidden');
         }
 
         function closeAddModal() {
             document.getElementById('addModal').classList.add('hidden');
+            document.getElementById('add_name').value = '';
+            document.getElementById('add_leasing_cost_type_id').value = '';
+            document.getElementById('add_vehicle_id').value = '';
+            document.getElementById('add_amount').value = '';
+            document.getElementById('add_cost_date').value = '';
+            document.getElementById('add_description').value = '';
         }
 
-        function editLeasing(id, vehicleId, costTypeId, lessor, contractNumber, dateFrom, dateTo, amount, paymentDate, description) {
+        function editLeasing(id, name, costTypeId, vehicleId, amount, costDate, description) {
             const form = document.getElementById('editForm');
             form.action = `/finanse/koszty/leasing/${id}`;
-            document.getElementById('edit_vehicle_id').value = vehicleId;
+            document.getElementById('edit_name').value = name;
             document.getElementById('edit_leasing_cost_type_id').value = costTypeId;
-            document.getElementById('edit_lessor').value = lessor;
-            document.getElementById('edit_contract_number').value = contractNumber;
-            document.getElementById('edit_date_from').value = dateFrom;
-            document.getElementById('edit_date_to').value = dateTo;
+            document.getElementById('edit_vehicle_id').value = vehicleId ?? '';
             document.getElementById('edit_amount').value = amount;
-            document.getElementById('edit_payment_date').value = paymentDate;
+            document.getElementById('edit_cost_date').value = costDate;
             document.getElementById('edit_description').value = description;
             document.getElementById('editModal').classList.remove('hidden');
         }

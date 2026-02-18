@@ -11,14 +11,14 @@ class LeasingController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Leasing::with(['vehicle', 'leasingCostType'])->orderBy('payment_date', 'desc');
+        $query = Leasing::with(['vehicle', 'leasingCostType'])->orderBy('cost_date', 'desc');
 
         if ($request->filled('date_from')) {
-            $query->where('payment_date', '>=', $request->date_from);
+            $query->where('cost_date', '>=', $request->date_from);
         }
 
         if ($request->filled('date_to')) {
-            $query->where('payment_date', '<=', $request->date_to);
+            $query->where('cost_date', '<=', $request->date_to);
         }
 
         if ($request->filled('leasing_cost_type_id')) {
@@ -40,47 +40,35 @@ class LeasingController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'vehicle_id' => 'required|exists:vehicles,id',
+            'name' => 'required|string|max:255',
             'leasing_cost_type_id' => 'required|exists:leasing_cost_types,id',
-            'lessor' => 'required|string|max:255',
-            'contract_number' => 'required|string|max:255',
-            'date_from' => 'required|date',
-            'date_to' => 'required|date|after_or_equal:date_from',
+            'vehicle_id' => 'nullable|exists:vehicles,id',
             'amount' => 'required|numeric|min:0',
-            'payment_date' => 'required|date',
+            'cost_date' => 'required|date',
             'description' => 'nullable|string',
         ]);
 
-        Leasing::create($request->only([
-            'vehicle_id', 'leasing_cost_type_id', 'lessor', 'contract_number',
-            'date_from', 'date_to', 'amount', 'payment_date', 'description',
-        ]));
+        Leasing::create($request->only(['name', 'leasing_cost_type_id', 'vehicle_id', 'amount', 'cost_date', 'description']));
 
         return redirect()->route('finanse.leasing.index')
-            ->with('success', 'Rekord leasingu został dodany pomyślnie.');
+            ->with('success', 'Koszt leasingowy został dodany pomyślnie.');
     }
 
     public function update(Request $request, Leasing $leasing)
     {
         $request->validate([
-            'vehicle_id' => 'required|exists:vehicles,id',
+            'name' => 'required|string|max:255',
             'leasing_cost_type_id' => 'required|exists:leasing_cost_types,id',
-            'lessor' => 'required|string|max:255',
-            'contract_number' => 'required|string|max:255',
-            'date_from' => 'required|date',
-            'date_to' => 'required|date|after_or_equal:date_from',
+            'vehicle_id' => 'nullable|exists:vehicles,id',
             'amount' => 'required|numeric|min:0',
-            'payment_date' => 'required|date',
+            'cost_date' => 'required|date',
             'description' => 'nullable|string',
         ]);
 
-        $leasing->update($request->only([
-            'vehicle_id', 'leasing_cost_type_id', 'lessor', 'contract_number',
-            'date_from', 'date_to', 'amount', 'payment_date', 'description',
-        ]));
+        $leasing->update($request->only(['name', 'leasing_cost_type_id', 'vehicle_id', 'amount', 'cost_date', 'description']));
 
         return redirect()->route('finanse.leasing.index')
-            ->with('success', 'Rekord leasingu został zaktualizowany pomyślnie.');
+            ->with('success', 'Koszt leasingowy został zaktualizowany pomyślnie.');
     }
 
     public function destroy(Leasing $leasing)

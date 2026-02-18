@@ -10,22 +10,17 @@ class Leasing extends Model
     use HasFactory;
 
     protected $fillable = [
+        'name',
         'vehicle_id',
         'leasing_cost_type_id',
-        'lessor',
-        'contract_number',
-        'date_from',
-        'date_to',
         'amount',
-        'payment_date',
+        'cost_date',
         'description',
     ];
 
     protected $casts = [
         'amount' => 'float',
-        'date_from' => 'date',
-        'date_to' => 'date',
-        'payment_date' => 'date',
+        'cost_date' => 'date',
     ];
 
     public function vehicle()
