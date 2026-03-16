@@ -114,8 +114,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('koszty/{cost}', [CostController::class, 'destroy'])->name('costs.destroy');
     });
 
-    // Admin only routes
-    Route::middleware('role:admin')->group(function () {
+    // Admin and kierownik routes
+    Route::middleware('role:admin,kierownik')->group(function () {
         Route::resource('vehicles', VehicleController::class);
         Route::resource('users', UserController::class);
         Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');

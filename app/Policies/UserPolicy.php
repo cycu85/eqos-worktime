@@ -12,7 +12,7 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isKierownik();
     }
 
     /**
@@ -20,7 +20,7 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isKierownik();
     }
 
     /**
@@ -28,7 +28,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isKierownik();
     }
 
     /**
@@ -36,7 +36,7 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isKierownik();
     }
 
     /**
@@ -44,8 +44,8 @@ class UserPolicy
      */
     public function delete(User $user, User $model): bool
     {
-        // Admin może usuwać innych użytkowników, ale nie siebie
-        return $user->isAdmin() && $user->id !== $model->id;
+        // Admin i kierownik mogą usuwać innych użytkowników, ale nie siebie
+        return ($user->isAdmin() || $user->isKierownik()) && $user->id !== $model->id;
     }
 
     /**
@@ -53,7 +53,7 @@ class UserPolicy
      */
     public function restore(User $user, User $model): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isKierownik();
     }
 
     /**
@@ -61,6 +61,6 @@ class UserPolicy
      */
     public function forceDelete(User $user, User $model): bool
     {
-        return $user->isAdmin() && $user->id !== $model->id;
+        return ($user->isAdmin() || $user->isKierownik()) && $user->id !== $model->id;
     }
 }

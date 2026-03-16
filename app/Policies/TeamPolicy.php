@@ -13,7 +13,7 @@ class TeamPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isKierownik();
     }
 
     /**
@@ -21,7 +21,7 @@ class TeamPolicy
      */
     public function view(User $user, Team $team): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isKierownik();
     }
 
     /**
@@ -29,7 +29,7 @@ class TeamPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isKierownik();
     }
 
     /**
@@ -37,7 +37,7 @@ class TeamPolicy
      */
     public function update(User $user, Team $team): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isKierownik();
     }
 
     /**
@@ -45,7 +45,7 @@ class TeamPolicy
      */
     public function delete(User $user, Team $team): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isKierownik();
     }
 
     /**
@@ -53,7 +53,7 @@ class TeamPolicy
      */
     public function restore(User $user, Team $team): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isKierownik();
     }
 
     /**
@@ -61,6 +61,6 @@ class TeamPolicy
      */
     public function forceDelete(User $user, Team $team): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isKierownik();
     }
 }
