@@ -38,11 +38,11 @@ class TaskController extends Controller
         // Build base query
         if ($user->isAdmin() || $user->isKierownik()) {
             // Admin and Kierownik see all tasks
-            $query = Task::with(['vehicles', 'leader', 'team', 'taskType', 'attachments']);
+            $query = Task::with(['vehicles', 'leader', 'team', 'taskTypes', 'attachments']);
         } elseif ($user->isLider()) {
             // Lider sees tasks where they are leader OR part of the team
             $escapedName = str_replace(['%', '_'], ['\\%', '\\_'], $user->name);
-            $query = Task::with(['vehicles', 'leader', 'team', 'taskType', 'attachments'])
+            $query = Task::with(['vehicles', 'leader', 'team', 'taskTypes', 'attachments'])
                 ->where(function ($q) use ($user, $escapedName) {
                     $q->where('leader_id', $user->id)
                       ->orWhere(function($subQuery) use ($escapedName) {
@@ -54,7 +54,7 @@ class TaskController extends Controller
                 });
         } else {
             // Pracownik sees only tasks where they are part of the team
-            $query = $user->teamTasks()->with(['vehicles', 'leader', 'team', 'taskType', 'attachments']);
+            $query = $user->teamTasks()->with(['vehicles', 'leader', 'team', 'taskTypes', 'attachments']);
         }
         
         // Apply search
@@ -211,7 +211,8 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'task_type_id' => 'nullable|exists:task_types,id',
+            'task_type_ids' => 'nullable|array',
+            'task_type_ids.*' => 'exists:task_types,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'vehicles' => 'required|array|min:1',
@@ -232,12 +233,14 @@ class TaskController extends Controller
             // Jeśli nie wybrano teamu, aktualny użytkownik staje się liderem
             $validated['leader_id'] = Auth::id();
         }
-        
+
         $vehicleIds = $validated['vehicles'];
-        unset($validated['vehicles'], $validated['team_id']);
+        $taskTypeIds = $validated['task_type_ids'] ?? [];
+        unset($validated['vehicles'], $validated['team_id'], $validated['task_type_ids']);
 
         $task = Task::create($validated);
         $task->vehicles()->attach($vehicleIds);
+        $task->taskTypes()->sync($taskTypeIds);
 
         // Wygeneruj work_logs dla każdego dnia
         $task->generateWorkLogs();
@@ -256,8 +259,8 @@ class TaskController extends Controller
     {
         $this->authorize('update', $task);
         
-        $task->load(['workLogs', 'vehicles', 'leader', 'team']);
-        
+        $task->load(['workLogs.taskType', 'vehicles', 'leader', 'team', 'taskTypes']);
+
         return view('tasks.work-logs', compact('task'));
     }
 
@@ -271,7 +274,7 @@ class TaskController extends Controller
     {
         $this->authorize('view', $task);
         
-        $task->load(['vehicles', 'leader', 'team', 'taskType']);
+        $task->load(['vehicles', 'leader', 'team', 'taskTypes']);
         
         return view('tasks.show', compact('task'));
     }
@@ -331,7 +334,8 @@ class TaskController extends Controller
         $validationRules = [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'task_type_id' => 'nullable|exists:task_types,id',
+            'task_type_ids' => 'nullable|array',
+            'task_type_ids.*' => 'exists:task_types,id',
             'vehicles' => 'required|array|min:1',
             'vehicles.*' => 'exists:vehicles,id',
             'team_id' => 'nullable|exists:teams,id',
@@ -366,8 +370,9 @@ class TaskController extends Controller
         // Jeśli team_id jest null lub pusty, zachowaj obecnego lidera (nie zmieniamy leader_id)
 
         $vehicleIds = $validated['vehicles'];
-        unset($validated['vehicles']);
-        
+        $taskTypeIds = $validated['task_type_ids'] ?? [];
+        unset($validated['vehicles'], $validated['task_type_ids']);
+
         // Handle attachment uploads - używamy nowej tabeli task_attachments
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
@@ -402,6 +407,7 @@ class TaskController extends Controller
 
         $task->update($validated);
         $task->vehicles()->sync($vehicleIds);
+        $task->taskTypes()->sync($taskTypeIds);
 
         // Regenerate work logs if dates changed
         if ($datesChanged) {

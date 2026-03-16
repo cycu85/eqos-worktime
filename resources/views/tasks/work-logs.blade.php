@@ -125,7 +125,7 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- Completed Tasks Count and Notes -->
+                                    <!-- Completed Tasks Count, Task Type and Notes -->
                                     <div class="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
                                         <div>
                                             <label class="form-kt-label text-xs">Ilość wykonanych zadań</label>
@@ -137,9 +137,20 @@
                                                 @endfor
                                             </select>
                                         </div>
-                                        <div class="sm:col-span-3">
+                                        <div>
+                                            <label class="form-kt-label text-xs">Rodzaj zadania</label>
+                                            <select name="logs[{{ $log->id }}][task_type_id]" class="form-kt-select text-sm">
+                                                <option value="">-- brak --</option>
+                                                @foreach($task->taskTypes as $type)
+                                                    <option value="{{ $type->id }}" {{ $log->task_type_id == $type->id ? 'selected' : '' }}>
+                                                        {{ $type->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="sm:col-span-2">
                                             <label class="form-kt-label text-xs">Notatki</label>
-                                            <textarea name="logs[{{ $log->id }}][notes]" 
+                                            <textarea name="logs[{{ $log->id }}][notes]"
                                                       rows="2"
                                                       class="form-kt-control text-sm"
                                                       placeholder="Opcjonalne notatki do tego dnia...">{{ $log->notes }}</textarea>

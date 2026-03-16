@@ -28,11 +28,11 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         
         // Build base query - same as in TaskController, now with workLogs
         if ($user->isAdmin() || $user->isKierownik()) {
-            $query = Task::with(['vehicles', 'leader', 'team', 'taskType', 'workLogs']);
+            $query = Task::with(['vehicles', 'leader', 'team', 'taskTypes', 'workLogs']);
         } elseif ($user->isLider()) {
-            $query = Task::with(['vehicles', 'leader', 'team', 'taskType', 'workLogs'])->forUser($user->id);
+            $query = Task::with(['vehicles', 'leader', 'team', 'taskTypes', 'workLogs'])->forUser($user->id);
         } else {
-            $query = $user->teamTasks()->with(['vehicles', 'leader', 'team', 'taskType', 'workLogs']);
+            $query = $user->teamTasks()->with(['vehicles', 'leader', 'team', 'taskTypes', 'workLogs']);
         }
         
         // Apply same filters as in TaskController
@@ -124,7 +124,7 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             $task->id,
             $task->title,
             $task->description,
-            $task->taskType ? $task->taskType->name : '',
+            $task->taskTypes->isNotEmpty() ? $task->taskTypes->pluck('name')->join(', ') : '',
             $task->vehicles->count() > 0 ? $task->vehicles->pluck('name')->join(', ') : '',
             $task->vehicles->count() > 0 ? $task->vehicles->pluck('registration')->join(', ') : '',
             $task->leader ? $task->leader->name : '',

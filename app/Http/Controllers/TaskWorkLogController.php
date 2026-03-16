@@ -19,6 +19,7 @@ class TaskWorkLogController extends Controller
             'logs.*.status' => 'required|in:planned,in_progress,completed,cancelled',
             'logs.*.notes' => 'nullable|string',
             'logs.*.completed_tasks_count' => 'nullable|integer|min:0|max:99',
+            'logs.*.task_type_id' => 'nullable|exists:task_types,id',
         ]);
 
         foreach ($validated['logs'] as $logId => $logData) {

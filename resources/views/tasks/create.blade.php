@@ -59,25 +59,31 @@
                             @enderror
                         </div>
 
-                        <!-- Task Type -->
+                        <!-- Task Types (multi-select) -->
                         <div class="mb-6">
-                            <label for="task_type_id" class="form-kt-label">
-                                Rodzaj zadania
+                            <label class="form-kt-label">
+                                Rodzaje zadania
                             </label>
-                            <select id="task_type_id" 
-                                    name="task_type_id" 
-                                    class="form-kt-select @error('task_type_id') border-red-500 @enderror">
-                                <option value="">-- Wybierz rodzaj zadania --</option>
-                                @foreach($taskTypes as $taskType)
-                                    <option value="{{ $taskType->id }}" {{ old('task_type_id') == $taskType->id ? 'selected' : '' }}>
-                                        {{ $taskType->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            @if($taskTypes->isNotEmpty())
+                                <div class="border border-gray-300 dark:border-gray-700 rounded-lg p-3 max-h-48 overflow-y-auto bg-white dark:bg-gray-900">
+                                    @foreach($taskTypes as $taskType)
+                                        <label class="flex items-center space-x-3 py-1.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded px-2">
+                                            <input type="checkbox"
+                                                   name="task_type_ids[]"
+                                                   value="{{ $taskType->id }}"
+                                                   {{ in_array($taskType->id, old('task_type_ids', [])) ? 'checked' : '' }}
+                                                   class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500">
+                                            <span class="text-sm text-gray-700 dark:text-gray-300">{{ $taskType->name }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-500 dark:text-gray-400 italic">Brak zdefiniowanych rodzajów zadań.</p>
+                            @endif
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Określ rodzaj wykonywanego zadania (opcjonalnie).
+                                Można wybrać kilka rodzajów (opcjonalnie).
                             </p>
-                            @error('task_type_id')
+                            @error('task_type_ids')
                                 <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
                         </div>

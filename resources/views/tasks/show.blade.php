@@ -106,18 +106,15 @@
                                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $task->leader->name }}</dd>
                             </div>
 
-                            @if($task->taskType)
+                            @if($task->taskTypes->isNotEmpty())
                                 <div>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Rodzaj zadania</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                            {{ $task->taskType->name }}
-                                        </span>
-                                        @if($task->taskType->description)
-                                            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                                {{ $task->taskType->description }}
-                                            </div>
-                                        @endif
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Rodzaje zadania</dt>
+                                    <dd class="mt-1 flex flex-wrap gap-1">
+                                        @foreach($task->taskTypes as $type)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                {{ $type->name }}
+                                            </span>
+                                        @endforeach
                                     </dd>
                                 </div>
                             @endif

@@ -364,10 +364,14 @@
                                             </a>
                                         </td>
                                         <td>
-                                            @if($task->taskType)
-                                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
-                                                    {{ $task->taskType->name }}
-                                                </span>
+                                            @if($task->taskTypes->isNotEmpty())
+                                                <div class="flex flex-wrap gap-1">
+                                                    @foreach($task->taskTypes as $type)
+                                                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                                                            {{ $type->name }}
+                                                        </span>
+                                                    @endforeach
+                                                </div>
                                             @else
                                                 <span class="text-gray-400 dark:text-gray-500">-</span>
                                             @endif

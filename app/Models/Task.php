@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property string $title
  * @property string|null $description
- * @property int|null $task_type_id
  * @property \Carbon\Carbon $start_date
  * @property \Carbon\Carbon $end_date
  * @property int $leader_id
@@ -29,7 +28,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<Vehicle> $vehicles
  * @property-read User $leader
  * @property-read Team|null $team
- * @property-read TaskType|null $taskType
+ * @property-read \Illuminate\Database\Eloquent\Collection<TaskType> $taskTypes
  * @property-read \Illuminate\Database\Eloquent\Collection<TaskWorkLog> $workLogs
  * @property-read \Illuminate\Database\Eloquent\Collection<TaskAttachment> $attachments
  * @property-read float $duration_hours
@@ -41,7 +40,6 @@ class Task extends Model
     protected $fillable = [
         'title',
         'description',
-        'task_type_id',
         'start_date',
         'end_date',
         'leader_id',
@@ -87,13 +85,13 @@ class Task extends Model
     }
 
     /**
-     * Powiązanie z typem zadania
+     * Powiązanie z typami zadania (wiele do wielu)
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<TaskType>
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<TaskType>
      */
-    public function taskType()
+    public function taskTypes()
     {
-        return $this->belongsTo(TaskType::class);
+        return $this->belongsToMany(TaskType::class, 'task_task_type');
     }
 
     /**

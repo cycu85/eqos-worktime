@@ -21,7 +21,7 @@ class TaskType extends Model
 
     public function tasks()
     {
-        return $this->hasMany(Task::class);
+        return $this->belongsToMany(Task::class, 'task_task_type');
     }
 
     public function prices()

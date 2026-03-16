@@ -12,6 +12,7 @@ class TaskWorkLog extends Model
 
     protected $fillable = [
         'task_id',
+        'task_type_id',
         'work_date',
         'start_time',
         'end_time',
@@ -31,6 +32,11 @@ class TaskWorkLog extends Model
     public function task()
     {
         return $this->belongsTo(Task::class);
+    }
+
+    public function taskType()
+    {
+        return $this->belongsTo(TaskType::class);
     }
 
     public function getDurationInMinutes()
