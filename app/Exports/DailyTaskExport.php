@@ -29,9 +29,9 @@ class DailyTaskExport implements FromCollection, WithHeadings, WithMapping, With
         
         // Build base query - same as in TaskController
         if ($user->isAdmin() || $user->isKierownik()) {
-            $query = Task::with(['vehicles', 'leader', 'team', 'taskTypes', 'workLogs']);
+            $query = Task::with(['vehicles', 'leader', 'team', 'taskTypes', 'workLogs.taskType']);
         } elseif ($user->isLider()) {
-            $query = Task::with(['vehicles', 'leader', 'team', 'taskTypes', 'workLogs'])->forUser($user->id);
+            $query = Task::with(['vehicles', 'leader', 'team', 'taskTypes', 'workLogs.taskType'])->forUser($user->id);
         } else {
             $query = $user->teamTasks()->with(['vehicles', 'leader', 'team', 'taskTypes', 'workLogs']);
         }
@@ -127,7 +127,7 @@ class DailyTaskExport implements FromCollection, WithHeadings, WithMapping, With
         return [
             $task->id,
             $task->title,
-            $task->taskTypes->isNotEmpty() ? $task->taskTypes->pluck('name')->join(', ') : '',
+            $workLog->taskType ? $workLog->taskType->name : '',
             $workLog->work_date->format('Y-m-d'),
             $workLog->work_date->locale('pl')->isoFormat('dddd'),
             substr($workLog->start_time, 0, 5),
