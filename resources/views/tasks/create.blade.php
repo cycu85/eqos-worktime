@@ -271,15 +271,43 @@
                             @enderror
                         </div>
 
+                        <!-- Lokalizacja i Nr. Lini -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label for="lokalizacja" class="form-kt-label">Lokalizacja</label>
+                                <input id="lokalizacja"
+                                       type="text"
+                                       name="lokalizacja"
+                                       value="{{ old('lokalizacja') }}"
+                                       class="form-kt-control @error('lokalizacja') border-red-500 @enderror"
+                                       placeholder="np. Warszawa, ul. Przykładowa">
+                                @error('lokalizacja')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label for="nr_lini" class="form-kt-label">Nr. Lini</label>
+                                <input id="nr_lini"
+                                       type="text"
+                                       name="nr_lini"
+                                       value="{{ old('nr_lini') }}"
+                                       class="form-kt-control @error('nr_lini') border-red-500 @enderror"
+                                       placeholder="np. L1, 110kV">
+                                @error('nr_lini')
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
                         <!-- Notes -->
                         <div class="mb-6">
                             <label for="notes" class="form-kt-label">
                                 Notatki <span class="text-gray-500">(opcjonalnie)</span>
                             </label>
-                            <textarea id="notes" 
-                                      name="notes" 
-                                      rows="3" 
-                                      class="form-kt-control @error('notes') border-red-500 @enderror" 
+                            <textarea id="notes"
+                                      name="notes"
+                                      rows="3"
+                                      class="form-kt-control @error('notes') border-red-500 @enderror"
                                       placeholder="Dodatkowe informacje, uwagi...">{{ old('notes') }}</textarea>
                             @error('notes')
                                 <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>

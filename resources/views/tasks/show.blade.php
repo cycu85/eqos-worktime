@@ -119,6 +119,20 @@
                                 </div>
                             @endif
 
+                            @if($task->lokalizacja)
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Lokalizacja</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $task->lokalizacja }}</dd>
+                                </div>
+                            @endif
+
+                            @if($task->nr_lini)
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nr. Lini</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $task->nr_lini }}</dd>
+                                </div>
+                            @endif
+
                             <div>
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pojazdy</dt>
                                 <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">

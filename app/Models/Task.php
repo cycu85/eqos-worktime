@@ -46,6 +46,8 @@ class Task extends Model
         'team_id',
         'team',
         'notes',
+        'lokalizacja',
+        'nr_lini',
         'status',
     ];
 
