@@ -113,6 +113,8 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'Czas',
             'Roboczogodziny',
             'Ilość wykonanych zadań',
+            'Lokalizacja',
+            'Nr. Lini',
             'Notatki',
             'Utworzono'
         ];
@@ -135,6 +137,8 @@ class TaskExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             $this->calculateDurationFromWorkLogs($task),
             $this->calculateWorkHours($task),
             $task->getTotalCompletedTasks(),
+            $task->lokalizacja ?: '',
+            $task->nr_lini ?: '',
             $task->notes,
             $task->created_at->format('Y-m-d H:i')
         ];

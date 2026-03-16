@@ -115,6 +115,8 @@ class DailyTaskExport implements FromCollection, WithHeadings, WithMapping, With
             'Nieobecni w zespole',
             'Pojazdy - nazwa',
             'Pojazdy - rejestracja',
+            'Lokalizacja',
+            'Nr. Lini',
             'Notatki dnia',
             'Notatki zadania'
         ];
@@ -123,7 +125,7 @@ class DailyTaskExport implements FromCollection, WithHeadings, WithMapping, With
     public function map($workLog): array
     {
         $task = $workLog->task;
-        
+
         return [
             $task->id,
             $task->title,
@@ -140,6 +142,8 @@ class DailyTaskExport implements FromCollection, WithHeadings, WithMapping, With
             $this->getAbsentTeamMembersForDate($task, $workLog->work_date),
             $task->vehicles->count() > 0 ? $task->vehicles->pluck('name')->join(', ') : '',
             $task->vehicles->count() > 0 ? $task->vehicles->pluck('registration')->join(', ') : '',
+            $task->lokalizacja ?: '',
+            $task->nr_lini ?: '',
             $workLog->notes ?: '',
             $task->notes ?: ''
         ];
