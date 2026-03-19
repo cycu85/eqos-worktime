@@ -68,11 +68,6 @@ class TaskWorkLogController extends Controller
 
         $selectedDate = \Carbon\Carbon::parse($validated['work_date']);
 
-        // Sprawdź czy taki dzień już nie istnieje
-        if ($task->workLogs()->where('work_date', $selectedDate->format('Y-m-d'))->exists()) {
-            return back()->with('error', 'Dzień pracy na wybraną datę już istnieje.');
-        }
-
         // Utwórz nowy wpis
         TaskWorkLog::create([
             'task_id' => $task->id,
