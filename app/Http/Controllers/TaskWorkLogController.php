@@ -63,7 +63,7 @@ class TaskWorkLogController extends Controller
         $this->authorize('update', $task);
         
         $validated = $request->validate([
-            'work_date' => 'required|date|after_or_equal:today'
+            'work_date' => 'required|date'
         ]);
 
         $selectedDate = \Carbon\Carbon::parse($validated['work_date']);

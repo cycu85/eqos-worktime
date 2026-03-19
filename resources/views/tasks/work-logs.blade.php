@@ -22,6 +22,26 @@
 
     <div class="py-6 sm:py-12">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            @if(session('success'))
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <span class="block sm:inline">{{ session('success') }}</span>
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <span class="block sm:inline">{{ session('error') }}</span>
+                </div>
+            @endif
+            @if($errors->any())
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <ul class="list-disc list-inside">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <!-- Task Info -->
             <div class="kt-card mb-6">
                 <div class="kt-card-body">
@@ -224,10 +244,9 @@
                 
                 <div class="mb-4">
                     <label class="form-kt-label">Data</label>
-                    <input type="date" 
-                           id="work-date-input" 
-                           class="form-kt-control"
-                           min="{{ now()->format('Y-m-d') }}">
+                    <input type="date"
+                           id="work-date-input"
+                           class="form-kt-control">
                 </div>
                 
                 <div class="flex justify-end space-x-3">
@@ -367,27 +386,6 @@
             }
             
             // Check if date already exists
-            const existingDates = [];
-            const logIds = [{{ $task->workLogs->pluck('id')->join(',') }}];
-            
-            logIds.forEach(logId => {
-                const startTimeEl = document.querySelector(`input[name="logs[${logId}][start_time]"]`);
-                if (startTimeEl) {
-                    const logContainer = startTimeEl.closest('.border');
-                    const dateText = logContainer.querySelector('.text-base').textContent;
-                    const dateParts = dateText.split('.');
-                    if (dateParts.length === 3) {
-                        const formattedDate = `${dateParts[2]}-${dateParts[1].padStart(2, '0')}-${dateParts[0].padStart(2, '0')}`;
-                        existingDates.push(formattedDate);
-                    }
-                }
-            });
-            
-            if (existingDates.includes(selectedDate)) {
-                alert('Dzień pracy na wybraną datę już istnieje.');
-                return;
-            }
-            
             // Set the date and submit form
             document.getElementById('selected-work-date').value = selectedDate;
             document.getElementById('add-work-day-form').submit();
