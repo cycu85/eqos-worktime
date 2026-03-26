@@ -344,7 +344,7 @@
                 if (startTimeEl) {
                     // Get work date from the display element
                     const logContainer = startTimeEl.closest('.border');
-                    const dateText = logContainer.querySelector('.text-base').textContent;
+                    const dateText = logContainer.querySelector('.text-base').textContent.trim();
                     const dateParts = dateText.split('.');
                     if (dateParts.length === 3) {
                         const formattedDate = `${dateParts[2]}-${dateParts[1].padStart(2, '0')}-${dateParts[0].padStart(2, '0')}`;
