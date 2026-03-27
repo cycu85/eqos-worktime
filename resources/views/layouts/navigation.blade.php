@@ -70,7 +70,7 @@
                                     <a href="{{ route('teams.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                         Zespoły
                                     </a>
-                                    <a href="{{ route('attendance.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 {{ request()->routeIs('attendance.*') ? 'bg-gray-100 dark:bg-gray-700 font-medium' : '' }}">
+                                    <a href="{{ route('attendance.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                         Obecności
                                     </a>
                                 </div>
