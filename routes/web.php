@@ -16,6 +16,7 @@ use App\Http\Controllers\TaskTypeController;
 use App\Http\Controllers\TaskWorkLogController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 
@@ -146,6 +147,9 @@ Route::middleware('auth')->group(function () {
         Route::put('settings/cost-categories/{category}', [CostCategoryController::class, 'update'])->name('settings.cost-categories.update');
         Route::delete('settings/cost-categories/{category}', [CostCategoryController::class, 'destroy'])->name('settings.cost-categories.destroy');
         Route::patch('settings/cost-categories/{category}/toggle-active', [CostCategoryController::class, 'toggleActive'])->name('settings.cost-categories.toggle-active');
+
+        // Attendance
+        Route::get('zasoby/obecnosci', [AttendanceController::class, 'index'])->name('attendance.index');
 
         // Leasing Cost Types management
         Route::get('settings/leasing-cost-types', [LeasingCostTypeController::class, 'index'])->name('settings.leasing-cost-types.index');
