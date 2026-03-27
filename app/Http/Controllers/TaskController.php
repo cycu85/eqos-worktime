@@ -236,7 +236,7 @@ class TaskController extends Controller
 
         $vehicleIds = $validated['vehicles'];
         $taskTypeIds = $validated['task_type_ids'] ?? [];
-        unset($validated['vehicles'], $validated['team_id'], $validated['task_type_ids']);
+        unset($validated['vehicles'], $validated['task_type_ids']);
 
         $task = Task::create($validated);
         $task->vehicles()->attach($vehicleIds);
