@@ -10,8 +10,10 @@ class AttendanceController extends Controller
 {
     public function index(Request $request)
     {
-        $dateFrom = $request->get('date_from', now()->startOfMonth()->format('Y-m-d'));
-        $dateTo   = $request->get('date_to', now()->format('Y-m-d'));
+        $rawFrom  = $request->get('date_from');
+        $rawTo    = $request->get('date_to');
+        $dateFrom = ($rawFrom && strtotime($rawFrom)) ? date('Y-m-d', strtotime($rawFrom)) : now()->startOfMonth()->format('Y-m-d');
+        $dateTo   = ($rawTo && strtotime($rawTo))     ? date('Y-m-d', strtotime($rawTo))   : now()->format('Y-m-d');
         $userId   = $request->get('user_id');
         $sort      = $request->get('sort', 'date');
         $direction = in_array($request->get('direction'), ['asc', 'desc'])
@@ -90,7 +92,7 @@ class AttendanceController extends Controller
 
         // Paginacja ręczna (kolekcja PHP, nie Eloquent)
         $perPage  = 20;
-        $page     = $request->get('page', 1);
+        $page     = max(1, (int) $request->get('page', 1));
         $total    = $attendance->count();
         $items    = $attendance->values()->forPage($page, $perPage);
 
