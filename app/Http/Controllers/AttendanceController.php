@@ -31,6 +31,7 @@ class AttendanceController extends Controller
             ->whereIn('task_work_logs.status', ['in_progress', 'completed'])
             ->where('task_work_logs.work_date', '>=', $dateFrom)
             ->where('task_work_logs.work_date', '<=', $dateTo)
+            ->where('users.is_active', true)
             ->get();
 
         // Mapa name => id dla wszystkich aktywnych użytkowników
