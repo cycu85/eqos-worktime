@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Task;
 use App\Models\TaskWorkLog;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -31,6 +30,20 @@ class AttendanceControllerTest extends TestCase
     {
         $pracownik = User::factory()->create(['role' => 'pracownik', 'is_active' => true]);
         $response = $this->actingAs($pracownik)->get(route('attendance.index'));
+        $response->assertForbidden();
+    }
+
+    public function test_kierownik_can_access_attendance(): void
+    {
+        $kierownik = User::factory()->create(['role' => 'kierownik', 'is_active' => true]);
+        $response = $this->actingAs($kierownik)->get(route('attendance.index'));
+        $response->assertOk();
+    }
+
+    public function test_lider_cannot_access_attendance(): void
+    {
+        $lider = User::factory()->create(['role' => 'lider', 'is_active' => true]);
+        $response = $this->actingAs($lider)->get(route('attendance.index'));
         $response->assertForbidden();
     }
 
