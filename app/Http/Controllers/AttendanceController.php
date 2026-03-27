@@ -102,7 +102,9 @@ class AttendanceController extends Controller
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
-        $users = User::where('is_active', true)->orderBy('name')->get();
+        // Lista użytkowników do filtra — pusta, aby imiona nie powielały się w HTML
+        // (filtrownie po user_id działa przez URL query string)
+        $users = collect();
 
         return view('attendance.index', compact(
             'paginator', 'dateFrom', 'dateTo', 'userId',
