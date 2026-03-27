@@ -107,7 +107,8 @@ class AttendanceControllerTest extends TestCase
             ->get(route('attendance.index', ['date_from' => '2026-03-01', 'date_to' => '2026-03-31']));
 
         $response->assertOk();
-        $response->assertDontSee('Marek Zielony');
+        // Status 'planned' nie tworzy obecności — data 10.03.2026 nie pojawi się w tabeli
+        $response->assertDontSee('10.03.2026');
     }
 
     public function test_duplicate_attendance_deduplicated(): void
@@ -122,9 +123,11 @@ class AttendanceControllerTest extends TestCase
             ->get(route('attendance.index', ['date_from' => '2026-03-01', 'date_to' => '2026-03-31']));
 
         $response->assertOk();
-        // Powinien pojawić się dokładnie raz - liczymy wystąpienia
+        $response->assertSee('Tomasz Lis');
+        // Data 05.03.2026 powinna pojawić się dokładnie raz w tabeli (deduplikacja działa)
+        // Sprawdzamy datę, nie imię — imię może się pojawić też w dropdownie filtra
         $content = $response->getContent();
-        $this->assertEquals(1, substr_count($content, 'Tomasz Lis'));
+        $this->assertEquals(1, substr_count($content, '05.03.2026'));
     }
 
     public function test_filter_by_user_id(): void
@@ -133,8 +136,9 @@ class AttendanceControllerTest extends TestCase
         $leader2 = User::factory()->create(['name' => 'Ewa Druga', 'role' => 'lider', 'is_active' => true]);
         $task1 = Task::factory()->create(['leader_id' => $leader1->id, 'team' => null]);
         $task2 = Task::factory()->create(['leader_id' => $leader2->id, 'team' => null]);
+        // Różne daty — żeby sprawdzać po dacie, nie po imieniu (imię może być w dropdownie)
         TaskWorkLog::factory()->create(['task_id' => $task1->id, 'work_date' => '2026-03-12', 'status' => 'completed']);
-        TaskWorkLog::factory()->create(['task_id' => $task2->id, 'work_date' => '2026-03-12', 'status' => 'completed']);
+        TaskWorkLog::factory()->create(['task_id' => $task2->id, 'work_date' => '2026-03-13', 'status' => 'completed']);
 
         $response = $this->actingAs($this->admin)
             ->get(route('attendance.index', [
@@ -144,7 +148,9 @@ class AttendanceControllerTest extends TestCase
             ]));
 
         $response->assertOk();
-        $response->assertSee('Adam Pierwszy');
-        $response->assertDontSee('Ewa Druga');
+        // Data Adama widoczna w wynikach
+        $response->assertSee('12.03.2026');
+        // Data Ewy NIE widoczna — filtr po user_id działa
+        $response->assertDontSee('13.03.2026');
     }
 }
