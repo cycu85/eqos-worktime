@@ -11,9 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Usuń indeks złożony zawierający vehicle_id (kompatybilność z SQLite)
+        if (Schema::hasColumn('tasks', 'vehicle_id')) {
+            try {
+                Schema::table('tasks', function (Blueprint $table) {
+                    $table->dropIndex('tasks_vehicle_id_start_datetime_index');
+                });
+            } catch (\Exception $e) {
+                // Indeks może nie istnieć na tej instancji
+            }
+        }
         Schema::table('tasks', function (Blueprint $table) {
-            $table->dropForeign(['vehicle_id']);
-            $table->dropColumn('vehicle_id');
+            if (Schema::hasColumn('tasks', 'vehicle_id')) {
+                $table->dropForeign(['vehicle_id']);
+                $table->dropColumn('vehicle_id');
+            }
         });
     }
 
